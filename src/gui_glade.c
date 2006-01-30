@@ -33,6 +33,8 @@
 #include "main.h"
 #include "interface.h"
 
+#include "gui_infowin.h"
+
 GtkWidget *gui_glade_custom_handler_func(GladeXML *xml,
 	gchar *func_name, gchar *name,
 	gchar *string1, gchar *string2,
@@ -99,6 +101,9 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		}
 		i ++;
 	}
+
+	/* initialize infowin */
+	gui_infowin_initialize(viewer, glade_xml_get_widget(xml, "proptree"));
 
 	/* connect main menu to glarea */
 	popupmenu = gtk_menu_new();

@@ -8,6 +8,7 @@ g3dviewer_SOURCES = \
 	trackball.c trackball.h \
 	infowin.c infowin.h \
 	gui_glade.c gui_glade.h \
+	gui_infowin.c gui_infowin.h \
 	gui_callbacks.c \
 	texture.c texture.h \
 	model.h model.c
