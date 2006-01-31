@@ -1,5 +1,8 @@
 bin_PROGRAMS = g3dviewer
 
+datadir = @datadir@
+localedir = $(datadir)/locale
+
 g3dviewer_SOURCES = \
 	main.c main.h \
 	gl.c gl.h \
@@ -14,6 +17,7 @@ g3dviewer_SOURCES = \
 g3dviewer_CFLAGS = \
 	-I$(top_srcdir) -I$(top_builddir) \
 	-Wall -ansi \
+	-DLOCALEDIR=\"$(localedir)\" \
 	@DBG_CFLAGS@ \
 	@GLIB_CFLAGS@ @GTK_CFLAGS@ @GTKGLEXT_CFLAGS@ \
 	@LIBGLADE_CFLAGS@ \

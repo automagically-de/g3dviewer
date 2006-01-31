@@ -46,6 +46,10 @@ int main(int argc, char **argv)
 {
 	G3DViewer *viewer;
 
+	setlocale(LC_ALL, "");
+	bindtextdomain("g3dviewer", LOCALEDIR);
+	textdomain("g3dviewer");
+
 	gtk_init(&argc, &argv);
 	gtk_gl_init(&argc, &argv);
 

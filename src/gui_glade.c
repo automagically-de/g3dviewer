@@ -67,7 +67,7 @@ static void gui_glade_add_open_filters(G3DViewer *viewer)
 
 	/* "all files" filter */
 	filter = gtk_file_filter_new();
-	gtk_file_filter_set_name(filter, "all files");
+	gtk_file_filter_set_name(filter, _("all files"));
 	gtk_file_filter_add_pattern(filter, "*");
 	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(opendialog), filter);
 

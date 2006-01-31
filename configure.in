@@ -10,6 +10,12 @@ AC_SUBST(VERSION)
 
 AC_PROG_CC
 
+ALL_LINGUAS=$(cat po/LINGUAS)
+AM_GLIB_GNU_GETTEXT
+
+GETTEXT_PACKAGE=$PACKAGE
+AC_SUBST(GETTEXT_PACKAGE)
+
 # glib 2.0
 AM_PATH_GLIB_2_0(2.4.0,,AC_MSG_ERROR([GLib >= 2.4.0 is required]))
 
@@ -88,6 +94,8 @@ AC_OUTPUT(Makefile
 	man/Makefile
 	src/Makefile
 	pixmaps/Makefile
-	glade/Makefile)
+	glade/Makefile
+	po/Makefile.in
+)
 	
 

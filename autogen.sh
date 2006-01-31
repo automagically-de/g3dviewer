@@ -6,16 +6,16 @@ INCLUDES=""
 #		   /opt/gnome/share/aclocal
 #do if test -d "$dir"; then INCLUDES="$INCLUDES -I $dir"; fi; done
 
-echo "++ aclocal -I m4/ $ACLOCAL_FLAGS $INCLUDES"
+set -x
+
+glib-gettextize --copy --force
+
 aclocal -I m4/ $ACLOCAL_FLAGS $INCLUDES
 
-echo "++ autoheader"
 autoheader
 
-echo "++ automake --gnu --add-missing --copy"
 automake --gnu --add-missing --copy
 
-echo "++ autoconf"
 autoconf
 
 if [ "$1" = "-conf" ]; then

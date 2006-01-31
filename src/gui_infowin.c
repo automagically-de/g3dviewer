@@ -122,7 +122,7 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	gtk_tree_store_append(treestore, &iter, NULL);
 	gtk_tree_store_set(treestore, &iter,
 		COL_TYPE, 0,
-		COL_TITLE, "objects",
+		COL_TITLE, _("objects"),
 		COL_VALUE, "",
 		COL_CHECK, FALSE,
 		-1);
@@ -131,7 +131,7 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	gtk_tree_store_append(treestore, &iter, NULL);
 	gtk_tree_store_set(treestore, &iter,
 		COL_TYPE, 0,
-		COL_TITLE, "materials",
+		COL_TITLE, _("materials"),
 		COL_VALUE, "",
 		COL_CHECK, FALSE,
 		-1);

@@ -35,7 +35,7 @@
 	  <child>
 	    <widget class="GtkMenuItem" id="menuitem1">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">_Datei</property>
+	      <property name="label" translatable="yes">_File</property>
 	      <property name="use_underline">True</property>
 
 	      <child>
@@ -81,7 +81,7 @@
 	  <child>
 	    <widget class="GtkMenuItem" id="menuitem3">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">_Ansicht</property>
+	      <property name="label" translatable="yes">_View</property>
 	      <property name="use_underline">True</property>
 
 	      <child>
@@ -197,7 +197,7 @@
 	  <child>
 	    <widget class="GtkMenuItem" id="menuitem4">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">_Hilfe</property>
+	      <property name="label" translatable="yes">_Help</property>
 	      <property name="use_underline">True</property>
 
 	      <child>
@@ -567,7 +567,7 @@
 
 &lt;span foreground=&quot;blue&quot;&gt;http://automagically.de/?g3dviewer&lt;/span&gt;
 
-© 2005, 2006 Markus Dahms
+(C) 2005, 2006 Markus Dahms
 &amp;lt;mad@automagically.de&amp;gt;</property>
 	  <property name="use_underline">False</property>
 	  <property name="use_markup">True</property>

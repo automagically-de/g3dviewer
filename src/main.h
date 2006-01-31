@@ -24,6 +24,7 @@
 #define _MAIN_H
 
 #include <GL/gl.h>
+#include <glib/gi18n.h>
 #include <gtk/gtk.h>
 #include <glade/glade-xml.h>
 #include <g3d/g3d.h>
@@ -63,22 +64,8 @@ typedef struct {
 
 		GtkWidget *window;
 		GtkWidget *infowin;
-		GtkWidget *opendialog;
-		GtkWidget *filesel_omenu;
-		/* model tab */
-		struct {
-			GtkWidget *tree;
-		} modeltab;
-		/* plugin tab */
-		struct {
-			GtkWidget *label_desc;
-			GtkWidget *label_exts;
-		} plugintab;
 
 		GtkWidget *glarea;
-		GtkWidget *statushbox;
-		GtkWidget *progressbar;
-		gboolean show_statusbar;
 	} interface;
 
 } G3DViewer;
