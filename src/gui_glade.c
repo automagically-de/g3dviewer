@@ -216,7 +216,7 @@ void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data)
 	g_printerr("D: label: %s\n", label);
 #endif
 	newmi = gtk_menu_item_new_with_label(label);
-	gtk_menu_append(GTK_MENU(menu), newmi);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu), newmi);
 
 	/* disable warning */
 	g_log_set_default_handler(gui_glade_null_logger, NULL);
@@ -271,8 +271,14 @@ GtkWidget *gui_glade_create_glwidget(void)
 	GdkGLConfig *glconfig;
 
 	glconfig = gdk_gl_config_new_by_mode(
-		GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH |
-		GDK_GL_MODE_ALPHA | GDK_GL_MODE_DOUBLE);
+		GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH | GDK_GL_MODE_DOUBLE);
+
+	if(glconfig == NULL)
+	{
+		glconfig = gdk_gl_config_new_by_mode(
+			GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH |
+			GDK_GL_MODE_ALPHA | GDK_GL_MODE_DOUBLE);
+	}
 
 	if(glconfig == NULL) return NULL;
 

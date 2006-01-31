@@ -87,8 +87,6 @@ int main(int argc, char **argv)
 
 	g3d_context_free(viewer->g3dcontext);
 
-	gtk_exit(0);
-
 	return EXIT_SUCCESS;
 }
 

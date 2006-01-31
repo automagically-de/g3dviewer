@@ -45,7 +45,7 @@ gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 {
 	GdkGLDrawable *gldrawable;
 	GdkGLContext *glcontext;
-	G3DViewer *viewer = (G3DViewer*)gtk_object_get_data(GTK_OBJECT(widget),
+	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
 	if(event->count > 0) return TRUE;
@@ -72,7 +72,7 @@ gint glarea_configure(GtkWidget *widget, GdkEventConfigure *event)
 
 	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext)) return TRUE;
 
-	viewer = (G3DViewer*)gtk_object_get_data(GTK_OBJECT(widget), "viewer");
+	viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget), "viewer");
 	glViewport(0,0, widget->allocation.width, widget->allocation.height);
 	viewer->aspect = (float)widget->allocation.width /
 		(float)widget->allocation.height;
@@ -87,7 +87,7 @@ gint glarea_configure(GtkWidget *widget, GdkEventConfigure *event)
 
 gint glarea_destroy(GtkWidget *widget)
 {
-	G3DViewer *viewer = (G3DViewer*)gtk_object_get_data(GTK_OBJECT(widget),
+	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 	if(viewer->interface.glarea)
 	{
@@ -100,7 +100,7 @@ gint glarea_destroy(GtkWidget *widget)
 gint glarea_scroll(GtkWidget *widget, GdkEventScroll *event)
 {
 	GdkRectangle area;
-	G3DViewer *viewer = (G3DViewer*)gtk_object_get_data(GTK_OBJECT(widget),
+	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
 #define ZOOM_BY 10
@@ -116,14 +116,14 @@ gint glarea_scroll(GtkWidget *widget, GdkEventScroll *event)
 	if(viewer->zoom < 1)   viewer->zoom = 1;
 	if(viewer->zoom > 120) viewer->zoom = 120;
 
-	gtk_widget_draw(widget, &area);
+	glarea_update(widget);
 
 	return FALSE;
 }
 
 gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event)
 {
-	G3DViewer *viewer = (G3DViewer*)gtk_object_get_data(GTK_OBJECT(widget),
+	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
 	/* left mouse buttom: rotate object */
@@ -139,7 +139,7 @@ gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event)
 		if(event->type == GDK_BUTTON_PRESS)
 		{
 			GtkWidget *menu =
-				(GtkWidget*)gtk_object_get_data(GTK_OBJECT(widget),
+				(GtkWidget*)g_object_get_data(G_OBJECT(widget),
 					"menu");
 			gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
 				event->button, event->time);
@@ -155,7 +155,7 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
   int x, y;
   GdkRectangle area;
   GdkModifierType state;
-  G3DViewer *viewer = (G3DViewer*)gtk_object_get_data(GTK_OBJECT(widget),
+  G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
   if(event->is_hint) gdk_window_get_pointer(event->window, &x, &y, &state);
@@ -180,7 +180,7 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
       (                  2.0*x -              area.width) / area.width,
       (            area.height -                   2.0*y) / area.height);
     add_quats(spin_quat, viewer->quat, viewer->quat);
-    gtk_widget_draw(widget, &area);
+    glarea_update(widget);
   }
 
   if(state & GDK_BUTTON2_MASK)
@@ -188,7 +188,7 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
     viewer->zoom += ((y - viewer->mouse.beginy) / (float)area.height) * 40;
     if(viewer->zoom < 1)   viewer->zoom = 1;
     if(viewer->zoom > 120) viewer->zoom = 120;
-    gtk_widget_draw(widget, &area);
+    glarea_update(widget);
   }
   viewer->mouse.beginx = x;
   viewer->mouse.beginy = y;
