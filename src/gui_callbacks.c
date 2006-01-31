@@ -31,6 +31,7 @@
 
 #include "main.h"
 #include "gl.h"
+#include "glarea.h"
 #include "gui_glade.h"
 
 /*
@@ -200,5 +201,63 @@ void gui_on_wireframe_cb(GtkWidget *widget, gpointer user_data)
 
 void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 {
+	G3DViewer *viewer;
+	GtkWidget *colorsel, *colordialog;
+	GdkColor color;
+	gint retval;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer != NULL);
+
+	colorsel = glade_xml_get_widget(viewer->interface.xml, "cs_background");
+	colordialog = glade_xml_get_widget(viewer->interface.xml, "color_dialog");
+
+	/* set active background color */
+	color.red   = viewer->bgcolor[0] * 0xFFFF;
+	color.green = viewer->bgcolor[1] * 0xFFFF;
+	color.blue  = viewer->bgcolor[2] * 0xFFFF;
+	gtk_color_selection_set_previous_color(GTK_COLOR_SELECTION(colorsel),
+		&color);
+	gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorsel),
+		&color);
+
+	retval = gtk_dialog_run(GTK_DIALOG(colordialog));
+	gtk_widget_hide(colordialog);
+	if(retval == GTK_RESPONSE_CANCEL)
+	{
+		gtk_color_selection_get_previous_color(GTK_COLOR_SELECTION(colorsel),
+			&color);
+		viewer->bgcolor[0] = (gdouble)color.red   / 65536.0;
+		viewer->bgcolor[1] = (gdouble)color.green / 65536.0;
+		viewer->bgcolor[2] = (gdouble)color.blue  / 65536.0;
+
+		glarea_update(viewer->interface.glarea);
+	}
 }
 
+/*
+ * ColorDialog: color changed
+ */
+void gui_color_changed_cb(GtkColorSelection *colorsel,
+	gpointer user_data)
+{
+	G3DViewer *viewer;
+	GdkColor color;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(colorsel), "viewer");
+	g_assert(viewer != NULL);
+
+	gtk_color_selection_get_current_color(colorsel, &color);
+	viewer->bgcolor[0] = (gdouble)color.red   / 65536.0;
+	viewer->bgcolor[1] = (gdouble)color.green / 65536.0;
+	viewer->bgcolor[2] = (gdouble)color.blue  / 65536.0;
+
+#if DEBUG > 4
+	g_printerr("D: gui_color_changed_cb: color %.2f, %.2f, %.2f\n",
+		viewer->bgcolor[0],
+		viewer->bgcolor[1],
+		viewer->bgcolor[2]);
+#endif
+
+	glarea_update(viewer->interface.glarea);
+}

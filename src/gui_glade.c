@@ -126,8 +126,10 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"mi_shininess",
 		"mi_textures",
 		"mi_twosided",
+		"mi_bgcolor",
 		"tb_file_open",
 		"tb_properties",
+		"cs_background",
 		"gtkglext1",
 		NULL };
 
