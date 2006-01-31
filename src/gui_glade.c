@@ -42,7 +42,7 @@ GtkWidget *gui_glade_custom_handler_func(GladeXML *xml,
 	gpointer user_data);
 void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data);
 
-/**
+/*
  * initializes libglade
  */
 
@@ -52,14 +52,14 @@ gboolean gui_glade_init(G3DViewer *viewer)
 	return TRUE;
 }
 
-/**
+/*
  * loads interface from .glade file
  */
 
 gboolean gui_glade_load(G3DViewer *viewer)
 {
 	GladeXML *xml;
-	GtkWidget *window, *widget, *popupmenu, *propwin;
+	GtkWidget *window, *widget, *popupmenu, *propwin, *infowin;
 	gint i;
 	static const gchar *viewer_widgets[] = {
 		"mi_file_open",
@@ -86,6 +86,9 @@ gboolean gui_glade_load(G3DViewer *viewer)
 
 	propwin = glade_xml_get_widget(xml, "properties_window");
 	gtk_widget_hide(propwin);
+
+	infowin = glade_xml_get_widget(xml, "info_dialog");
+	gtk_widget_hide(infowin);
 
 	/* connect viewer pointer to objects */
 	i = 0;

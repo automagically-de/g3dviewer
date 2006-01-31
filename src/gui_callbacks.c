@@ -202,11 +202,3 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 {
 }
 
-/*
- * Help->Info
- */
-
-void gui_on_info_cb(GtkWidget *widget, gpointer user_data)
-{
-}
-
