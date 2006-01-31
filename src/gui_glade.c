@@ -28,10 +28,14 @@
 #include <string.h>
 
 #include <gtk/gtk.h>
+#include <gtk/gtkgl.h>
 #include <glade/glade-xml.h>
 
+#include <g3d/plugins.h>
+
 #include "main.h"
-#include "interface.h"
+#include "model.h"
+#include "glarea.h"
 
 #include "gui_infowin.h"
 
@@ -48,8 +52,59 @@ void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data);
 
 gboolean gui_glade_init(G3DViewer *viewer)
 {
-	glade_set_custom_handler(gui_glade_custom_handler_func, viewer);
 	return TRUE;
+}
+
+static void gui_glade_add_open_filters(G3DViewer *viewer)
+{
+	GtkWidget *opendialog;
+	GtkFileFilter *filter;
+	GSList *plugins;
+	G3DPlugin *plugin;
+	gchar *name, *exts, **ext, *glob, *tmp;
+
+	opendialog = glade_xml_get_widget(viewer->interface.xml, "open_dialog");
+
+	/* "all files" filter */
+	filter = gtk_file_filter_new();
+	gtk_file_filter_set_name(filter, "all files");
+	gtk_file_filter_add_pattern(filter, "*");
+	gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(opendialog), filter);
+
+	/* FIXME: evil hack? */
+	plugins = viewer->g3dcontext->plugins;
+	while(plugins)
+	{
+		plugin = (G3DPlugin *)plugins->data;
+		plugins = plugins->next;
+
+		if(plugin->type != G3D_PLUGIN_IMPORT) continue;
+
+		filter = gtk_file_filter_new();
+		exts = g_strjoinv(", ", plugin->extensions);
+		if(strlen(exts) > 30)
+		{
+			tmp = exts;
+			exts = g_strdup_printf("%.*s...", 30, tmp);
+			g_free(tmp);
+		}
+		name = g_strdup_printf("%s (%s)", plugin->name, exts);
+		gtk_file_filter_set_name(filter, name);
+		g_free(name);
+		g_free(exts);
+
+		ext = plugin->extensions;
+		while(ext && *ext)
+		{
+			glob = g_strdup_printf("*.%s", *ext);
+			gtk_file_filter_add_pattern(filter, glob);
+			g_free(glob);
+
+			ext ++;
+		}
+
+		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(opendialog), filter);
+	}
 }
 
 /*
@@ -59,7 +114,7 @@ gboolean gui_glade_init(G3DViewer *viewer)
 gboolean gui_glade_load(G3DViewer *viewer)
 {
 	GladeXML *xml;
-	GtkWidget *window, *widget, *popupmenu, *propwin, *infowin;
+	GtkWidget *window, *widget, *popupmenu, *glarea;
 	gint i;
 	static const gchar *viewer_widgets[] = {
 		"mi_file_open",
@@ -73,6 +128,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"mi_twosided",
 		"tb_file_open",
 		"tb_properties",
+		"gtkglext1",
 		NULL };
 
 	/* load main window from xml */
@@ -84,11 +140,9 @@ gboolean gui_glade_load(G3DViewer *viewer)
 	glade_xml_signal_autoconnect(xml);
 	window = glade_xml_get_widget(xml, "main_window");
 
-	propwin = glade_xml_get_widget(xml, "properties_window");
-	gtk_widget_hide(propwin);
-
-	infowin = glade_xml_get_widget(xml, "info_dialog");
-	gtk_widget_hide(infowin);
+	/* connect glarea (TODO: remove link) */
+	glarea = glade_xml_get_widget(xml, "gtkglext1");
+	viewer->interface.glarea = glarea;
 
 	/* connect viewer pointer to objects */
 	i = 0;
@@ -118,9 +172,14 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		popupmenu);
 	gtk_widget_show_all(popupmenu);
 
+	/* update "open" dialog */
+	gui_glade_add_open_filters(viewer);
+
 	/* show main window */
 	viewer->interface.window = window;
 	gtk_widget_show_all(window);
+
+	glarea_update(viewer->interface.glarea);
 
 	return TRUE;
 }
@@ -172,29 +231,76 @@ void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data)
 	g_log_set_default_handler(g_log_default_handler, NULL);
 }
 
-/**
- * custom handler for libglade to provide interface_create_glarea with
- * a pointer
+/*
+ * show "open" dialog
  */
-
-GtkWidget *gui_glade_custom_handler_func(GladeXML *xml,
-	gchar *func_name, gchar *name,
-	gchar *string1, gchar *string2,
-	gint int1, gint int2,
-	gpointer user_data)
+gboolean gui_glade_open_dialog(G3DViewer *viewer)
 {
-	G3DViewer *viewer;
-	GtkWidget *glarea;
+	GtkWidget *opendialog;
+	gchar *filename;
+	gint retval;
 
-	viewer = (G3DViewer *)user_data;
+	opendialog = glade_xml_get_widget(viewer->interface.xml, "open_dialog");
 
-	if(0 == strcmp("interface_create_glarea", func_name))
+	retval = gtk_dialog_run(GTK_DIALOG(opendialog));
+	gtk_widget_hide(opendialog);
+	if(retval == GTK_RESPONSE_OK)
 	{
-		glarea = interface_create_glarea(viewer);
-		viewer->interface.glarea = glarea;
-		return glarea;
+		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(opendialog));
+
+		if(viewer->filename)
+			g_free(viewer->filename);
+		viewer->filename = filename;
+
+		retval = model_load(viewer);
+
+		glarea_update(viewer->interface.glarea);
+
+		return retval;
 	}
 
-	return NULL;
+	return FALSE;
+}
+
+/*
+ * create GL widget
+ */
+GtkWidget *gui_glade_create_glwidget(void)
+{
+	GtkWidget *glarea;
+	GdkGLConfig *glconfig;
+
+	glconfig = gdk_gl_config_new_by_mode(
+		GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH |
+		GDK_GL_MODE_ALPHA | GDK_GL_MODE_DOUBLE);
+
+	if(glconfig == NULL) return NULL;
+
+	glarea = gtk_drawing_area_new();
+	gtk_widget_set_gl_capability(glarea, glconfig, NULL, TRUE,
+		GDK_GL_RGBA_TYPE);
+
+	if(glarea == NULL) return NULL;
+
+	gtk_widget_set_events(glarea,
+		GDK_EXPOSURE_MASK |
+		GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+		GDK_SCROLL_MASK |
+		GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+
+	g_signal_connect(G_OBJECT(glarea), "scroll_event",
+		GTK_SIGNAL_FUNC(glarea_scroll), NULL);
+	g_signal_connect(G_OBJECT(glarea), "expose_event",
+		GTK_SIGNAL_FUNC(glarea_expose), NULL);
+	g_signal_connect(G_OBJECT(glarea), "motion_notify_event",
+		GTK_SIGNAL_FUNC(glarea_motion_notify), NULL);
+	g_signal_connect(G_OBJECT(glarea), "button_press_event",
+		GTK_SIGNAL_FUNC(glarea_button_pressed), NULL);
+	g_signal_connect(G_OBJECT(glarea), "configure_event",
+		GTK_SIGNAL_FUNC(glarea_configure), NULL);
+	g_signal_connect(G_OBJECT(glarea), "destroy_event",
+		GTK_SIGNAL_FUNC(glarea_destroy), NULL);
+
+	return glarea;
 }
 

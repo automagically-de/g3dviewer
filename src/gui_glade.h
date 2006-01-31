@@ -27,5 +27,6 @@
 
 gboolean gui_glade_init(G3DViewer *viewer);
 gboolean gui_glade_load(G3DViewer *viewer);
+gboolean gui_glade_open_dialog(G3DViewer *viewer);
 
 #endif /* _GUI_GLADE_H */

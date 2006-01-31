@@ -2,7 +2,6 @@ bin_PROGRAMS = g3dviewer
 
 g3dviewer_SOURCES = \
 	main.c main.h \
-	interface.c interface.h \
 	gl.c gl.h \
 	glarea.h glarea.c \
 	trackball.c trackball.h \

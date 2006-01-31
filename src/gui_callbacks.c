@@ -28,11 +28,10 @@
 #include <string.h>
 
 #include <gtk/gtk.h>
-#include <glade/glade-xml.h>
 
 #include "main.h"
-#include "interface.h"
 #include "gl.h"
+#include "gui_glade.h"
 
 /*
  * File->Open
@@ -40,10 +39,11 @@
 
 void gui_on_open_cb(GtkWidget *widget, gpointer user_data)
 {
-	gpointer data;
+	G3DViewer *viewer;
 
-	data = g_object_get_data(G_OBJECT(widget), "viewer");
-	interface_showopendialog((G3DViewer*)data);
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+
+	gui_glade_open_dialog(viewer);
 }
 
 /*

@@ -180,7 +180,7 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 	/* clear tree */
 	gui_infowin_clean(viewer);
 
-	g_return_val_if_fail(viewer->model != NULL, FALSE);
+	if(viewer->model == NULL) return FALSE;
 
 	/* append objects */
 	objects = viewer->model->objects;

@@ -35,7 +35,6 @@
 
 #include "main.h"
 #include "model.h"
-#include "interface.h"
 #include "gui_glade.h"
 #include "trackball.h"
 
@@ -74,21 +73,15 @@ int main(int argc, char **argv)
 	gui_glade_init(viewer);
 	gui_glade_load(viewer);
 
-#if 0
-	interface_init(viewer);
-#endif
-
 	if(viewer->filename != NULL)
 	{
 		model_load(viewer);
 	}
 	else
-		interface_showopendialog(viewer);
+		gui_glade_open_dialog(viewer);
 
 	if(parse_only)
 		return EXIT_SUCCESS;
-
-	interface_update_window(viewer);
 
 	gtk_main();
 

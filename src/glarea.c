@@ -35,6 +35,12 @@
 #include "glarea.h"
 #include "trackball.h"
 
+void glarea_update(GtkWidget *glarea)
+{
+	gtk_widget_queue_draw_area(glarea, 0, 0,
+		glarea->allocation.width, glarea->allocation.height);
+}
+
 gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 {
 	GdkGLDrawable *gldrawable;

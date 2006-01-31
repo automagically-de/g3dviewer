@@ -25,6 +25,8 @@
 
 #include <gtk/gtk.h>
 
+void glarea_update(GtkWidget *glarea);
+
 gint glarea_expose(GtkWidget *widget, GdkEventExpose *event);
 gint glarea_configure(GtkWidget *widget, GdkEventConfigure *event);
 gint glarea_destroy(GtkWidget *widget);
