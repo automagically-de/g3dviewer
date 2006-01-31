@@ -30,6 +30,7 @@
 #include <gtk/gtk.h>
 
 #include "main.h"
+#include "glarea.h"
 
 enum _columns
 {
@@ -38,6 +39,7 @@ enum _columns
 	COL_VALUE,
 	COL_CHECK,
 	COL_SHOWHIDE,
+	COL_POINTER,
 	N_COLUMNS
 };
 
@@ -58,23 +60,75 @@ static GtkTreeStore *gui_infowin_create_model(void)
 		G_TYPE_STRING, /* title */
 		G_TYPE_STRING, /* number */
 		G_TYPE_BOOLEAN, /* show checkbox */
-		G_TYPE_BOOLEAN /* show/hide object */
+		G_TYPE_BOOLEAN, /* show/hide object */
+		G_TYPE_POINTER /* custom pointer (object, etc.) */
 		);
 
 	return treestore;
 }
 
-static gboolean gui_infowin_create_columns(GtkWidget *treeview)
+
+static void gui_infowin_object_hide_cb(GtkCellRendererToggle *renderer,
+	gchar *pathstr, gpointer data)
+{
+	GtkTreePath *path;
+	GtkTreeIter iter;
+	GtkTreeModel *model;
+	gboolean toggle_item;
+	G3DViewer *viewer;
+	G3DObject *object;
+	gpointer ptr;
+
+	model = g_object_get_data(G_OBJECT(renderer), "model");
+	viewer = g_object_get_data(G_OBJECT(renderer), "viewer");
+
+	g_assert(model);
+	g_assert(viewer);
+
+	path = gtk_tree_path_new_from_string(pathstr);
+	gtk_tree_model_get_iter(model, &iter, path);
+
+	gtk_tree_model_get(model, &iter,
+		COL_SHOWHIDE, &toggle_item,
+		COL_POINTER, &ptr,
+		-1);
+	object = (G3DObject *)ptr;
+
+#if DEBUG > 3
+	g_printerr("D: gui_infowin_object_hide_cb: object=0x%p (%i)\n", object,
+		toggle_item);
+#endif
+
+	gtk_tree_path_free(path);
+
+	if(object == NULL) return;
+
+	toggle_item ^= 1;
+	object->hide = !toggle_item;
+
+	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, COL_SHOWHIDE,
+		toggle_item, -1);
+
+	glarea_update(viewer->interface.glarea);
+}
+
+static gboolean gui_infowin_create_columns(GtkWidget *treeview,
+	GtkTreeModel *model, G3DViewer *viewer)
 {
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
 
 	/* visibility column */
 	renderer = gtk_cell_renderer_toggle_new();
+	g_object_set_data(G_OBJECT(renderer), "model", model);
+	g_object_set_data(G_OBJECT(renderer), "viewer", viewer);
+	g_signal_connect(G_OBJECT(renderer), "toggled",
+		G_CALLBACK(gui_infowin_object_hide_cb), NULL);
 	column = gtk_tree_view_column_new_with_attributes("Show",
 		renderer,
 		"active", COL_SHOWHIDE,
 		"visible", COL_CHECK,
+		"activatable", COL_CHECK,
 		NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
@@ -111,7 +165,8 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 		GTK_TREE_MODEL(treestore));
 	viewer->info.treestore = treestore;
 
-	if(gui_infowin_create_columns(treeview) == FALSE)
+	if(gui_infowin_create_columns(treeview, GTK_TREE_MODEL(treestore),
+		viewer) == FALSE)
 		return FALSE;
 
 	/* selection */
@@ -197,6 +252,7 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 			COL_VALUE, "",
 			COL_CHECK, TRUE,
 			COL_SHOWHIDE, TRUE,
+			COL_POINTER, object,
 			-1);
 
 		/* vertices */

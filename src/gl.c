@@ -252,6 +252,10 @@ void gl_draw(G3DViewer *viewer)
 	while(olist != NULL)
 	{
 		object = (G3DObject *)olist->data;
+		olist = olist->next;
+
+		/* don't render invisible objects */
+		if(object->hide) continue;
 
 		g_return_if_fail(object != NULL);
 #if DEBUG > 3
@@ -345,8 +349,6 @@ void gl_draw(G3DViewer *viewer)
 		g_printerr(" fcs");
 		g_printerr(" }\n");
 #endif
-
-		olist = olist->next;
 	} /* while olist != NULL */
 #if DEBUG > 3
 	g_printerr("gl.c: drawn...\n");
