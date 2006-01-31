@@ -1,19 +1,17 @@
 g3dviewer - a 3D file viewer
 
 REQUIREMENTS:
-	* one combination of
-		* GTK+ 2.0+ and GtkGLExt 1.0+ (prefered now)
-		* GTK+ 2.0+ and GtkGLArea 1.99+
-		* GTK+ 1.2+ and GtkGLArea 1.x
+	* GTK+ 2.4+
+	* libglade >= 2.4.0
+	* GtkGLExt 1.0+
 	* OpenGL (GL & GLU library)
 	* Flex (optional, for VRML plugin)
 
 	Debian (Sarge) Packages:
 	* GTK+ 1.2:        libgtk1.2-dev
-	* GTK+ 2.x:        libgtk2.0-dev
+	* GTK+ 2.4+:       libgtk2.0-dev
+	* libglade         libglade2-dev
 	* GtkGLExt:        libgtkglext1-dev
-	* GtkGLArea 1.x:   gtkglarea5-dev
-	* GtkGLArea 2.x:   libgtkgl2.0-dev
 	* Mesa GL:         xlibmesa-gl-dev
 	* Mesa GLU:        xlibmesa-glu-dev
 	* Flex:            flex
@@ -35,14 +33,17 @@ SUPPORTED FILETYPES:
 | .3mf  | x | x |   |   | 3D Metafile                                 |
 | .3ds  | x | x | p |   | 3D Studio                                   |
 | .ac   | x | x | x |   | AC3D                                        |
+| .acc  | x | x | x |   | AC3D with triangle strips (TORCS)           |
 | .b3d  | x | x |   |   | ?? (3D MetaFile format)                     |
 | .cob  | x | x |   |   | Caligari TrueSpace                          |
 | .dxf  | x |   |   |   | AutoCAD                                     |
 | .iob  | x | x |   |   | Impulse Turbo Silver / Imagine              |
+| .lcd  | x | x |   |   | LeoCAD                                      |
 | .lw   | x | x |   |   | LightWave                                   |
 | .lwb  | x | x |   |   | LightWave                                   |
 | .lwo  | x | x |   |   | LightWave                                   |
 | .md2  | x |   |   |   | id Software Quake II                        |
+| .md3  | x | x | x | ? | id Software Quake III                       |
 | .nff  | x | x |   | x | Neutral File Format                         |
 | .obj  | x | x |   |   | Alias Wavefront Maya                        |
 | .prj  | x | ? |   |   | 3D Studio                                   |
