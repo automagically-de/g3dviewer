@@ -154,7 +154,7 @@ void gui_on_textures_cb(GtkWidget *widget, gpointer user_data)
 		viewer->glflags &= ~G3D_FLAG_GL_TEXTURES;
 }
 
-/**
+/*
  * View->Specular Lighting
  */
 
@@ -171,7 +171,7 @@ void gui_on_specular_cb(GtkWidget *widget, gpointer user_data)
 		viewer->glflags &= ~G3D_FLAG_GL_SPECULAR;
 }
 
-/**
+/*
  * View->Wireframe
  */
 
@@ -194,7 +194,7 @@ void gui_on_wireframe_cb(GtkWidget *widget, gpointer user_data)
 	}
 }
 
-/**
+/*
  * View->Background Color
  */
 
@@ -202,7 +202,7 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 {
 }
 
-/**
+/*
  * Help->Info
  */
 

@@ -27,5 +27,7 @@
 #include <g3d/g3d.h>
 
 gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview);
+gboolean gui_infowin_clean(G3DViewer *viewer);
+gboolean gui_infowin_update(G3DViewer *viewer);
 
 #endif /* _GUI_INFOWIN_H */

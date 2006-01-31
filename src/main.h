@@ -21,6 +21,7 @@
 */
 
 #ifndef _MAIN_H
+#define _MAIN_H
 
 #include <GL/gl.h>
 #include <gtk/gtk.h>
@@ -49,6 +50,13 @@ typedef struct {
 		gint32 beginx, beginy;
 	} mouse;
 
+	/* model information */
+	struct {
+		GtkTreeStore *treestore;
+		GtkTreeIter iter_objects;
+		GtkTreeIter iter_materials;
+	} info;
+
 	/* interface */
 	struct {
 		GladeXML *xml;
@@ -75,6 +83,4 @@ typedef struct {
 
 } G3DViewer;
 
-#define _MAIN_H
-
-#endif
+#endif /* _MAIN_H */

@@ -28,35 +28,55 @@
 #include <string.h>
 
 #include <gtk/gtk.h>
-#include <glade/glade-xml.h>
 
 #include "main.h"
 
-enum
+enum _columns
 {
 	COL_TYPE,
 	COL_TITLE,
 	COL_VALUE,
+	COL_CHECK,
+	COL_SHOWHIDE,
 	N_COLUMNS
 };
 
-GtkTreeStore *gui_infowin_create_model(void)
+enum _types
+{
+	TYPE_OBJECT,
+	TYPE_MATERIAL,
+	TYPE_PROPERTY,
+	N_TYPES
+};
+
+static GtkTreeStore *gui_infowin_create_model(void)
 {
 	GtkTreeStore *treestore;
 
 	treestore = gtk_tree_store_new(N_COLUMNS,
 		G_TYPE_INT, /* type of node */
 		G_TYPE_STRING, /* title */
-		G_TYPE_INT /* number */
+		G_TYPE_STRING, /* number */
+		G_TYPE_BOOLEAN, /* show checkbox */
+		G_TYPE_BOOLEAN /* show/hide object */
 		);
 
 	return treestore;
 }
 
-gboolean gui_infowin_create_columns(GtkWidget *treeview)
+static gboolean gui_infowin_create_columns(GtkWidget *treeview)
 {
 	GtkCellRenderer *renderer;
 	GtkTreeViewColumn *column;
+
+	/* visibility column */
+	renderer = gtk_cell_renderer_toggle_new();
+	column = gtk_tree_view_column_new_with_attributes("Show",
+		renderer,
+		"active", COL_SHOWHIDE,
+		"visible", COL_CHECK,
+		NULL);
+	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
 	/* title column */
 	renderer = gtk_cell_renderer_text_new();
@@ -65,6 +85,7 @@ gboolean gui_infowin_create_columns(GtkWidget *treeview)
 		"text", COL_TITLE,
 		NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+	gtk_tree_view_set_expander_column(GTK_TREE_VIEW(treeview), column);
 
 	/* value column */
 	renderer = gtk_cell_renderer_text_new();
@@ -73,6 +94,8 @@ gboolean gui_infowin_create_columns(GtkWidget *treeview)
 		"text", COL_VALUE,
 		NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+
+	gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
 
 	return TRUE;
 }
@@ -86,6 +109,7 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	treestore = gui_infowin_create_model();
 	gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),
 		GTK_TREE_MODEL(treestore));
+	viewer->info.treestore = treestore;
 
 	if(gui_infowin_create_columns(treeview) == FALSE)
 		return FALSE;
@@ -99,15 +123,106 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	gtk_tree_store_set(treestore, &iter,
 		COL_TYPE, 0,
 		COL_TITLE, "objects",
-		COL_VALUE, 0,
+		COL_VALUE, "",
+		COL_CHECK, FALSE,
 		-1);
+	viewer->info.iter_objects = iter;
 
 	gtk_tree_store_append(treestore, &iter, NULL);
 	gtk_tree_store_set(treestore, &iter,
 		COL_TYPE, 0,
 		COL_TITLE, "materials",
-		COL_VALUE, 0,
+		COL_VALUE, "",
+		COL_CHECK, FALSE,
 		-1);
+	viewer->info.iter_materials = iter;
+
+	return TRUE;
+}
+
+static gboolean gui_infowin_remove_children(GtkTreeStore *treestore,
+	GtkTreeIter iter_parent)
+{
+	GtkTreeIter iter_child;
+	gint n, i;
+
+	n = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treestore),
+		&iter_parent);
+	gtk_tree_model_iter_children(GTK_TREE_MODEL(treestore),
+		&iter_child, &iter_parent);
+
+	for(i = 0; i < n; i ++)
+	{
+		gui_infowin_remove_children(treestore, iter_child);
+		gtk_tree_store_remove(treestore, &iter_child);
+	}
+
+	return TRUE;
+}
+
+gboolean gui_infowin_clean(G3DViewer *viewer)
+{
+	gui_infowin_remove_children(viewer->info.treestore,
+		viewer->info.iter_objects);
+	gui_infowin_remove_children(viewer->info.treestore,
+		viewer->info.iter_materials);
+
+	return TRUE;
+}
+
+gboolean gui_infowin_update(G3DViewer *viewer)
+{
+	GtkTreeIter iter, iter2;
+	GSList *objects;
+	G3DObject *object;
+	gchar *stmp;
+
+	/* clear tree */
+	gui_infowin_clean(viewer);
+
+	g_return_val_if_fail(viewer->model != NULL, FALSE);
+
+	/* append objects */
+	objects = viewer->model->objects;
+	while(objects != NULL)
+	{
+		object = (G3DObject *)objects->data;
+
+		/* object node */
+		gtk_tree_store_append(viewer->info.treestore, &iter,
+			&(viewer->info.iter_objects));
+		gtk_tree_store_set(viewer->info.treestore, &iter,
+			COL_TYPE, TYPE_OBJECT,
+			COL_TITLE, object->name,
+			COL_VALUE, "",
+			COL_CHECK, TRUE,
+			COL_SHOWHIDE, TRUE,
+			-1);
+
+		/* vertices */
+		stmp = g_strdup_printf("%d", object->vertex_count);
+		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
+		gtk_tree_store_set(viewer->info.treestore, &iter2,
+			COL_TYPE, TYPE_PROPERTY,
+			COL_TITLE, "number of vertices",
+			COL_VALUE, stmp,
+			COL_CHECK, FALSE,
+			-1);
+		g_free(stmp);
+
+		/* faces */
+		stmp = g_strdup_printf("%d", g_slist_length(object->faces));
+		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
+		gtk_tree_store_set(viewer->info.treestore, &iter2,
+			COL_TYPE, TYPE_PROPERTY,
+			COL_TITLE, "number of faces",
+			COL_VALUE, stmp,
+			COL_CHECK, FALSE,
+			-1);
+		g_free(stmp);
+
+		objects = objects->next;
+	}
 
 	return TRUE;
 }

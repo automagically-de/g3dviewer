@@ -24,7 +24,7 @@
 
 #include "main.h"
 #include "texture.h"
-#include "infowin.h"
+#include "gui_infowin.h"
 
 gboolean model_load(G3DViewer *viewer)
 {
@@ -47,7 +47,7 @@ gboolean model_load(G3DViewer *viewer)
 	}
 
 	/* update model information */
-	infowin_modeltab_fill(viewer);
+	gui_infowin_update(viewer);
 
 	/* update window title */
 	title = g_strdup_printf("g3dviewer%s%s",
