@@ -13,7 +13,7 @@ build-stamp:
 configure: configure-stamp
 configure-stamp:
 	dh_testdir
-	./configure --prefix=/usr
+	PKG_CONFIG_PATH= ./configure --prefix=/usr
 	touch configure-stamp
 
 clean:
