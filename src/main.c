@@ -40,19 +40,35 @@
 
 static gboolean parse_only = FALSE;
 
-int main_parseargs(int *argc, char ***argv, G3DViewer *viewer);
+static int main_parseargs(int *argc, char ***argv, G3DViewer *viewer);
+static void main_cleanup(G3DViewer *viewer);
 
 int main(int argc, char **argv)
 {
 	G3DViewer *viewer;
 
+	/* localization stuff */
 	setlocale(LC_ALL, "");
 	bindtextdomain("g3dviewer", LOCALEDIR);
 	textdomain("g3dviewer");
 
+#if DEBUG > 0
+	/* memory debugging */
+	atexit(g_mem_profile);
+	g_mem_set_vtable(glib_mem_profiler_table);
+#endif
+
 	gtk_init(&argc, &argv);
+
+#if DEBUG > 0
+	/* gdb stack trace in case of error */
+	g_on_error_stack_trace(NULL);
+#endif
+
 	gtk_gl_init(&argc, &argv);
 
+	/* create viewer and fill with defaults
+	 * TODO: move to separate function */
 	viewer = g_new0(G3DViewer, 1);
 	viewer->zoom = 45;
 	viewer->mouse.beginx = 0;
@@ -89,12 +105,12 @@ int main(int argc, char **argv)
 
 	gtk_main();
 
-	g3d_context_free(viewer->g3dcontext);
+	main_cleanup(viewer);
 
 	return EXIT_SUCCESS;
 }
 
-void main_showhelp(void)
+static void main_showhelp(void)
 {
 	printf(
 		"g3dviewer - a 3D model viewer\n"
@@ -106,7 +122,7 @@ void main_showhelp(void)
 	exit(1);
 }
 
-int main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
+static int main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
 {
 	/* program name */
 	(*argc)--;
@@ -132,3 +148,9 @@ int main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
 	return EXIT_SUCCESS;
 }
 
+static void main_cleanup(G3DViewer *viewer)
+{
+	g3d_context_free(viewer->g3dcontext);
+	if(viewer->filename != NULL) g_free(viewer->filename);
+	g_free(viewer);
+}
