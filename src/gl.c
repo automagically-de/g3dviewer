@@ -279,6 +279,7 @@ void gl_draw(G3DViewer *viewer)
 			if((viewer->glflags & G3D_FLAG_GL_TEXTURES) &&
 				(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
 			{
+				/* if texture has changed update to new texture */
 				if(object->_tex_images[i] != prev_texid)
 				{
 					prev_texid = object->_tex_images[i];
@@ -291,7 +292,8 @@ void gl_draw(G3DViewer *viewer)
 				}
 			}
 
-			for(j=0; j<3; j++)
+			/* draw triangles */
+			for(j = 0; j < 3; j ++)
 			{
 				if((viewer->glflags & G3D_FLAG_GL_TEXTURES) &&
 					(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
