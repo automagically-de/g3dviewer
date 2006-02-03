@@ -29,4 +29,12 @@ gboolean gui_glade_init(G3DViewer *viewer);
 gboolean gui_glade_load(G3DViewer *viewer);
 gboolean gui_glade_open_dialog(G3DViewer *viewer);
 
+/* callbacks */
+gboolean gui_glade_set_bgcolor_cb(
+	gfloat r, gfloat g, gfloat b, gfloat a,
+	gpointer user_data);
+gboolean gui_glade_update_interface_cb(gpointer user_data);
+gboolean gui_glade_update_progress_bar_cb(gfloat percentage,
+	gboolean show, gpointer user_data);
+
 #endif /* _GUI_GLADE_H */

@@ -90,9 +90,19 @@ int main(int argc, char **argv)
 
 	trackball(viewer->quat, 0.0, 0.0, 0.0, 0.0);
 
+	/* the gui related stuff */
 	gui_glade_init(viewer);
 	gui_glade_load(viewer);
 
+	/* register gui callbacks */
+	g3d_context_set_set_bgcolor_func(viewer->g3dcontext,
+		gui_glade_set_bgcolor_cb, viewer);
+	g3d_context_set_update_interface_func(viewer->g3dcontext,
+		gui_glade_update_interface_cb, viewer);
+	g3d_context_set_update_progress_bar_func(viewer->g3dcontext,
+		gui_glade_update_progress_bar_cb, viewer);
+
+	/* load model or show open dialog */
 	if(viewer->filename != NULL)
 	{
 		model_load(viewer);
@@ -100,11 +110,14 @@ int main(int argc, char **argv)
 	else
 		gui_glade_open_dialog(viewer);
 
+	/* for debugging reasons */
 	if(parse_only)
 		return EXIT_SUCCESS;
 
+	/* ... aaaand go! */
 	gtk_main();
 
+	/* cleaning up :-/ */
 	main_cleanup(viewer);
 
 	return EXIT_SUCCESS;

@@ -37,14 +37,10 @@
 #include "model.h"
 #include "glarea.h"
 
+#include "gui_glade.h"
 #include "gui_infowin.h"
 
-GtkWidget *gui_glade_custom_handler_func(GladeXML *xml,
-	gchar *func_name, gchar *name,
-	gchar *string1, gchar *string2,
-	gint int1, gint int2,
-	gpointer user_data);
-void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data);
+static void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data);
 
 /*
  * initializes libglade
@@ -181,6 +177,9 @@ gboolean gui_glade_load(G3DViewer *viewer)
 	viewer->interface.window = window;
 	gtk_widget_show_all(window);
 
+	/* hide progress bar */
+	gui_glade_update_progress_bar_cb(0.0, FALSE, viewer);
+
 	glarea_update(viewer->interface.glarea);
 
 	return TRUE;
@@ -199,7 +198,7 @@ static void gui_glade_null_logger(const gchar *log_domain,
 /*
  * clones one main menu item and attaches it to a popup menu
  */
-void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data)
+static void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data)
 {
 	GtkWidget *menu, *newmi;
 	GList *children;
@@ -265,7 +264,7 @@ gboolean gui_glade_open_dialog(G3DViewer *viewer)
 }
 
 /*
- * create GL widget
+ * create GL widget (called from libglade)
  */
 GtkWidget *gui_glade_create_glwidget(void)
 {
@@ -310,5 +309,57 @@ GtkWidget *gui_glade_create_glwidget(void)
 		GTK_SIGNAL_FUNC(glarea_destroy), NULL);
 
 	return glarea;
+}
+
+/*
+ * set background color callback (G3DSetBgColorFunc)
+ */
+gboolean gui_glade_set_bgcolor_cb(
+	gfloat r, gfloat g, gfloat b, gfloat a,
+	gpointer user_data)
+{
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)user_data;
+	g_assert(viewer);
+
+	return TRUE;
+}
+
+/*
+ * update interface callback (G3DUpdateInterfaceFunc)
+ */
+gboolean gui_glade_update_interface_cb(gpointer user_data)
+{
+	while(gtk_events_pending())
+		gtk_main_iteration();
+
+	return TRUE;
+}
+
+/*
+ * update progress bar callback (G3DUpdateProgressBarFunc)
+ */
+gboolean gui_glade_update_progress_bar_cb(gfloat percentage,
+	gboolean show, gpointer user_data)
+{
+	G3DViewer *viewer;
+	GtkWidget *pbar;
+
+	viewer = (G3DViewer *)user_data;
+	g_assert(viewer);
+
+	pbar = glade_xml_get_widget(viewer->interface.xml, "main_progressbar");
+	g_assert(pbar);
+
+	/* TODO: update percentage */
+
+	if(show)
+		gtk_widget_show(pbar);
+	else
+		gtk_widget_hide(pbar);
+
+	gui_glade_update_interface_cb(user_data);
+	return TRUE;
 }
 
