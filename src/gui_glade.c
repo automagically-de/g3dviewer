@@ -117,6 +117,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"mi_properties",
 		"mi_show_menubar",
 		"mi_show_toolbar",
+		"mi_zoomfit",
 		"mi_wireframe",
 		"mi_specular",
 		"mi_shininess",
@@ -125,6 +126,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"mi_bgcolor",
 		"tb_file_open",
 		"tb_properties",
+		"tb_zoomfit",
 		"cs_background",
 		"gtkglext1",
 		NULL };

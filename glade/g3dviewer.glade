@@ -114,6 +114,21 @@
 		  </child>
 
 		  <child>
+		    <widget class="GtkImageMenuItem" id="mi_zoomfit">
+		      <property name="visible">True</property>
+		      <property name="label">gtk-zoom-fit</property>
+		      <property name="use_stock">True</property>
+		      <signal name="activate" handler="gui_on_zoomfit_cb" last_modification_time="Sun, 12 Feb 2006 09:43:29 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkSeparatorMenuItem" id="trennlinie3">
+		      <property name="visible">True</property>
+		    </widget>
+		  </child>
+
+		  <child>
 		    <widget class="GtkCheckMenuItem" id="mi_wireframe">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Wireframe</property>
@@ -208,7 +223,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Info</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="gtk_widget_show" object="info_dialog" last_modification_time="Tue, 31 Jan 2006 13:42:05 GMT"/>
+		      <signal name="activate" handler="gtk_widget_show" last_modification_time="Tue, 31 Jan 2006 13:42:05 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -275,12 +290,13 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkToolButton" id="toolbutton3">
+	    <widget class="GtkToolButton" id="tb_zoomfit">
 	      <property name="visible">True</property>
 	      <property name="stock_id">gtk-zoom-fit</property>
 	      <property name="visible_horizontal">True</property>
 	      <property name="visible_vertical">True</property>
 	      <property name="is_important">False</property>
+	      <signal name="clicked" handler="gui_on_zoomfit_cb" last_modification_time="Sun, 12 Feb 2006 09:41:56 GMT"/>
 	    </widget>
 	    <packing>
 	      <property name="expand">False</property>

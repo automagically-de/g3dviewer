@@ -35,6 +35,7 @@
 
 #include "main.h"
 #include "model.h"
+#include "glarea.h"
 #include "gui_glade.h"
 #include "trackball.h"
 
@@ -106,6 +107,7 @@ int main(int argc, char **argv)
 	if(viewer->filename != NULL)
 	{
 		model_load(viewer);
+		glarea_update(viewer->interface.glarea);
 	}
 	else
 		gui_glade_open_dialog(viewer);

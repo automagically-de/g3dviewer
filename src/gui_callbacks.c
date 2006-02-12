@@ -33,6 +33,7 @@
 #include "gl.h"
 #include "glarea.h"
 #include "gui_glade.h"
+#include "trackball.h"
 
 /*
  * File->Open
@@ -104,6 +105,27 @@ void gui_on_show_toolbar_cb(GtkWidget *widget, gpointer user_data)
 		gtk_widget_show(toolbar);
 	else
 		gtk_widget_hide(toolbar);
+}
+
+/*
+ * View->ZoomFit
+ */
+void gui_on_zoomfit_cb(GtkWidget *widget, gpointer user_data)
+{
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
+
+	/* zoom */
+	viewer->zoom = 45;
+
+	/* reset trackball */
+#if 1
+	trackball(viewer->quat, 0.0, 0.0, 0.0, 0.0);
+#endif
+
+	glarea_update(viewer->interface.glarea);
 }
 
 /*
