@@ -1,0 +1,81 @@
+/* $Id: glarea.c,v 1.3.4.2 2006/01/23 23:44:01 dahms Exp $ */
+
+/*
+	G3DViewer - 3D object viewer
+
+	Copyright (C) 2005, 2006  Markus Dahms <mad@automagically.de>
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program; if not, write to the Free Software
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+#ifdef HAVE_CONFIG_H
+#	include <config.h>
+#endif
+
+#include <gtk/gtk.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
+#include <GL/gl.h>
+
+#include "main.h"
+
+static guint8 *screenshot_get_pixels(G3DViewer *viewer,
+	guint32 *width, guint32 *height)
+{
+	guint8 *pixels;
+
+	*width = viewer->interface.glarea->allocation.width;
+	*height = viewer->interface.glarea->allocation.height;
+
+	pixels = g_new(guint8, *width * *height * 3);
+
+	glReadPixels(0, 0, *width, *height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+
+	return pixels;
+}
+
+gboolean screenshot_save(G3DViewer *viewer, const gchar *filename)
+{
+	guint8 *pixels;
+	guint32 width, height;
+	GdkPixbuf *pixbuf, *flipped;
+
+	pixels = screenshot_get_pixels(viewer, &width, &height);
+
+	if(pixels == NULL)
+		return FALSE;
+
+	pixbuf = gdk_pixbuf_new_from_data(pixels,
+		GDK_COLORSPACE_RGB, FALSE,
+		8, width, height, width * 3,
+		NULL, NULL);
+
+	if(pixbuf == NULL)
+		return FALSE;
+
+	/* GL returns pixels starting from lower left corner */
+	flipped = gdk_pixbuf_flip(pixbuf, FALSE);
+
+	if(flipped == NULL)
+		return FALSE;
+
+	gdk_pixbuf_save(flipped, filename, "png", NULL, NULL);
+
+	g_free(pixels);
+
+	gdk_pixbuf_unref(pixbuf);
+	gdk_pixbuf_unref(flipped);
+
+	return TRUE;
+}

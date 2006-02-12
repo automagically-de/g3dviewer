@@ -127,6 +127,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"tb_file_open",
 		"tb_properties",
 		"tb_zoomfit",
+		"tb_screenshot",
 		"cs_background",
 		"gtkglext1",
 		NULL };

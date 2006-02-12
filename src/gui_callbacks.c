@@ -34,6 +34,7 @@
 #include "glarea.h"
 #include "gui_glade.h"
 #include "trackball.h"
+#include "screenshot.h"
 
 /*
  * File->Open
@@ -282,4 +283,30 @@ void gui_color_changed_cb(GtkColorSelection *colorsel,
 #endif
 
 	glarea_update(viewer->interface.glarea);
+}
+
+/*
+ * Screenshot
+ */
+void gui_on_screenshot_cb(GtkWidget *widget, gpointer user_data)
+{
+	G3DViewer *viewer;
+	gchar *filename;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
+
+	/* don't screenshot empty window */
+	if(viewer->filename == NULL)
+		return;
+
+	filename = g_strdup_printf("g3dviewer-screenshot-%s.png",
+		viewer->filename);
+
+	if(screenshot_save(viewer, filename))
+		g_print("screenshot \"%s\" saved.\n", filename);
+	else
+		g_printerr("failed saving screenshot \"%s\".\n", filename);
+
+	g_free(filename);
 }
