@@ -1,4 +1,8 @@
 changes since version 0.2.99.0:
+	* gui: screenshot function
+	* gui: moved to libglade
+	* gui: objects hideable
+	* general: localization
 
 changes since version 0.2.0:
 	* libg3d: moved model loading and manipulation into separate library

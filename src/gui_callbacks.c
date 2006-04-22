@@ -291,7 +291,7 @@ void gui_color_changed_cb(GtkColorSelection *colorsel,
 void gui_on_screenshot_cb(GtkWidget *widget, gpointer user_data)
 {
 	G3DViewer *viewer;
-	gchar *filename;
+	gchar *filename, *basename;
 
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
@@ -300,8 +300,9 @@ void gui_on_screenshot_cb(GtkWidget *widget, gpointer user_data)
 	if(viewer->filename == NULL)
 		return;
 
-	filename = g_strdup_printf("g3dviewer-screenshot-%s.png",
-		viewer->filename);
+	basename = g_path_get_basename(viewer->filename);
+	filename = g_strdup_printf("g3dviewer-screenshot-%s.png", basename);
+	g_free(basename);
 
 	if(screenshot_save(viewer, filename))
 		g_print("screenshot \"%s\" saved.\n", filename);
