@@ -1,4 +1,4 @@
-/* $Id: gui_callbacks.c,v 1.1.2.3 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -256,6 +256,23 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 
 		glarea_update(viewer->interface.glarea);
 	}
+}
+
+/*
+ * Help->Info
+ */
+
+void gui_on_help_info_cb(GtkWidget *widget, gpointer user_data)
+{
+	G3DViewer *viewer;
+	GtkWidget *info_dialog;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer != NULL);
+
+	info_dialog = glade_xml_get_widget(viewer->interface.xml, "info_dialog");
+
+	gtk_widget_show_all(info_dialog);
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $Id: gui_glade.c,v 1.1.2.4 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -124,6 +124,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"mi_textures",
 		"mi_twosided",
 		"mi_bgcolor",
+		"mi_info",
 		"tb_file_open",
 		"tb_properties",
 		"tb_zoomfit",

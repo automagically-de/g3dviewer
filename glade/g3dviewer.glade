@@ -20,6 +20,7 @@
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
   <signal name="delete_event" handler="gtk_main_quit" last_modification_time="Sat, 21 Jan 2006 12:15:37 GMT"/>
 
   <child>
@@ -31,6 +32,8 @@
       <child>
 	<widget class="GtkMenuBar" id="menu_main">
 	  <property name="visible">True</property>
+	  <property name="pack_direction">GTK_PACK_DIRECTION_LTR</property>
+	  <property name="child_pack_direction">GTK_PACK_DIRECTION_LTR</property>
 
 	  <child>
 	    <widget class="GtkMenuItem" id="menuitem1">
@@ -223,7 +226,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Info</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="gtk_widget_show" last_modification_time="Tue, 31 Jan 2006 13:42:05 GMT"/>
+		      <signal name="activate" handler="gui_on_help_info_cb" last_modification_time="Sat, 22 Apr 2006 17:46:31 GMT"/>
 		    </widget>
 		  </child>
 		</widget>
@@ -400,6 +403,7 @@
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_NORMAL</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
   <signal name="delete_event" handler="gtk_widget_hide" object="properties_window" last_modification_time="Sun, 22 Jan 2006 14:00:19 GMT"/>
 
   <child>
@@ -554,6 +558,7 @@
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
   <property name="has_separator">True</property>
   <signal name="delete_event" handler="gtk_widget_hide" object="info_dialog" last_modification_time="Tue, 31 Jan 2006 13:37:39 GMT"/>
 
@@ -629,6 +634,7 @@
   <property name="local_only">True</property>
   <property name="select_multiple">False</property>
   <property name="show_hidden">False</property>
+  <property name="do_overwrite_confirmation">False</property>
   <property name="title" translatable="yes">Open Model</property>
   <property name="type">GTK_WINDOW_TOPLEVEL</property>
   <property name="window_position">GTK_WIN_POS_NONE</property>
@@ -641,6 +647,7 @@
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
 
   <child internal-child="vbox">
     <widget class="GtkVBox" id="dialog-vbox2">
@@ -704,6 +711,7 @@
   <property name="type_hint">GDK_WINDOW_TYPE_HINT_DIALOG</property>
   <property name="gravity">GDK_GRAVITY_NORTH_WEST</property>
   <property name="focus_on_map">True</property>
+  <property name="urgency_hint">False</property>
 
   <child internal-child="cancel_button">
     <widget class="GtkButton" id="cancel_button1">

@@ -1,4 +1,4 @@
-/* $Id: gui_callbacks.c,v 1.1.2.3 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -48,6 +48,7 @@ enum _types
 	TYPE_OBJECT,
 	TYPE_MATERIAL,
 	TYPE_PROPERTY,
+	TYPE_FOLDER,
 	N_TYPES
 };
 
@@ -176,7 +177,7 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	/* initial nodes */
 	gtk_tree_store_append(treestore, &iter, NULL);
 	gtk_tree_store_set(treestore, &iter,
-		COL_TYPE, 0,
+		COL_TYPE, TYPE_FOLDER,
 		COL_TITLE, _("objects"),
 		COL_VALUE, "",
 		COL_CHECK, FALSE,
@@ -185,7 +186,7 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 
 	gtk_tree_store_append(treestore, &iter, NULL);
 	gtk_tree_store_set(treestore, &iter,
-		COL_TYPE, 0,
+		COL_TYPE, TYPE_FOLDER,
 		COL_TITLE, _("materials"),
 		COL_VALUE, "",
 		COL_CHECK, FALSE,
@@ -260,7 +261,7 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
 		gtk_tree_store_set(viewer->info.treestore, &iter2,
 			COL_TYPE, TYPE_PROPERTY,
-			COL_TITLE, "number of vertices",
+			COL_TITLE, _("number of vertices"),
 			COL_VALUE, stmp,
 			COL_CHECK, FALSE,
 			-1);
@@ -271,11 +272,33 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
 		gtk_tree_store_set(viewer->info.treestore, &iter2,
 			COL_TYPE, TYPE_PROPERTY,
-			COL_TITLE, "number of faces",
+			COL_TITLE, _("number of faces"),
 			COL_VALUE, stmp,
 			COL_CHECK, FALSE,
 			-1);
 		g_free(stmp);
+
+		/* materials */
+		stmp = g_strdup_printf("%d", g_slist_length(object->materials));
+		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
+		gtk_tree_store_set(viewer->info.treestore, &iter2,
+			COL_TYPE, TYPE_PROPERTY,
+			COL_TITLE, _("number of materials"),
+			COL_VALUE, stmp,
+			COL_CHECK, FALSE,
+			-1);
+		g_free(stmp);
+
+		if(g_slist_length(object->materials) > 0)
+		{
+			gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
+			gtk_tree_store_set(viewer->info.treestore, &iter2,
+				COL_TYPE, TYPE_FOLDER,
+				COL_TITLE, _("materials"),
+				COL_VALUE, "",
+				COL_CHECK, FALSE,
+				-1);
+		}
 
 		objects = objects->next;
 	}
