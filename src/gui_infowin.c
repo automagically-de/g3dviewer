@@ -36,6 +36,7 @@ enum _columns
 {
 	COL_TYPE,
 	COL_TITLE,
+	COL_ICON,
 	COL_VALUE,
 	COL_CHECK,
 	COL_SHOWHIDE,
@@ -52,6 +53,13 @@ enum _types
 	N_TYPES
 };
 
+enum _icons
+{
+	ICON_OBJECT,
+	ICON_MATERIAL,
+	N_ICONS
+};
+
 static GtkTreeStore *gui_infowin_create_model(void)
 {
 	GtkTreeStore *treestore;
@@ -59,6 +67,7 @@ static GtkTreeStore *gui_infowin_create_model(void)
 	treestore = gtk_tree_store_new(N_COLUMNS,
 		G_TYPE_INT, /* type of node */
 		G_TYPE_STRING, /* title */
+		GDK_TYPE_PIXBUF, /* pixbuf pointer */
 		G_TYPE_STRING, /* number */
 		G_TYPE_BOOLEAN, /* show checkbox */
 		G_TYPE_BOOLEAN, /* show/hide object */
@@ -134,11 +143,22 @@ static gboolean gui_infowin_create_columns(GtkWidget *treeview,
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
 	/* title column */
+	column = gtk_tree_view_column_new();
+
+	/* title column: icon */
+	renderer = gtk_cell_renderer_pixbuf_new();
+	gtk_tree_view_column_pack_start(column, renderer, FALSE);
+	gtk_tree_view_column_set_attributes(column, renderer,
+		"pixbuf", COL_ICON,
+		NULL);
+
+	/* title column: text */
 	renderer = gtk_cell_renderer_text_new();
-	column = gtk_tree_view_column_new_with_attributes("Title",
-		renderer,
+	gtk_tree_view_column_pack_start(column, renderer, TRUE);
+	gtk_tree_view_column_set_attributes(column, renderer,
 		"text", COL_TITLE,
 		NULL);
+
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 	gtk_tree_view_set_expander_column(GTK_TREE_VIEW(treeview), column);
 
@@ -193,6 +213,16 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 		-1);
 	viewer->info.iter_materials = iter;
 
+	/* load icons */
+	/* FIXME: cleanup */
+	viewer->interface.icons = g_new0(GdkPixbuf *, N_ICONS);
+	viewer->interface.icons[ICON_OBJECT] =
+		gdk_pixbuf_new_from_file(
+			DATA_DIR "/pixmaps/icon16_model.xpm", NULL);
+	viewer->interface.icons[ICON_MATERIAL] =
+		gdk_pixbuf_new_from_file(
+			DATA_DIR "/pixmaps/icon16_material.xpm", NULL);
+
 	return TRUE;
 }
 
@@ -232,20 +262,42 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 	GSList *mlist;
 	GtkTreeIter iter1, iter2;
 	G3DMaterial *material;
+	gchar *matname, *stmp;
 
 	mlist = materials;
 	while(mlist != NULL)
 	{
 		material = (G3DMaterial *)mlist->data;
 
+		if(material->name && strlen(material->name))
+			matname = material->name;
+		else
+			matname = _("(unnamed material)");
+
 		gtk_tree_store_append(viewer->info.treestore, &iter1, parentiter);
 		gtk_tree_store_set(viewer->info.treestore, &iter1,
 			COL_TYPE, TYPE_MATERIAL,
-			COL_TITLE, material->name,
+			COL_TITLE, matname,
+			COL_ICON, viewer->interface.icons[ICON_MATERIAL],
 			COL_VALUE, "",
 			COL_CHECK, FALSE,
 			-1);
 
+		/* material properties */
+		stmp = g_strdup_printf("#%02X%02X%02X",
+			(gint)(material->r * 255),
+			(gint)(material->g * 255),
+			(gint)(material->b * 255));
+		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter1);
+		gtk_tree_store_set(viewer->info.treestore, &iter2,
+			COL_TYPE, TYPE_PROPERTY,
+			COL_TITLE, _("color"),
+			COL_VALUE, stmp,
+			COL_CHECK, FALSE,
+			-1);
+		g_free(stmp);
+
+		/* next material */
 		mlist = mlist->next;
 	}
 
@@ -276,6 +328,7 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 		gtk_tree_store_set(viewer->info.treestore, &iter,
 			COL_TYPE, TYPE_OBJECT,
 			COL_TITLE, object->name,
+			COL_ICON, viewer->interface.icons[ICON_OBJECT],
 			COL_VALUE, "",
 			COL_CHECK, TRUE,
 			COL_SHOWHIDE, TRUE,
@@ -315,20 +368,8 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 			-1);
 		g_free(stmp);
 
-		if(g_slist_length(object->materials) > 0)
-		{
-			gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
-			gtk_tree_store_set(viewer->info.treestore, &iter2,
-				COL_TYPE, TYPE_FOLDER,
-				COL_TITLE, _("materials"),
-				COL_VALUE, "",
-				COL_CHECK, FALSE,
-				-1);
-
-		}
-
 		/* add object-specific materials */
-		add_materials(viewer, &iter2, object->materials);
+		add_materials(viewer, &iter, object->materials);
 
 		objects = objects->next;
 	}

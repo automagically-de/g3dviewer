@@ -1,4 +1,4 @@
-/* $Id: main.h,v 1.1.1.1.4.5 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -66,6 +66,7 @@ typedef struct {
 		GtkWidget *infowin;
 
 		GtkWidget *glarea;
+		GdkPixbuf **icons;
 	} interface;
 
 } G3DViewer;
