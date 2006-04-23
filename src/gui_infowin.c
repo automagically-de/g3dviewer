@@ -226,6 +226,32 @@ gboolean gui_infowin_clean(G3DViewer *viewer)
 	return TRUE;
 }
 
+static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
+	GSList *materials)
+{
+	GSList *mlist;
+	GtkTreeIter iter1, iter2;
+	G3DMaterial *material;
+
+	mlist = materials;
+	while(mlist != NULL)
+	{
+		material = (G3DMaterial *)mlist->data;
+
+		gtk_tree_store_append(viewer->info.treestore, &iter1, parentiter);
+		gtk_tree_store_set(viewer->info.treestore, &iter1,
+			COL_TYPE, TYPE_MATERIAL,
+			COL_TITLE, material->name,
+			COL_VALUE, "",
+			COL_CHECK, FALSE,
+			-1);
+
+		mlist = mlist->next;
+	}
+
+	return TRUE;
+}
+
 gboolean gui_infowin_update(G3DViewer *viewer)
 {
 	GtkTreeIter iter, iter2;
@@ -298,10 +324,18 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 				COL_VALUE, "",
 				COL_CHECK, FALSE,
 				-1);
+
 		}
+
+		/* add object-specific materials */
+		add_materials(viewer, &iter2, object->materials);
 
 		objects = objects->next;
 	}
+
+	/* add global materials */
+	add_materials(viewer, &(viewer->info.iter_materials),
+		viewer->model->materials);
 
 	return TRUE;
 }
