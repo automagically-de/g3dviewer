@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-22 19:54+0200\n"
+"POT-Creation-Date: 2006-04-23 12:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,23 +20,31 @@ msgstr ""
 msgid "all files"
 msgstr ""
 
-#: src/gui_infowin.c:181
+#: src/gui_infowin.c:201
 msgid "objects"
 msgstr ""
 
-#: src/gui_infowin.c:190 src/gui_infowin.c:297
+#: src/gui_infowin.c:210
 msgid "materials"
 msgstr ""
 
-#: src/gui_infowin.c:264
+#: src/gui_infowin.c:275
+msgid "(unnamed material)"
+msgstr ""
+
+#: src/gui_infowin.c:294
+msgid "color"
+msgstr ""
+
+#: src/gui_infowin.c:343
 msgid "number of vertices"
 msgstr ""
 
-#: src/gui_infowin.c:275
+#: src/gui_infowin.c:354
 msgid "number of faces"
 msgstr ""
 
-#: src/gui_infowin.c:286
+#: src/gui_infowin.c:365
 msgid "number of materials"
 msgstr ""
 

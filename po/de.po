@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: g3dviewer 0.2.99.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-22 19:54+0200\n"
+"POT-Creation-Date: 2006-04-23 12:15+0200\n"
 "PO-Revision-Date: 2006-01-31 21:37+0100\n"
 "Last-Translator: Markus Dahms <mad@automagically.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -20,23 +20,31 @@ msgstr ""
 msgid "all files"
 msgstr "Alle Dateien"
 
-#: src/gui_infowin.c:181
+#: src/gui_infowin.c:201
 msgid "objects"
 msgstr "Objekte"
 
-#: src/gui_infowin.c:190 src/gui_infowin.c:297
+#: src/gui_infowin.c:210
 msgid "materials"
 msgstr "Materialien"
 
-#: src/gui_infowin.c:264
+#: src/gui_infowin.c:275
+msgid "(unnamed material)"
+msgstr "(unbenanntes Material)"
+
+#: src/gui_infowin.c:294
+msgid "color"
+msgstr "Farbe"
+
+#: src/gui_infowin.c:343
 msgid "number of vertices"
 msgstr "Anzahl der Punkte"
 
-#: src/gui_infowin.c:275
+#: src/gui_infowin.c:354
 msgid "number of faces"
 msgstr "Anzahl der Flächen"
 
-#: src/gui_infowin.c:286
+#: src/gui_infowin.c:365
 msgid "number of materials"
 msgstr "Anzahl der Materialien"
 
