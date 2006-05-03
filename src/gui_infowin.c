@@ -48,6 +48,7 @@ enum _types
 {
 	TYPE_OBJECT,
 	TYPE_MATERIAL,
+	TYPE_TEXTURE,
 	TYPE_PROPERTY,
 	TYPE_FOLDER,
 	N_TYPES
@@ -57,6 +58,7 @@ enum _icons
 {
 	ICON_OBJECT,
 	ICON_MATERIAL,
+	ICON_TEXTURE,
 	N_ICONS
 };
 
@@ -95,6 +97,9 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	viewer->interface.icons[ICON_MATERIAL] =
 		gdk_pixbuf_new_from_file(
 			DATA_DIR "/pixmaps/icon16_material.xpm", NULL);
+	viewer->interface.icons[ICON_TEXTURE] =
+		gdk_pixbuf_new_from_file(
+			DATA_DIR "/pixmaps/icon16_texture.xpm", NULL);
 
 	return TRUE;
 }
@@ -256,6 +261,28 @@ static gboolean gui_infowin_clean(G3DViewer *viewer)
 	return TRUE;
 }
 
+static gboolean add_texture(G3DViewer *viewer, GtkTreeIter *parentiter,
+	G3DImage *texture)
+{
+	GtkTreeIter iter;
+
+	if(texture)
+	{
+		gtk_tree_store_append(viewer->info.treestore, &iter, parentiter);
+		gtk_tree_store_set(viewer->info.treestore, &iter,
+			COL_TYPE, TYPE_TEXTURE,
+			COL_TITLE, texture->name,
+			COL_VALUE, "",
+			COL_CHECK, FALSE,
+			COL_ICON, viewer->interface.icons[ICON_TEXTURE],
+			-1);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
 static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 	GSList *materials)
 {
@@ -282,6 +309,8 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 			COL_VALUE, "",
 			COL_CHECK, FALSE,
 			-1);
+
+		add_texture(viewer, &iter1, material->tex_image);
 
 		/* material properties */
 		stmp = g_strdup_printf("#%02X%02X%02X",
@@ -329,6 +358,9 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 
 		/* sub-objects */
 		add_objects(viewer, &iter, object->objects);
+
+		/* texture image */
+		add_texture(viewer, &iter, object->tex_image);
 
 		/* vertices */
 		stmp = g_strdup_printf("%d", object->vertex_count);
@@ -398,8 +430,7 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 	add_objects(viewer, &rootiter, viewer->model->objects);
 
 	/* add global materials */
-	add_materials(viewer, &rootiter,
-		viewer->model->materials);
+	add_materials(viewer, &rootiter, viewer->model->materials);
 
 	return TRUE;
 }
