@@ -60,6 +60,60 @@ enum _icons
 	N_ICONS
 };
 
+static GtkTreeStore *gui_infowin_create_model(void);
+static gboolean gui_infowin_clean(G3DViewer *viewer);
+static gboolean gui_infowin_create_columns(GtkWidget *treeview,
+	GtkTreeModel *model, G3DViewer *viewer);
+
+gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
+{
+	GtkTreeStore *treestore;
+	GtkTreeSelection *select;
+	GtkTreeIter iter;
+
+	treestore = gui_infowin_create_model();
+	gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),
+		GTK_TREE_MODEL(treestore));
+	viewer->info.treestore = treestore;
+
+	if(gui_infowin_create_columns(treeview, GTK_TREE_MODEL(treestore),
+		viewer) == FALSE)
+		return FALSE;
+
+	/* selection */
+	select = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
+	gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
+
+	/* initial nodes */
+	gtk_tree_store_append(treestore, &iter, NULL);
+
+	/* load icons */
+	viewer->interface.icons = g_new0(GdkPixbuf *, N_ICONS);
+	viewer->interface.icons[ICON_OBJECT] =
+		gdk_pixbuf_new_from_file(
+			DATA_DIR "/pixmaps/icon16_model.xpm", NULL);
+	viewer->interface.icons[ICON_MATERIAL] =
+		gdk_pixbuf_new_from_file(
+			DATA_DIR "/pixmaps/icon16_material.xpm", NULL);
+
+	return TRUE;
+}
+
+void gui_infowin_cleanup(G3DViewer *viewer)
+{
+	gint32 i;
+
+	gui_infowin_clean(NULL);
+
+	/* cleanup icons */
+	for(i = 0; i < N_ICONS; i ++)
+		gdk_pixbuf_unref(viewer->interface.icons[i]);
+
+	g_free(viewer->interface.icons);
+}
+
+/****************************************************************************/
+
 static GtkTreeStore *gui_infowin_create_model(void)
 {
 	GtkTreeStore *treestore;
@@ -76,7 +130,6 @@ static GtkTreeStore *gui_infowin_create_model(void)
 
 	return treestore;
 }
-
 
 static void gui_infowin_object_hide_cb(GtkCellRendererToggle *renderer,
 	gchar *pathstr, gpointer data)
@@ -175,83 +228,30 @@ static gboolean gui_infowin_create_columns(GtkWidget *treeview,
 	return TRUE;
 }
 
-gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
-{
-	GtkTreeStore *treestore;
-	GtkTreeSelection *select;
-	GtkTreeIter iter;
-
-	treestore = gui_infowin_create_model();
-	gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),
-		GTK_TREE_MODEL(treestore));
-	viewer->info.treestore = treestore;
-
-	if(gui_infowin_create_columns(treeview, GTK_TREE_MODEL(treestore),
-		viewer) == FALSE)
-		return FALSE;
-
-	/* selection */
-	select = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-	gtk_tree_selection_set_mode(select, GTK_SELECTION_SINGLE);
-
-	/* initial nodes */
-	gtk_tree_store_append(treestore, &iter, NULL);
-	gtk_tree_store_set(treestore, &iter,
-		COL_TYPE, TYPE_FOLDER,
-		COL_TITLE, _("objects"),
-		COL_VALUE, "",
-		COL_CHECK, FALSE,
-		-1);
-	viewer->info.iter_objects = iter;
-
-	gtk_tree_store_append(treestore, &iter, NULL);
-	gtk_tree_store_set(treestore, &iter,
-		COL_TYPE, TYPE_FOLDER,
-		COL_TITLE, _("materials"),
-		COL_VALUE, "",
-		COL_CHECK, FALSE,
-		-1);
-	viewer->info.iter_materials = iter;
-
-	/* load icons */
-	/* FIXME: cleanup */
-	viewer->interface.icons = g_new0(GdkPixbuf *, N_ICONS);
-	viewer->interface.icons[ICON_OBJECT] =
-		gdk_pixbuf_new_from_file(
-			DATA_DIR "/pixmaps/icon16_model.xpm", NULL);
-	viewer->interface.icons[ICON_MATERIAL] =
-		gdk_pixbuf_new_from_file(
-			DATA_DIR "/pixmaps/icon16_material.xpm", NULL);
-
-	return TRUE;
-}
 
 static gboolean gui_infowin_remove_children(GtkTreeStore *treestore,
-	GtkTreeIter iter_parent)
+	GtkTreeIter *iter_parent)
 {
 	GtkTreeIter iter_child;
 	gint n, i;
 
 	n = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treestore),
-		&iter_parent);
+		iter_parent);
 	gtk_tree_model_iter_children(GTK_TREE_MODEL(treestore),
-		&iter_child, &iter_parent);
+		&iter_child, iter_parent);
 
 	for(i = 0; i < n; i ++)
 	{
-		gui_infowin_remove_children(treestore, iter_child);
+		gui_infowin_remove_children(treestore, &iter_child);
 		gtk_tree_store_remove(treestore, &iter_child);
 	}
 
 	return TRUE;
 }
 
-gboolean gui_infowin_clean(G3DViewer *viewer)
+static gboolean gui_infowin_clean(G3DViewer *viewer)
 {
-	gui_infowin_remove_children(viewer->info.treestore,
-		viewer->info.iter_objects);
-	gui_infowin_remove_children(viewer->info.treestore,
-		viewer->info.iter_materials);
+	gui_infowin_remove_children(viewer->info.treestore, NULL);
 
 	return TRUE;
 }
@@ -304,27 +304,19 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 	return TRUE;
 }
 
-gboolean gui_infowin_update(G3DViewer *viewer)
+static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
+	GSList *objects)
 {
 	GtkTreeIter iter, iter2;
-	GSList *objects;
 	G3DObject *object;
 	gchar *stmp;
 
-	/* clear tree */
-	gui_infowin_clean(viewer);
-
-	if(viewer->model == NULL) return FALSE;
-
-	/* append objects */
-	objects = viewer->model->objects;
 	while(objects != NULL)
 	{
 		object = (G3DObject *)objects->data;
 
 		/* object node */
-		gtk_tree_store_append(viewer->info.treestore, &iter,
-			&(viewer->info.iter_objects));
+		gtk_tree_store_append(viewer->info.treestore, &iter, parentiter);
 		gtk_tree_store_set(viewer->info.treestore, &iter,
 			COL_TYPE, TYPE_OBJECT,
 			COL_TITLE, object->name,
@@ -334,6 +326,9 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 			COL_SHOWHIDE, TRUE,
 			COL_POINTER, object,
 			-1);
+
+		/* sub-objects */
+		add_objects(viewer, &iter, object->objects);
 
 		/* vertices */
 		stmp = g_strdup_printf("%d", object->vertex_count);
@@ -374,8 +369,36 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 		objects = objects->next;
 	}
 
+	return TRUE;
+}
+
+gboolean gui_infowin_update(G3DViewer *viewer)
+{
+	GtkTreeIter rootiter;
+	gchar *stmp, *basename;
+
+	/* clear tree */
+	gui_infowin_clean(viewer);
+
+	basename = g_path_get_basename(viewer->model->filename);
+	stmp = g_strdup_printf("%s: %s", _("model"), basename);
+	gtk_tree_store_append(viewer->info.treestore, &rootiter, NULL);
+	gtk_tree_store_set(viewer->info.treestore, &rootiter,
+		COL_TYPE, TYPE_FOLDER,
+		COL_TITLE, stmp,
+		COL_VALUE, "",
+		COL_CHECK, FALSE,
+		-1);
+	g_free(basename);
+	g_free(stmp);
+
+	if(viewer->model == NULL) return FALSE;
+
+	/* append objects */
+	add_objects(viewer, &rootiter, viewer->model->objects);
+
 	/* add global materials */
-	add_materials(viewer, &(viewer->info.iter_materials),
+	add_materials(viewer, &rootiter,
 		viewer->model->materials);
 
 	return TRUE;
