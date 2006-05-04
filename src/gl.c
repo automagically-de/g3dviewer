@@ -232,7 +232,7 @@ static void gl_draw_objects(G3DViewer *viewer, GSList *objects)
 
 		glBegin(GL_TRIANGLES);
 
-		for(i=0; i<object->_num_faces; i++)
+		for(i = 0; i < object->_num_faces; i ++)
 		{
 			if(prev_material != object->_materials[i])
 			{
@@ -336,27 +336,27 @@ void gl_draw(G3DViewer *viewer)
 	gl_draw_objects(viewer, viewer->model->objects);
 
 #ifdef TIMING /* get time to draw one frame to compare algorithms */
-		g_timer_stop(timer);
+	g_timer_stop(timer);
 
-		if(avg_msec == 0)
-		{
-			gulong msec;
-			gdouble sec;
+	if(avg_msec == 0)
+	{
+		gulong msec;
+		gdouble sec;
 
-			sec = g_timer_elapsed(timer, &msec);
-			avg_msec = (gulong)sec * 1000000 + msec;
-		}
-		else
-		{
-			gulong msec, add;
-			gdouble sec;
+		sec = g_timer_elapsed(timer, &msec);
+		avg_msec = (gulong)sec * 1000000 + msec;
+	}
+	else
+	{
+		gulong msec, add;
+		gdouble sec;
 
-			sec = g_timer_elapsed(timer, &msec);
-			add = (gulong)sec * 1000000 + msec;
-			avg_msec = (avg_msec + add) / 2;
-		}
+		sec = g_timer_elapsed(timer, &msec);
+		add = (gulong)sec * 1000000 + msec;
+		avg_msec = (avg_msec + add) / 2;
+	}
 
-		g_printerr("average time to render frame: %lu µs\n", avg_msec);
+	g_printerr("average time to render frame: %lu µs\n", avg_msec);
 #endif
 
 #if DEBUG > 3
