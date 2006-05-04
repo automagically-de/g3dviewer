@@ -115,6 +115,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 	static const gchar *viewer_widgets[] = {
 		"mi_file_open",
 		"mi_properties",
+		"mi_screenshot",
 		"mi_show_menubar",
 		"mi_show_toolbar",
 		"mi_zoomfit",

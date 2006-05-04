@@ -54,8 +54,6 @@ typedef struct {
 	/* model information */
 	struct {
 		GtkTreeStore *treestore;
-		GtkTreeIter iter_objects;
-		GtkTreeIter iter_materials;
 	} info;
 
 	/* interface */

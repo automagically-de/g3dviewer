@@ -1,4 +1,4 @@
-/* $Id: gl.c,v 1.11.2.1.2.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -204,51 +204,15 @@ void gl_update_material(G3DViewer *viewer, G3DMaterial *material)
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
 
-void gl_draw(G3DViewer *viewer)
+static void gl_draw_objects(G3DViewer *viewer, GSList *objects)
 {
 	GSList *olist;
 	int i, j;
 	G3DMaterial *prev_material = NULL;
 	G3DObject *object;
-	GLfloat m[4][4];
 	guint32 prev_texid = 0;
 
-	if(! _initialized)
-	{
-		gl_init(viewer);
-		_initialized = 1;
-	}
-
-	/* draw scene... */
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	gluPerspective(viewer->zoom, viewer->aspect, 1, 100);
-	glMatrixMode(GL_MODELVIEW);
-
-	glClearColor(
-		viewer->bgcolor[0],
-		viewer->bgcolor[1],
-		viewer->bgcolor[2],
-		0.0);
-	glClearDepth(1.0);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
-	glLoadIdentity();
-	glTranslatef(0, 0, -30);
-	build_rotmatrix(m, viewer->quat);
-	glMultMatrixf(&m[0][0]);
-
-	/* reset texture */
-	glBindTexture (GL_TEXTURE_2D, 0);
-
-	if(viewer->model == NULL)
-		return;
-
-#ifdef TIMING
-	g_timer_start(timer);
-#endif
-
-	olist = viewer->model->objects;
+	olist = objects;
 	while(olist != NULL)
 	{
 		object = (G3DObject *)olist->data;
@@ -323,6 +287,54 @@ void gl_draw(G3DViewer *viewer)
 
 		glEnd();
 
+		/* handle sub-objects */
+		gl_draw_objects(viewer, object->objects);
+
+	} /* while olist != NULL */
+}
+
+void gl_draw(G3DViewer *viewer)
+{
+	GLfloat m[4][4];
+
+	if(! _initialized)
+	{
+		gl_init(viewer);
+		_initialized = 1;
+	}
+
+	/* draw scene... */
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(viewer->zoom, viewer->aspect, 1, 100);
+	glMatrixMode(GL_MODELVIEW);
+
+	glClearColor(
+		viewer->bgcolor[0],
+		viewer->bgcolor[1],
+		viewer->bgcolor[2],
+		0.0);
+	glClearDepth(1.0);
+	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+
+	glLoadIdentity();
+	glTranslatef(0, 0, -30);
+	build_rotmatrix(m, viewer->quat);
+	glMultMatrixf(&m[0][0]);
+
+	/* reset texture */
+	glBindTexture (GL_TEXTURE_2D, 0);
+
+	if(viewer->model == NULL)
+		return;
+
+#ifdef TIMING
+	g_timer_start(timer);
+#endif
+
+	/* draw all objects */
+	gl_draw_objects(viewer, viewer->model->objects);
+
 #ifdef TIMING /* get time to draw one frame to compare algorithms */
 		g_timer_stop(timer);
 
@@ -347,11 +359,6 @@ void gl_draw(G3DViewer *viewer)
 		g_printerr("average time to render frame: %lu µs\n", avg_msec);
 #endif
 
-#if DEBUG > 3
-		g_printerr(" fcs");
-		g_printerr(" }\n");
-#endif
-	} /* while olist != NULL */
 #if DEBUG > 3
 	g_printerr("gl.c: drawn...\n");
 #endif

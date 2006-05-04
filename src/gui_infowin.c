@@ -56,9 +56,11 @@ enum _types
 
 enum _icons
 {
+	ICON_MODEL,
 	ICON_OBJECT,
 	ICON_MATERIAL,
 	ICON_TEXTURE,
+	ICON_PROPERTY,
 	N_ICONS
 };
 
@@ -91,15 +93,21 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 
 	/* load icons */
 	viewer->interface.icons = g_new0(GdkPixbuf *, N_ICONS);
-	viewer->interface.icons[ICON_OBJECT] =
+	viewer->interface.icons[ICON_MODEL] =
 		gdk_pixbuf_new_from_file(
 			DATA_DIR "/pixmaps/icon16_model.xpm", NULL);
+	viewer->interface.icons[ICON_OBJECT] =
+		gdk_pixbuf_new_from_file(
+			DATA_DIR "/pixmaps/icon16_object.png", NULL);
 	viewer->interface.icons[ICON_MATERIAL] =
 		gdk_pixbuf_new_from_file(
 			DATA_DIR "/pixmaps/icon16_material.xpm", NULL);
 	viewer->interface.icons[ICON_TEXTURE] =
 		gdk_pixbuf_new_from_file(
 			DATA_DIR "/pixmaps/icon16_texture.xpm", NULL);
+	viewer->interface.icons[ICON_PROPERTY] =
+		gdk_pixbuf_new_from_file(
+			DATA_DIR "/pixmaps/icon16_property.png", NULL);
 
 	return TRUE;
 }
@@ -323,6 +331,7 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 			COL_TITLE, _("color"),
 			COL_VALUE, stmp,
 			COL_CHECK, FALSE,
+			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
 			-1);
 		g_free(stmp);
 
@@ -370,6 +379,7 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 			COL_TITLE, _("number of vertices"),
 			COL_VALUE, stmp,
 			COL_CHECK, FALSE,
+			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
 			-1);
 		g_free(stmp);
 
@@ -381,6 +391,7 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 			COL_TITLE, _("number of faces"),
 			COL_VALUE, stmp,
 			COL_CHECK, FALSE,
+			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
 			-1);
 		g_free(stmp);
 
@@ -392,6 +403,7 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 			COL_TITLE, _("number of materials"),
 			COL_VALUE, stmp,
 			COL_CHECK, FALSE,
+			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
 			-1);
 		g_free(stmp);
 
@@ -420,6 +432,7 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 		COL_TITLE, stmp,
 		COL_VALUE, "",
 		COL_CHECK, FALSE,
+		COL_ICON, viewer->interface.icons[ICON_MODEL],
 		-1);
 	g_free(basename);
 	g_free(stmp);
