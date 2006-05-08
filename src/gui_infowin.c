@@ -424,6 +424,8 @@ gboolean gui_infowin_update(G3DViewer *viewer)
 	/* clear tree */
 	gui_infowin_clean(viewer);
 
+	if(viewer->model == NULL) return FALSE;
+
 	basename = g_path_get_basename(viewer->model->filename);
 	stmp = g_strdup_printf("%s: %s", _("model"), basename);
 	gtk_tree_store_append(viewer->info.treestore, &rootiter, NULL);

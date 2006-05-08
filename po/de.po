@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: g3dviewer 0.2.99.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-23 12:15+0200\n"
+"POT-Creation-Date: 2006-05-08 22:08+0200\n"
 "PO-Revision-Date: 2006-01-31 21:37+0100\n"
 "Last-Translator: Markus Dahms <mad@automagically.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -20,33 +20,29 @@ msgstr ""
 msgid "all files"
 msgstr "Alle Dateien"
 
-#: src/gui_infowin.c:201
-msgid "objects"
-msgstr "Objekte"
-
-#: src/gui_infowin.c:210
-msgid "materials"
-msgstr "Materialien"
-
-#: src/gui_infowin.c:275
+#: src/gui_infowin.c:310
 msgid "(unnamed material)"
 msgstr "(unbenanntes Material)"
 
-#: src/gui_infowin.c:294
+#: src/gui_infowin.c:331
 msgid "color"
 msgstr "Farbe"
 
-#: src/gui_infowin.c:343
+#: src/gui_infowin.c:379
 msgid "number of vertices"
 msgstr "Anzahl der Punkte"
 
-#: src/gui_infowin.c:354
+#: src/gui_infowin.c:391
 msgid "number of faces"
 msgstr "Anzahl der Flächen"
 
-#: src/gui_infowin.c:365
+#: src/gui_infowin.c:403
 msgid "number of materials"
 msgstr "Anzahl der Materialien"
+
+#: src/gui_infowin.c:430
+msgid "model"
+msgstr ""
 
 #: glade/g3dviewer.glade:8
 msgid "G3DViewer"
@@ -56,63 +52,67 @@ msgstr "G3DViewer"
 msgid "_File"
 msgstr "_Datei"
 
-#: glade/g3dviewer.glade:87
+#: glade/g3dviewer.glade:74
+msgid "_Screenshot"
+msgstr ""
+
+#: glade/g3dviewer.glade:114
 msgid "_View"
 msgstr "_Ansicht"
 
-#: glade/g3dviewer.glade:96
+#: glade/g3dviewer.glade:123
 msgid "Show _menu bar"
 msgstr "_Menüleiste zeigen"
 
-#: glade/g3dviewer.glade:106
+#: glade/g3dviewer.glade:133
 msgid "Show t_ool bar"
 msgstr "_Werkzeugleiste zeigen"
 
-#: glade/g3dviewer.glade:137
+#: glade/g3dviewer.glade:164
 msgid "_Wireframe"
 msgstr "_Drahtgitter"
 
-#: glade/g3dviewer.glade:147
+#: glade/g3dviewer.glade:174
 msgid "_Specular lighting"
 msgstr "_Spiegelndes Licht"
 
-#: glade/g3dviewer.glade:157
+#: glade/g3dviewer.glade:184
 msgid "S_hininess"
 msgstr "Glanz"
 
-#: glade/g3dviewer.glade:167
+#: glade/g3dviewer.glade:194
 msgid "T_wo-sided faces"
 msgstr "_Beidseitige Flächen"
 
-#: glade/g3dviewer.glade:177
+#: glade/g3dviewer.glade:204
 msgid "_Textures"
 msgstr "_Texturen"
 
-#: glade/g3dviewer.glade:193
+#: glade/g3dviewer.glade:220
 msgid "_Background color"
 msgstr "Hintergrund_farbe"
 
-#: glade/g3dviewer.glade:218
+#: glade/g3dviewer.glade:245
 msgid "_Help"
 msgstr "_Hilfe"
 
-#: glade/g3dviewer.glade:227
+#: glade/g3dviewer.glade:254
 msgid "_Info"
 msgstr "_Info"
 
-#: glade/g3dviewer.glade:391
+#: glade/g3dviewer.glade:418
 msgid "Model Properties"
 msgstr "Modelleigenschaften"
 
-#: glade/g3dviewer.glade:482
+#: glade/g3dviewer.glade:509
 msgid "Parts"
 msgstr "Teile"
 
-#: glade/g3dviewer.glade:547
+#: glade/g3dviewer.glade:574
 msgid "About G3DViewer"
 msgstr "Über G3DViewer"
 
-#: glade/g3dviewer.glade:602
+#: glade/g3dviewer.glade:629
 msgid ""
 "<b>About G3DViewer</b>\n"
 "\n"
@@ -128,10 +128,10 @@ msgstr ""
 "(C) 2005, 2006 Markus Dahms\n"
 "&lt;mad@automagically.de&gt;"
 
-#: glade/g3dviewer.glade:638
+#: glade/g3dviewer.glade:665
 msgid "Open Model"
 msgstr "Modell öffnen"
 
-#: glade/g3dviewer.glade:702
+#: glade/g3dviewer.glade:729
 msgid "Select background color"
 msgstr "Hintergrundfarbe wählen"

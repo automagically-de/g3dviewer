@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-04-23 12:15+0200\n"
+"POT-Creation-Date: 2006-05-08 22:08+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,32 +20,28 @@ msgstr ""
 msgid "all files"
 msgstr ""
 
-#: src/gui_infowin.c:201
-msgid "objects"
-msgstr ""
-
-#: src/gui_infowin.c:210
-msgid "materials"
-msgstr ""
-
-#: src/gui_infowin.c:275
+#: src/gui_infowin.c:310
 msgid "(unnamed material)"
 msgstr ""
 
-#: src/gui_infowin.c:294
+#: src/gui_infowin.c:331
 msgid "color"
 msgstr ""
 
-#: src/gui_infowin.c:343
+#: src/gui_infowin.c:379
 msgid "number of vertices"
 msgstr ""
 
-#: src/gui_infowin.c:354
+#: src/gui_infowin.c:391
 msgid "number of faces"
 msgstr ""
 
-#: src/gui_infowin.c:365
+#: src/gui_infowin.c:403
 msgid "number of materials"
+msgstr ""
+
+#: src/gui_infowin.c:430
+msgid "model"
 msgstr ""
 
 #: glade/g3dviewer.glade:8
@@ -56,63 +52,67 @@ msgstr ""
 msgid "_File"
 msgstr ""
 
-#: glade/g3dviewer.glade:87
+#: glade/g3dviewer.glade:74
+msgid "_Screenshot"
+msgstr ""
+
+#: glade/g3dviewer.glade:114
 msgid "_View"
 msgstr ""
 
-#: glade/g3dviewer.glade:96
+#: glade/g3dviewer.glade:123
 msgid "Show _menu bar"
 msgstr ""
 
-#: glade/g3dviewer.glade:106
+#: glade/g3dviewer.glade:133
 msgid "Show t_ool bar"
 msgstr ""
 
-#: glade/g3dviewer.glade:137
+#: glade/g3dviewer.glade:164
 msgid "_Wireframe"
 msgstr ""
 
-#: glade/g3dviewer.glade:147
+#: glade/g3dviewer.glade:174
 msgid "_Specular lighting"
 msgstr ""
 
-#: glade/g3dviewer.glade:157
+#: glade/g3dviewer.glade:184
 msgid "S_hininess"
 msgstr ""
 
-#: glade/g3dviewer.glade:167
+#: glade/g3dviewer.glade:194
 msgid "T_wo-sided faces"
 msgstr ""
 
-#: glade/g3dviewer.glade:177
+#: glade/g3dviewer.glade:204
 msgid "_Textures"
 msgstr ""
 
-#: glade/g3dviewer.glade:193
+#: glade/g3dviewer.glade:220
 msgid "_Background color"
 msgstr ""
 
-#: glade/g3dviewer.glade:218
+#: glade/g3dviewer.glade:245
 msgid "_Help"
 msgstr ""
 
-#: glade/g3dviewer.glade:227
+#: glade/g3dviewer.glade:254
 msgid "_Info"
 msgstr ""
 
-#: glade/g3dviewer.glade:391
+#: glade/g3dviewer.glade:418
 msgid "Model Properties"
 msgstr ""
 
-#: glade/g3dviewer.glade:482
+#: glade/g3dviewer.glade:509
 msgid "Parts"
 msgstr ""
 
-#: glade/g3dviewer.glade:547
+#: glade/g3dviewer.glade:574
 msgid "About G3DViewer"
 msgstr ""
 
-#: glade/g3dviewer.glade:602
+#: glade/g3dviewer.glade:629
 msgid ""
 "<b>About G3DViewer</b>\n"
 "\n"
@@ -122,10 +122,10 @@ msgid ""
 "&lt;mad@automagically.de&gt;"
 msgstr ""
 
-#: glade/g3dviewer.glade:638
+#: glade/g3dviewer.glade:665
 msgid "Open Model"
 msgstr ""
 
-#: glade/g3dviewer.glade:702
+#: glade/g3dviewer.glade:729
 msgid "Select background color"
 msgstr ""
