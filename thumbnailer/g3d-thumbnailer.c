@@ -11,8 +11,9 @@
 #include "gl.h"
 #include "trackball.h"
 #include "screenshot.h"
+#include "texture.h"
 
-static gboolean setup_gl()
+static gboolean setup_gl(guint32 width, guint32 height)
 {
 	Display *display;
 	XVisualInfo *visinfo;
@@ -65,7 +66,7 @@ static gboolean setup_gl()
 	}
 
 	pixmap = XCreatePixmap(display, RootWindow(display, visinfo->screen),
-		240, 160, visinfo->depth);
+		width, height, visinfo->depth);
 	if(pixmap <= 0)
 	{
 		g_printerr("ERROR: could not create pixmap\n");
@@ -90,11 +91,13 @@ int main(int argc, char *argv[])
 	G3DModel *model;
 	gfloat bgcolor[4] = { 1.0, 1.0, 1.0, 0.0 };
 	gfloat quat[4] = { 0.0, 0.0, 0.0, 0.0 };
+	guint32 width = 128;
+	guint32 height = 128;
 
 	gtk_init(&argc, &argv);
 
-	setup_gl();
-	trackball(quat, 0.5, 0.5, 0.0, 0.0);
+	setup_gl(width, height);
+	trackball(quat, 0.3, -0.5, -0.2, 0.5);
 
 	if(argc < 3)
 	{
@@ -103,23 +106,36 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	if(argc > 3)
+	{
+		/* size */
+		width = atoi(argv[3]);
+		/* height = width / 4 * 3; */
+		height = width;
+	}
+
 	context = g3d_context_new();
 	model = g3d_model_load(context, argv[1]);
 
 	if(model)
 	{
+		texture_load_all_textures(model);
+
 		gl_draw(
 			G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_ALLTWOSIDE |
 			G3D_FLAG_GL_TEXTURES,
 			45 /* zoom */,
-			240.0 / 160.0,
+			(gfloat)width / (gfloat)height,
 			bgcolor,
 			quat,
 			model);
 
 		glXWaitGL();
 
-		return screenshot_save(argv[2], 240, 160);
+		if(screenshot_save(argv[2], width, height))
+		{
+			return EXIT_SUCCESS;
+		}
 	}
 
 	return EXIT_FAILURE;
