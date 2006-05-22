@@ -1,4 +1,4 @@
-/* $Id: texture.c,v 1.10.4.4 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -28,7 +28,6 @@
 
 #include <g3d/g3d.h>
 
-#include "main.h"
 #include "gl.h"
 
 int texture_load_all_textures(G3DModel *model)
