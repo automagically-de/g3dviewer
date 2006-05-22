@@ -58,9 +58,21 @@ cat >> $schemafile <<EOD
 	<schemalist>
 EOD
 
+add_schema "image@x-3dmf" "3DMF"
 add_schema "image@x-3ds" "3DS"
+add_schema "image@x-ac3d" "AC3D"
+add_schema "image@x-cob" "COB"
+add_schema "image@x-dxf" "DXF"
+add_schema "image@x-iob" "IOB"
+add_schema "image@x-lcd" "LCD"
 add_schema "image@x-lwo" "LWO"
 #add_schema "image@x-lws" "LWS"
+add_schema "image@x-md2" "MD2"
+add_schema "image@x-md3" "MD3"
+add_schema "image@x-nff" "NFF"
+add_schema "image@x-obj" "OBJ"
+add_schema "image@x-q3d" "Q3D"
+add_schema "image@x-vrml" "VRML"
 
 cat >> $schemafile <<EOD
 	</schemalist>

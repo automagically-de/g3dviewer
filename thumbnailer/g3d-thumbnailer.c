@@ -1,4 +1,4 @@
-/* $Id:$ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -112,14 +112,13 @@ int main(int argc, char *argv[])
 	G3DContext *context;
 	G3DModel *model;
 	gfloat bgcolor[4] = { 1.0, 1.0, 1.0, 0.0 };
-	gfloat quat[4] = { 0.0, 0.0, 0.0, 0.0 };
+	gfloat quat[4] = { 0.10, -0.31, -0.87, 0.38 };
 	guint32 width = 128;
 	guint32 height = 128;
 
 	gtk_init(&argc, &argv);
 
 	setup_gl(width, height);
-	trackball(quat, 0.3, -0.5, -0.2, 0.5);
 
 	if(argc < 3)
 	{

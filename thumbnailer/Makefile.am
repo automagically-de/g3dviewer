@@ -17,6 +17,17 @@ g3d_thumbnailer_CFLAGS = \
 g3d_thumbnailer_LDFLAGS = \
 	@X_LIBS@ @GL_LIBS@ @GTK_LIBS@ @LIBG3D_LIBS@
 
+mimelocaldir = ${HOME}/.local/share/mime
+mimefiles = g3dviewer.xml
+
+install-data-local: install-mime-local install-schema-local
+
+install-mime-local:
+	mkdir -p ${mimelocaldir}/packages
+	mkdir -p ${mimelocaldir}/applications
+	cp ${mimefiles} ${mimelocaldir}/packages
+	update-mime-database ${mimelocaldir}
+
 install-schema-local:
 	./gen_schema.sh
 	gconftool-2 --install-schema-file=g3d-thumbnailer.schema
