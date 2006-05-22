@@ -33,6 +33,7 @@
 #include "main.h"
 #include "gl.h"
 #include "glarea.h"
+#include "gui_glade.h"
 #include "trackball.h"
 
 /*
@@ -177,6 +178,7 @@ gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event)
 gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 {
 	gint x, y;
+	gchar *text;
 	GdkRectangle area;
 	GdkModifierType state;
 	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
@@ -206,6 +208,12 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 			(                  2.0*x -              area.width) / area.width,
 			(            area.height -                   2.0*y) / area.height);
 		add_quats(spin_quat, viewer->quat, viewer->quat);
+
+		text = g_strdup_printf("quat: %-.2f, %-.2f, %-.2f, %-.2f",
+			viewer->quat[0], viewer->quat[1],
+			viewer->quat[2], viewer->quat[3]);
+		gui_glade_status(viewer, text);
+		g_free(text);
 
 		glarea_update(widget);
 	}

@@ -110,7 +110,7 @@ static void gui_glade_add_open_filters(G3DViewer *viewer)
 gboolean gui_glade_load(G3DViewer *viewer)
 {
 	GladeXML *xml;
-	GtkWidget *window, *widget, *popupmenu, *glarea;
+	GtkWidget *window, *widget, *popupmenu, *glarea, *statusbar;
 	gint i;
 	static const gchar *viewer_widgets[] = {
 		"mi_file_open",
@@ -174,6 +174,11 @@ gboolean gui_glade_load(G3DViewer *viewer)
 	g_object_set_data(G_OBJECT(viewer->interface.glarea), "menu",
 		popupmenu);
 	gtk_widget_show_all(popupmenu);
+
+	/* get statusbar context id */
+	statusbar = glade_xml_get_widget(viewer->interface.xml, "statusbar");
+	viewer->interface.status_context_id = gtk_statusbar_get_context_id(
+		GTK_STATUSBAR(statusbar), "default");
 
 	/* update "open" dialog */
 	gui_glade_add_open_filters(viewer);
@@ -266,6 +271,21 @@ gboolean gui_glade_open_dialog(G3DViewer *viewer)
 	}
 
 	return FALSE;
+}
+
+/*
+ * show text in status bar
+ */
+
+gboolean gui_glade_status(G3DViewer *viewer, const gchar *text)
+{
+	GtkWidget *statusbar;
+
+	statusbar = glade_xml_get_widget(viewer->interface.xml, "statusbar");
+	gtk_statusbar_push(GTK_STATUSBAR(statusbar),
+		viewer->interface.status_context_id, text);
+
+	return TRUE;
 }
 
 /*

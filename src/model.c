@@ -1,4 +1,4 @@
-/* $Id: model.c,v 1.1.2.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -24,6 +24,7 @@
 
 #include "main.h"
 #include "texture.h"
+#include "gui_glade.h"
 #include "gui_infowin.h"
 
 gboolean model_load(G3DViewer *viewer)
@@ -43,6 +44,10 @@ gboolean model_load(G3DViewer *viewer)
 	{
 		viewer->model = model;
 		texture_load_all_textures(viewer->model);
+		title = g_strdup_printf(_("%s successfully loaded."),
+			viewer->filename ? viewer->filename : _("unnamed model"));
+		gui_glade_status(viewer, title);
+		g_free(title);
 		retval = TRUE;
 	}
 

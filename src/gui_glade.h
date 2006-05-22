@@ -1,4 +1,4 @@
-/* $Id: gui_glade.h,v 1.1.2.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -28,6 +28,7 @@
 gboolean gui_glade_init(G3DViewer *viewer);
 gboolean gui_glade_load(G3DViewer *viewer);
 gboolean gui_glade_open_dialog(G3DViewer *viewer);
+gboolean gui_glade_status(G3DViewer *viewer, const gchar *text);
 
 /* callbacks */
 gboolean gui_glade_set_bgcolor_cb(

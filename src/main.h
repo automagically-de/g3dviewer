@@ -60,6 +60,8 @@ typedef struct {
 
 		GtkWidget *glarea;
 		GdkPixbuf **icons;
+
+		guint status_context_id;
 	} interface;
 
 } G3DViewer;
