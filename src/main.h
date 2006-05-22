@@ -29,11 +29,6 @@
 #include <glade/glade-xml.h>
 #include <g3d/g3d.h>
 
-#define G3D_FLAG_GL_SPECULAR        (1L << 0)
-#define G3D_FLAG_GL_SHININESS       (1L << 1)
-#define G3D_FLAG_GL_ALLTWOSIDE      (1L << 2)
-#define G3D_FLAG_GL_TEXTURES        (1L << 3)
-
 typedef struct {
 	G3DContext *g3dcontext;
 	G3DModel *model;

@@ -1,4 +1,4 @@
-/* $Id: main.c,v 1.5.4.6 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -38,6 +38,7 @@
 #include "glarea.h"
 #include "gui_glade.h"
 #include "trackball.h"
+#include "gl.h"
 
 static gboolean parse_only = FALSE;
 

@@ -93,6 +93,7 @@ AC_OUTPUT(Makefile
 	m4/Makefile
 	man/Makefile
 	src/Makefile
+	thumbnailer/Makefile
 	pixmaps/Makefile
 	glade/Makefile
 	po/Makefile.in

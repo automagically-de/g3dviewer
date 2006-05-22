@@ -1,4 +1,4 @@
-/* $Id: glarea.c,v 1.3.4.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -23,8 +23,6 @@
 #ifndef _SCREENSHOT_H
 #define _SCREENSHOT_H
 
-#include "main.h"
-
-gboolean screenshot_save(G3DViewer *viewer, const gchar *filename);
+gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height);
 
 #endif /* _SCREENSHOT_H */

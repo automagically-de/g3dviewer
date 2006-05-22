@@ -30,7 +30,9 @@
 
 #include <g3d/types.h>
 
+#if 0
 #include "main.h"
+#endif
 #include "gl.h"
 #include "trackball.h"
 
@@ -47,7 +49,7 @@ static gulong avg_msec = 0;
 
 GLuint evil;
 
-void gl_init(G3DViewer *viewer)
+void gl_init(void)
 {
 #if DEBUG > 1
 	g_printerr("init OpenGL\n");
@@ -175,14 +177,14 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 		image->pixeldata);
 }
 
-void gl_update_material(G3DViewer *viewer, G3DMaterial *material)
+void gl_update_material(gint32 glflags, G3DMaterial *material)
 {
 	GLenum facetype;
 	GLfloat normspec[4] = { 0.0, 0.0, 0.0, 1.0 };
 
 	g_return_if_fail(material != NULL);
 
-	if(viewer->glflags & G3D_FLAG_GL_ALLTWOSIDE)
+	if(glflags & G3D_FLAG_GL_ALLTWOSIDE)
 		facetype = GL_FRONT_AND_BACK;
 	else
 		facetype = GL_FRONT;
@@ -193,18 +195,18 @@ void gl_update_material(G3DViewer *viewer, G3DMaterial *material)
 		material->b,
 		material->a);
 
-	if(viewer->glflags & G3D_FLAG_GL_SPECULAR)
+	if(glflags & G3D_FLAG_GL_SPECULAR)
 		glMaterialfv(facetype, GL_SPECULAR, material->specular);
 	else
 		glMaterialfv(facetype, GL_SPECULAR, normspec);
 
-	if(viewer->glflags & G3D_FLAG_GL_SHININESS)
+	if(glflags & G3D_FLAG_GL_SHININESS)
 		glMaterialf(facetype, GL_SHININESS, material->shininess);
 	else
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
 
-static void gl_draw_objects(G3DViewer *viewer, GSList *objects)
+static void gl_draw_objects(gint32 glflags, GSList *objects)
 {
 	GSList *olist;
 	int i, j;
@@ -236,11 +238,11 @@ static void gl_draw_objects(G3DViewer *viewer, GSList *objects)
 		{
 			if(prev_material != object->_materials[i])
 			{
-				gl_update_material(viewer, object->_materials[i]);
+				gl_update_material(glflags, object->_materials[i]);
 				prev_material = object->_materials[i];
 			}
 
-			if((viewer->glflags & G3D_FLAG_GL_TEXTURES) &&
+			if((glflags & G3D_FLAG_GL_TEXTURES) &&
 				(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
 			{
 				/* if texture has changed update to new texture */
@@ -259,7 +261,7 @@ static void gl_draw_objects(G3DViewer *viewer, GSList *objects)
 			/* draw triangles */
 			for(j = 0; j < 3; j ++)
 			{
-				if((viewer->glflags & G3D_FLAG_GL_TEXTURES) &&
+				if((glflags & G3D_FLAG_GL_TEXTURES) &&
 					(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
 				{
 					glTexCoord2f(
@@ -288,44 +290,45 @@ static void gl_draw_objects(G3DViewer *viewer, GSList *objects)
 		glEnd();
 
 		/* handle sub-objects */
-		gl_draw_objects(viewer, object->objects);
+		gl_draw_objects(glflags, object->objects);
 
 	} /* while olist != NULL */
 }
 
-void gl_draw(G3DViewer *viewer)
+void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
+	gfloat *quat, G3DModel *model)
 {
 	GLfloat m[4][4];
 
 	if(! _initialized)
 	{
-		gl_init(viewer);
+		gl_init();
 		_initialized = 1;
 	}
 
 	/* draw scene... */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(viewer->zoom, viewer->aspect, 1, 100);
+	gluPerspective(zoom, aspect, 1, 100);
 	glMatrixMode(GL_MODELVIEW);
 
 	glClearColor(
-		viewer->bgcolor[0],
-		viewer->bgcolor[1],
-		viewer->bgcolor[2],
-		0.0);
+		bgcolor[0],
+		bgcolor[1],
+		bgcolor[2],
+		bgcolor[3]);
 	glClearDepth(1.0);
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	glLoadIdentity();
 	glTranslatef(0, 0, -30);
-	build_rotmatrix(m, viewer->quat);
+	build_rotmatrix(m, quat);
 	glMultMatrixf(&m[0][0]);
 
 	/* reset texture */
 	glBindTexture (GL_TEXTURE_2D, 0);
 
-	if(viewer->model == NULL)
+	if(model == NULL)
 		return;
 
 #ifdef TIMING
@@ -333,7 +336,7 @@ void gl_draw(G3DViewer *viewer)
 #endif
 
 	/* draw all objects */
-	gl_draw_objects(viewer, viewer->model->objects);
+	gl_draw_objects(glflags, model->objects);
 
 #ifdef TIMING /* get time to draw one frame to compare algorithms */
 	g_timer_stop(timer);

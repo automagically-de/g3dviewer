@@ -1,4 +1,4 @@
-/* $Id: glarea.c,v 1.3.4.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -24,41 +24,33 @@
 #	include <config.h>
 #endif
 
-#include <gtk/gtk.h>
 #include <gdk-pixbuf/gdk-pixbuf.h>
 #include <GL/gl.h>
 
-#include "main.h"
-
-static guint8 *screenshot_get_pixels(G3DViewer *viewer,
-	guint32 *width, guint32 *height)
+static guint8 *screenshot_get_pixels(guint32 width, guint32 height)
 {
 	guint8 *pixels;
 
-	*width = viewer->interface.glarea->allocation.width;
-	*height = viewer->interface.glarea->allocation.height;
+	pixels = g_new(guint8, width * height * 4);
 
-	pixels = g_new(guint8, *width * *height * 3);
-
-	glReadPixels(0, 0, *width, *height, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 	return pixels;
 }
 
-gboolean screenshot_save(G3DViewer *viewer, const gchar *filename)
+gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height)
 {
 	guint8 *pixels;
-	guint32 width, height;
 	GdkPixbuf *pixbuf, *flipped;
 
-	pixels = screenshot_get_pixels(viewer, &width, &height);
+	pixels = screenshot_get_pixels(width, height);
 
 	if(pixels == NULL)
 		return FALSE;
 
 	pixbuf = gdk_pixbuf_new_from_data(pixels,
-		GDK_COLORSPACE_RGB, FALSE,
-		8, width, height, width * 3,
+		GDK_COLORSPACE_RGB, TRUE,
+		8, width, height, width * 4,
 		NULL, NULL);
 
 	if(pixbuf == NULL)

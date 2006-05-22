@@ -1,4 +1,4 @@
-/* $Id: glarea.c,v 1.3.4.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -60,7 +60,10 @@ gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 	glcontext = gtk_widget_get_gl_context(widget);
 
 	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext)) return TRUE;
-	gl_draw(viewer);
+
+	gl_draw(viewer->glflags, viewer->zoom, viewer->aspect, viewer->bgcolor,
+		viewer->quat, viewer->model);
+
 	gdk_gl_drawable_swap_buffers(gldrawable);
 	gdk_gl_drawable_gl_end(gldrawable);
 

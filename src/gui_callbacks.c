@@ -309,6 +309,7 @@ void gui_on_screenshot_cb(GtkWidget *widget, gpointer user_data)
 {
 	G3DViewer *viewer;
 	gchar *filename, *basename;
+	guint32 width, height;
 
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
@@ -317,11 +318,16 @@ void gui_on_screenshot_cb(GtkWidget *widget, gpointer user_data)
 	if(viewer->filename == NULL)
 		return;
 
+	width = viewer->interface.glarea->allocation.width;
+	height = viewer->interface.glarea->allocation.height;
+
 	basename = g_path_get_basename(viewer->filename);
 	filename = g_strdup_printf("g3dviewer-screenshot-%s.png", basename);
 	g_free(basename);
 
-	if(screenshot_save(viewer, filename))
+
+
+	if(screenshot_save(filename, width, height))
 		g_print("screenshot \"%s\" saved.\n", filename);
 	else
 		g_printerr("failed saving screenshot \"%s\".\n", filename);

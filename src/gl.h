@@ -1,4 +1,4 @@
-/* $Id: gl.h,v 1.3.4.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -23,11 +23,15 @@
 #ifndef _GL_H
 #define _GL_H
 
-#include "main.h"
+#define G3D_FLAG_GL_SPECULAR        (1L << 0)
+#define G3D_FLAG_GL_SHININESS       (1L << 1)
+#define G3D_FLAG_GL_ALLTWOSIDE      (1L << 2)
+#define G3D_FLAG_GL_TEXTURES        (1L << 3)
 
 void gl_set_twoside(gboolean twoside);
 void gl_set_textures(gboolean textures);
 void gl_load_texture(gpointer key, gpointer value, gpointer data);
-void gl_draw(G3DViewer *viewer);
+void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
+	gfloat *quat, G3DModel *model);
 
 #endif
