@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# $Id:$
+# $Id$
 
 #	G3DViewer - 3D object viewer
 #
@@ -60,6 +60,7 @@ EOD
 
 add_schema "image@x-3ds" "3DS"
 add_schema "image@x-lwo" "LWO"
+#add_schema "image@x-lws" "LWS"
 
 cat >> $schemafile <<EOD
 	</schemalist>

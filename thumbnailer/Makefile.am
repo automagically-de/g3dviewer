@@ -16,3 +16,8 @@ g3d_thumbnailer_CFLAGS = \
 
 g3d_thumbnailer_LDFLAGS = \
 	@X_LIBS@ @GL_LIBS@ @GTK_LIBS@ @LIBG3D_LIBS@
+
+install-schema-local:
+	./gen_schema.sh
+	gconftool-2 --install-schema-file=g3d-thumbnailer.schema
+
