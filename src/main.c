@@ -54,7 +54,7 @@ int main(int argc, char **argv)
 	bindtextdomain("g3dviewer", LOCALEDIR);
 	textdomain("g3dviewer");
 
-#if DEBUG > 0
+#if DEBUG > 3
 	/* memory debugging */
 	atexit(g_mem_profile);
 	g_mem_set_vtable(glib_mem_profiler_table);

@@ -370,6 +370,7 @@ gboolean gui_glade_update_progress_bar_cb(gfloat percentage,
 {
 	G3DViewer *viewer;
 	GtkWidget *pbar;
+	gchar *text;
 
 	viewer = (G3DViewer *)user_data;
 	g_assert(viewer);
@@ -377,7 +378,11 @@ gboolean gui_glade_update_progress_bar_cb(gfloat percentage,
 	pbar = glade_xml_get_widget(viewer->interface.xml, "main_progressbar");
 	g_assert(pbar);
 
-	/* TODO: update percentage */
+	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), percentage);
+
+	text = g_strdup_printf("%.2f%%", percentage);
+	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(pbar), text);
+	g_free(text);
 
 	if(show)
 		gtk_widget_show(pbar);
