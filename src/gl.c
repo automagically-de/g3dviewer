@@ -210,19 +210,96 @@ void gl_update_material(gint32 glflags, G3DMaterial *material)
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
 
-static void gl_draw_objects(gint32 glflags, GSList *objects)
+static void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
+	gfloat min_a, gfloat max_a, gboolean *dont_render)
+{
+	static G3DMaterial *prev_material = NULL;
+	static guint32 prev_texid = 0;
+	gint32 j;
+
+	/* material check */
+	if(prev_material != object->_materials[i])
+	{
+		if((object->_materials[i]->a < min_a) ||
+			(object->_materials[i]->a >= max_a))
+		{
+			*dont_render = TRUE;
+			return;
+		}
+
+		*dont_render = FALSE;
+
+		glEnd();
+		gl_update_material(glflags, object->_materials[i]);
+		glBegin(GL_TRIANGLES);
+		prev_material = object->_materials[i];
+
+		prev_texid = 0;
+	}
+
+	if(*dont_render) return;
+
+	/* texture stuff */
+	if((glflags & G3D_FLAG_GL_TEXTURES) &&
+		(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
+	{
+		/* if texture has changed update to new texture */
+		if(object->_tex_images[i] != prev_texid)
+		{
+			prev_texid = object->_tex_images[i];
+			glEnd();
+			glBindTexture(GL_TEXTURE_2D, prev_texid);
+			glBegin(GL_TRIANGLES);
+#if DEBUG > 5
+			g_print("gl: binding to texture id %d\n", prev_texid);
+#endif
+		}
+	}
+
+
+	/* draw triangles */
+	for(j = 0; j < 3; j ++)
+	{
+		if((glflags & G3D_FLAG_GL_TEXTURES) &&
+			(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
+		{
+			glTexCoord2f(
+				object->_tex_coords[(i * 3 + j) * 2 + 0],
+				object->_tex_coords[(i * 3 + j) * 2 + 1]);
+#if DEBUG > 5
+			g_print("gl: setting texture coords: %f, %f\n",
+				object->_tex_coords[(i * 3 + j) * 2 + 0],
+				object->_tex_coords[(i * 3 + j) * 2 + 1]);
+#endif
+		}
+
+		glNormal3f(
+			object->_normals[(i*3+j)*3+0],
+			object->_normals[(i*3+j)*3+1],
+			object->_normals[(i*3+j)*3+2]);
+		glVertex3f(
+			object->vertex_data[object->_indices[i*3+j]*3+0],
+			object->vertex_data[object->_indices[i*3+j]*3+1],
+			object->vertex_data[object->_indices[i*3+j]*3+2]);
+
+	} /* 1 .. 3 */
+}
+
+static void gl_draw_objects(gint32 glflags, GSList *objects,
+	gfloat min_a, gfloat max_a)
 {
 	GSList *olist;
-	int i, j;
-	G3DMaterial *prev_material = NULL;
+	int i;
 	G3DObject *object;
-	guint32 prev_texid = 0;
+	gboolean dont_render;
 
 	olist = objects;
 	while(olist != NULL)
 	{
 		object = (G3DObject *)olist->data;
 		olist = olist->next;
+
+		dont_render = FALSE;
 
 		/* don't render invisible objects */
 		if(object->hide) continue;
@@ -240,62 +317,13 @@ static void gl_draw_objects(gint32 glflags, GSList *objects)
 
 		for(i = 0; i < object->_num_faces; i ++)
 		{
-			if(prev_material != object->_materials[i])
-			{
-				glEnd();
-				gl_update_material(glflags, object->_materials[i]);
-				glBegin(GL_TRIANGLES);
-				prev_material = object->_materials[i];
-			}
-
-			if((glflags & G3D_FLAG_GL_TEXTURES) &&
-				(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
-			{
-				/* if texture has changed update to new texture */
-				if(object->_tex_images[i] != prev_texid)
-				{
-					prev_texid = object->_tex_images[i];
-					glEnd();
-					glBindTexture(GL_TEXTURE_2D, prev_texid);
-					glBegin(GL_TRIANGLES);
-#if DEBUG > 5
-					g_print("gl: binding to texture id %d\n", prev_texid);
-#endif
-				}
-			}
-
-			/* draw triangles */
-			for(j = 0; j < 3; j ++)
-			{
-				if((glflags & G3D_FLAG_GL_TEXTURES) &&
-					(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
-				{
-					glTexCoord2f(
-						object->_tex_coords[(i * 3 + j) * 2 + 0],
-						object->_tex_coords[(i * 3 + j) * 2 + 1]);
-#if DEBUG > 5
-					g_print("gl: setting texture coords: %f, %f\n",
-						object->_tex_coords[(i * 3 + j) * 2 + 0],
-						object->_tex_coords[(i * 3 + j) * 2 + 1]);
-#endif
-				}
-
-				glNormal3f(
-					object->_normals[(i*3+j)*3+0],
-					object->_normals[(i*3+j)*3+1],
-					object->_normals[(i*3+j)*3+2]);
-				glVertex3f(
-					object->vertex_data[object->_indices[i*3+j]*3+0],
-					object->vertex_data[object->_indices[i*3+j]*3+1],
-					object->vertex_data[object->_indices[i*3+j]*3+2]);
-
-			} /* 1 .. 3 */
+			gl_draw_face(glflags, object, i, min_a, max_a, &dont_render);
 		} /* all faces */
 
 		glEnd();
 
 		/* handle sub-objects */
-		gl_draw_objects(glflags, object->objects);
+		gl_draw_objects(glflags, object->objects, min_a, max_a);
 
 	} /* while olist != NULL */
 }
@@ -308,6 +336,7 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	static gint32 previous_glflags = -1;
 	static gint32 dlist = -1;
 	GLenum error;
+	gfloat f;
 
 	if(! _initialized)
 	{
@@ -358,7 +387,8 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 
 		glNewList(dlist, GL_COMPILE);
 		/* draw all objects */
-		gl_draw_objects(glflags, model->objects);
+		for(f = 1.0; f >= 0.0; f -= 0.2)
+			gl_draw_objects(glflags, model->objects, f, f + 0.2);
 		glEndList();
 
 		if(previous_name) g_free(previous_name);
