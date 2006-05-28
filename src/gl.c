@@ -94,10 +94,14 @@ void gl_init(void)
 
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_lc);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
+	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
+
 	glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
 	glLightfv(GL_LIGHT0, GL_DIFFUSE,  light0_col);
 	glLightfv(GL_LIGHT1, GL_POSITION, light1_pos);
 	glLightfv(GL_LIGHT1, GL_DIFFUSE,  light1_col);
+	glLightfv(GL_LIGHT1, GL_SPECULAR,  light1_col);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHTING);
@@ -211,11 +215,18 @@ void gl_update_material(gint32 glflags, G3DMaterial *material)
 }
 
 static void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
-	gfloat min_a, gfloat max_a, gboolean *dont_render)
+	gfloat min_a, gfloat max_a, gboolean *dont_render, gboolean *init)
 {
 	static G3DMaterial *prev_material = NULL;
 	static guint32 prev_texid = 0;
 	gint32 j;
+
+	if(*init)
+	{
+		prev_material = NULL;
+		prev_texid = 0;
+		*init = FALSE;
+	}
 
 	/* material check */
 	if(prev_material != object->_materials[i])
@@ -292,6 +303,7 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 	int i;
 	G3DObject *object;
 	gboolean dont_render;
+	gboolean init = TRUE;
 
 	olist = objects;
 	while(olist != NULL)
@@ -317,7 +329,8 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 
 		for(i = 0; i < object->_num_faces; i ++)
 		{
-			gl_draw_face(glflags, object, i, min_a, max_a, &dont_render);
+			gl_draw_face(glflags, object, i, min_a, max_a,
+				&dont_render, &init);
 		} /* all faces */
 
 		glEnd();
