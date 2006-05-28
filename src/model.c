@@ -51,6 +51,10 @@ gboolean model_load(G3DViewer *viewer)
 		retval = TRUE;
 	}
 
+#if DEBUG > 3
+	g_printerr("[model] model pointer: %p\n", model);
+#endif
+
 	/* update model information */
 	gui_infowin_update(viewer);
 

@@ -21,6 +21,7 @@
 */
 
 #include <stdlib.h>
+#include <string.h>
 #include <math.h>
 
 #include <glib.h>
@@ -59,7 +60,7 @@ void gl_init(void)
 	GLfloat light0_col[4] = { 0.6, 0.6, 0.6, 1.0 };
 	GLfloat light1_pos[4] = {  50.0, 50.0, 0.0, 0.0 };
 	GLfloat light1_col[4] = { 0.4, 0.4, 0.4, 1.0 };
-	GLfloat ambient_lc[4] = { 0.25, 0.25, 0.25, 1.0 };
+	GLfloat ambient_lc[4] = { 0.35, 0.35, 0.35, 1.0 };
 
 #if 0
 	glEnable(GL_CULL_FACE);
@@ -157,6 +158,7 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR_MIPMAP_NEAREST);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);*/
 	glTexImage2D(
 		GL_TEXTURE_2D /* target */,
 		0 /* level */,
@@ -195,13 +197,15 @@ void gl_update_material(gint32 glflags, G3DMaterial *material)
 		material->b,
 		material->a);
 
+	return;
+
 	if(glflags & G3D_FLAG_GL_SPECULAR)
 		glMaterialfv(facetype, GL_SPECULAR, material->specular);
 	else
 		glMaterialfv(facetype, GL_SPECULAR, normspec);
 
 	if(glflags & G3D_FLAG_GL_SHININESS)
-		glMaterialf(facetype, GL_SHININESS, material->shininess);
+		glMaterialf(facetype, GL_SHININESS, material->shininess * 10);
 	else
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
@@ -238,7 +242,9 @@ static void gl_draw_objects(gint32 glflags, GSList *objects)
 		{
 			if(prev_material != object->_materials[i])
 			{
+				glEnd();
 				gl_update_material(glflags, object->_materials[i]);
+				glBegin(GL_TRIANGLES);
 				prev_material = object->_materials[i];
 			}
 
@@ -250,7 +256,7 @@ static void gl_draw_objects(gint32 glflags, GSList *objects)
 				{
 					prev_texid = object->_tex_images[i];
 					glEnd();
-					glBindTexture (GL_TEXTURE_2D, prev_texid);
+					glBindTexture(GL_TEXTURE_2D, prev_texid);
 					glBegin(GL_TRIANGLES);
 #if DEBUG > 5
 					g_print("gl: binding to texture id %d\n", prev_texid);
@@ -284,8 +290,7 @@ static void gl_draw_objects(gint32 glflags, GSList *objects)
 					object->vertex_data[object->_indices[i*3+j]*3+2]);
 
 			} /* 1 .. 3 */
-		}
-		/* all faces */
+		} /* all faces */
 
 		glEnd();
 
@@ -299,6 +304,10 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	gfloat *quat, G3DModel *model)
 {
 	GLfloat m[4][4];
+	static gchar *previous_name = NULL;
+	static gint32 previous_glflags = -1;
+	static gint32 dlist = -1;
+	GLenum error;
 
 	if(! _initialized)
 	{
@@ -335,8 +344,34 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	g_timer_start(timer);
 #endif
 
-	/* draw all objects */
-	gl_draw_objects(glflags, model->objects);
+	/* FIXME: better detection of new model */
+	if((dlist < 0) || (glflags != previous_glflags) ||
+		(previous_name == NULL) || strcmp(previous_name, model->filename))
+	{
+#if DEBUG > 0
+		g_printerr("[gl] creating new display list\n");
+#endif
+		/* create and execute display list */
+		if(dlist >= 0)
+			glDeleteLists(dlist, 1);
+		dlist = glGenLists(1);
+
+		glNewList(dlist, GL_COMPILE);
+		/* draw all objects */
+		gl_draw_objects(glflags, model->objects);
+		glEndList();
+
+		if(previous_name) g_free(previous_name);
+		previous_name = g_strdup(model->filename);
+		previous_glflags = glflags;
+	}
+
+	/* execute display list */
+	glCallList(dlist);
+
+	error = glGetError();
+	if(error != GL_NO_ERROR)
+		g_printerr("[gl] E: %d\n", error);
 
 #ifdef TIMING /* get time to draw one frame to compare algorithms */
 	g_timer_stop(timer);
