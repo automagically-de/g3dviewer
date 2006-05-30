@@ -380,7 +380,7 @@ gboolean gui_glade_update_progress_bar_cb(gfloat percentage,
 
 	gtk_progress_bar_set_fraction(GTK_PROGRESS_BAR(pbar), percentage);
 
-	text = g_strdup_printf("%.2f%%", percentage);
+	text = g_strdup_printf("%.1f%%", percentage * 100);
 	gtk_progress_bar_set_text(GTK_PROGRESS_BAR(pbar), text);
 	g_free(text);
 
