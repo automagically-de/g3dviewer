@@ -39,6 +39,7 @@
 
 #include "gui_glade.h"
 #include "gui_infowin.h"
+#include "gui_log.h"
 
 static void gui_glade_clone_menuitem(GtkWidget *menuitem, gpointer user_data);
 
@@ -130,6 +131,8 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"tb_properties",
 		"tb_zoomfit",
 		"tb_screenshot",
+		"tb_log_clear",
+		"tb_log_save",
 		"cs_background",
 		"gtkglext1",
 		NULL };
@@ -182,6 +185,10 @@ gboolean gui_glade_load(G3DViewer *viewer)
 
 	/* update "open" dialog */
 	gui_glade_add_open_filters(viewer);
+
+	/* initialize log */
+	gui_log_initialize(viewer, glade_xml_get_widget(xml, "logtree"));
+	g_log_set_handler("LibG3D", G_LOG_LEVEL_MASK, gui_log_handler, viewer);
 
 	/* show main window */
 	viewer->interface.window = window;

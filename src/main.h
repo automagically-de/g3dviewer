@@ -49,6 +49,7 @@ typedef struct {
 	/* model information */
 	struct {
 		GtkTreeStore *treestore;
+		GtkTreeStore *logtreestore;
 	} info;
 
 	/* interface */
