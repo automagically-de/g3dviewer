@@ -26,6 +26,7 @@
 #include "texture.h"
 #include "gui_glade.h"
 #include "gui_infowin.h"
+#include "gui_log.h"
 
 gboolean model_load(G3DViewer *viewer)
 {
@@ -38,6 +39,9 @@ gboolean model_load(G3DViewer *viewer)
 	viewer->model = NULL;
 	if(model)
 		g3d_model_free(model);
+
+	/* clean log */
+	gui_log_clean(viewer);
 
 	model = g3d_model_load(viewer->g3dcontext, viewer->filename);
 	if(model)

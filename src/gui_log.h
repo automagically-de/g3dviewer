@@ -28,6 +28,7 @@
 #include <gtk/gtk.h>
 
 gboolean gui_log_initialize(G3DViewer *viewer, GtkWidget *treeview);
+void gui_log_clean(G3DViewer *viewer);
 void gui_log_cleanup(G3DViewer *viewer);
 void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	const gchar *message, gpointer user_data);

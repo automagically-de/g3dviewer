@@ -48,6 +48,8 @@ static gboolean gui_log_create_columns(GtkWidget *treeview,
 	GtkTreeModel *model, G3DViewer *viewer);
 static GtkTreeIter *gui_log_parent_iter_for_level(GtkTreeModel *model,
 	gint32 level, GtkTreeIter *parentiter);
+static gboolean gui_log_remove_children(GtkTreeStore *treestore,
+	GtkTreeIter *iter_parent);
 
 gboolean gui_log_initialize(G3DViewer *viewer, GtkWidget *treeview)
 {
@@ -71,9 +73,14 @@ gboolean gui_log_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	return TRUE;
 }
 
+void gui_log_clean(G3DViewer *viewer)
+{
+	gui_log_remove_children(viewer->info.logtreestore, NULL);
+}
+
 void gui_log_cleanup(G3DViewer *viewer)
 {
-	;
+	gui_log_clean(viewer);
 }
 
 void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
@@ -214,3 +221,24 @@ static GtkTreeIter *gui_log_parent_iter_for_level(GtkTreeModel *model,
 
 	return iter2;
 }
+
+static gboolean gui_log_remove_children(GtkTreeStore *treestore,
+	GtkTreeIter *iter_parent)
+{
+	GtkTreeIter iter_child;
+	gint n, i;
+
+	n = gtk_tree_model_iter_n_children(GTK_TREE_MODEL(treestore),
+		iter_parent);
+	gtk_tree_model_iter_children(GTK_TREE_MODEL(treestore),
+		&iter_child, iter_parent);
+
+	for(i = 0; i < n; i ++)
+	{
+		gui_log_remove_children(treestore, &iter_child);
+		gtk_tree_store_remove(treestore, &iter_child);
+	}
+
+	return TRUE;
+}
+
