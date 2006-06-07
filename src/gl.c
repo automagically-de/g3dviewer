@@ -325,6 +325,13 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 		g_printerr("new object\n");
 #endif
 
+		glPushMatrix();
+
+		if(object->transformation)
+		{
+			glMultMatrixf(object->transformation->matrix);
+		}
+
 		glBegin(GL_TRIANGLES);
 
 		for(i = 0; i < object->_num_faces; i ++)
@@ -337,6 +344,8 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 
 		/* handle sub-objects */
 		gl_draw_objects(glflags, object->objects, min_a, max_a);
+
+		glPopMatrix();
 
 	} /* while olist != NULL */
 }
