@@ -127,7 +127,7 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	gtk_tree_store_set(viewer->info.logtreestore, &iter,
 		COL_LOGLEVEL, log_level,
 		COL_ICON, stock_id,
-		COL_MESSAGE, g_strdup(message),
+		COL_MESSAGE, g_strdup(stripped_msg),
 		COL_SET_FAMILY, TRUE,
 		COL_FAMILY, family,
 		COL_SET_BG, TRUE,
@@ -203,7 +203,11 @@ static GtkTreeIter *gui_log_parent_iter_for_level(GtkTreeModel *model,
 
 	if(level == 0) return NULL;
 
+	if(gtk_tree_model_iter_n_children(model, parentiter) == 0)
+		return NULL;
+
 	iter = g_new0(GtkTreeIter, 1);
+
 	if(gtk_tree_model_iter_nth_child(model, iter, parentiter,
 		gtk_tree_model_iter_n_children(model, parentiter) - 1) == FALSE)
 	{
