@@ -114,11 +114,13 @@ gboolean gui_glade_load(G3DViewer *viewer)
 	GtkWidget *window, *widget, *popupmenu, *glarea, *statusbar;
 	gint i;
 	static const gchar *viewer_widgets[] = {
+		"main_window",
 		"mi_file_open",
 		"mi_properties",
 		"mi_screenshot",
 		"mi_show_menubar",
 		"mi_show_toolbar",
+		"mi_fullscreen",
 		"mi_zoomfit",
 		"mi_wireframe",
 		"mi_specular",

@@ -378,7 +378,12 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 		bgcolor[2],
 		bgcolor[3]);
 	glClearDepth(1.0);
-	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+	glClearIndex(0.3);
+	glClear(
+		GL_COLOR_BUFFER_BIT |
+		GL_DEPTH_BUFFER_BIT |
+		GL_ACCUM_BUFFER_BIT |
+		GL_STENCIL_BUFFER_BIT);
 
 	glLoadIdentity();
 	glTranslatef(0, 0, -30);

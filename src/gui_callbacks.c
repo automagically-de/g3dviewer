@@ -109,6 +109,34 @@ void gui_on_show_toolbar_cb(GtkWidget *widget, gpointer user_data)
 }
 
 /*
+ * View->Fullscreen
+ */
+void gui_on_fullscreen_cb(GtkWidget *widget, gpointer user_data)
+{
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
+
+	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
+		gtk_window_fullscreen(GTK_WINDOW(viewer->interface.window));
+	else
+		gtk_window_unfullscreen(GTK_WINDOW(viewer->interface.window));
+}
+
+/*
+ * Window state event
+ */
+void gui_on_window_state_event(GtkWidget *widget, GdkEventVisibility *event,
+	gpointer user_data)
+{
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
+}
+
+/*
  * View->ZoomFit
  */
 void gui_on_zoomfit_cb(GtkWidget *widget, gpointer user_data)
