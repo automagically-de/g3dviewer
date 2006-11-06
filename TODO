@@ -1,9 +1,10 @@
+# OUT OF DATE!
+
 short term:
 	* flex version check
 	* type cleanup
 	* fix imp_heightfield
 	* optional plugins
-	* move .so file building to libtool
 
 	* 3ds lights
 	* correct normals (right direction faces) [added a hack (two-sided faces)]
@@ -25,10 +26,10 @@ longer term:
 
 -------------------------------------------------------------------------------
 done:
-  * center objects
-  * 3ds color materials
-  * interface inprovements (open dialog)
-
+* center objects
+* 3ds color materials
+* interface inprovements (open dialog)
+* move .so file building to libtool
 -------------------------------------------------------------------------------
 TODO for 0.2.0
 * type cleanup (GLib / GL types only)
