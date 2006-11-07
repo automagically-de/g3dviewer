@@ -163,6 +163,8 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 		GL_LINEAR_MIPMAP_NEAREST);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);*/
+	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);*/
+	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);*/
 	glTexImage2D(
 		GL_TEXTURE_2D /* target */,
 		0 /* level */,
