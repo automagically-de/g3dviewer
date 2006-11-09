@@ -122,7 +122,8 @@ int main(int argc, char *argv[])
 
 	if(argc < 3)
 	{
-		g_print("usage: %s <input file: model> <output file: image>\n",
+		g_print("usage: %s <input file: model> <output file: image> "
+			"[<width in px>]\n",
 			argv[0]);
 		return EXIT_FAILURE;
 	}

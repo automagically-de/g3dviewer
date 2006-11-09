@@ -141,6 +141,7 @@ void gl_set_textures(gboolean textures)
 void gl_load_texture(gpointer key, gpointer value, gpointer data)
 {
 	G3DImage *image = (G3DImage *)value;
+	gint32 env;
 
 #if 0
 	/* predefined - update object->_tex_images else... */
@@ -161,10 +162,17 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR_MIPMAP_NEAREST);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);*/
-	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);*/
-	/*glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);*/
+
+	switch(image->tex_env)
+	{
+		case G3D_TEXENV_BLEND: env = GL_BLEND; break;
+		case G3D_TEXENV_MODULATE: env = GL_MODULATE; break;
+		case G3D_TEXENV_DECAL: env = GL_DECAL; break;
+		case G3D_TEXENV_REPLACE: env = GL_REPLACE; break;
+		default: env = GL_BLEND; break;
+	}
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, env);
+
 	glTexImage2D(
 		GL_TEXTURE_2D /* target */,
 		0 /* level */,
