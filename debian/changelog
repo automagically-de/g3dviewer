@@ -1,5 +1,11 @@
 g3dviewer (0.3.0-2) unstable; urgency=low
 
+  * updated to version 0.2.99.3
+
+ -- Markus Dahms <mad@automagically.de>  Wed, 15 Nov 2006 10:44:51 +0100
+
+g3dviewer (0.3.0-2) unstable; urgency=low
+
   * updated to version 0.2.99.2
 
  -- Markus Dahms <mad@automagically.de>  Tue, 09 May 2006 09:37:34 +0200
