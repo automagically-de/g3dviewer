@@ -1,0 +1,3 @@
+The 3D model loading and manipulation has been split off into a separate
+library, libg3d. The user interface now depends on GTK+ 2.x and GtkGlExt 1.x,
+the old GTK 1.2.x/GtkGlArea code has been removed.

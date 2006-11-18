@@ -1,0 +1,3 @@
+A VRML 1.0 plugin has been started. There is a new manual page; and of course
+some bugs have been fixed. Preparations have been made to release Debian
+packages soon.

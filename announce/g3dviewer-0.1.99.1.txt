@@ -1,0 +1,7 @@
+Finally there is texture support. For now it includes the Quick3D plugin, the
+newly created AC3D plugin and with some quirks the 3DS plugin. Two new image
+plugins have been created, one for SGI RGB files and a general image loading
+plugin based on GdkPixbuf (GTK 2.x only).
+The code has been cleaned up a lot and there will be more cleanups until the
+final 0.2.0 release.
+The removal of the GTK 1.2 interface has been postponed to 0.3.0.

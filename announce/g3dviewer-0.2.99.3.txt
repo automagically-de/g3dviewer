@@ -1,0 +1,4 @@
+A fullscreen mode has been added. There are minor enhancements in the
+renderer, as a result libg3d 0.0.5 is required now. For use in the GNOME
+desktop a thumbnailer has been added which can be used within the Nautilus
+file manager (the integration is still a bit bumpy, though).
