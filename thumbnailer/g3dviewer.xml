@@ -41,7 +41,7 @@
 		<comment xml:lang="en">VDrift 3D model</comment>
 		<glob pattern="*.joe" />
 		<glob pattern="*.car" />
-	</mimetype>
+	</mime-type>
 
 	<mime-type type="image/x-lcd">
 		<comment xml:lang="en">LCD 3D model</comment>

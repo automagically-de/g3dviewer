@@ -22,7 +22,7 @@ mimefiles = g3dviewer.xml
 
 install-data-user: install-mime-user install-schema-user
 
-install-mime-user:
+install-mime-user: ${mimefiles}
 	mkdir -p ${mimelocaldir}/packages
 	mkdir -p ${mimelocaldir}/applications
 	cp ${mimefiles} ${mimelocaldir}/packages
@@ -32,3 +32,6 @@ install-schema-user:
 	./gen_schema.sh
 	gconftool-2 --install-schema-file=g3d-thumbnailer.schema
 
+EXTRA_DIST = \
+	g3dviewer.xml \
+	gen_schema.sh

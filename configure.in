@@ -1,6 +1,6 @@
 AC_INIT(configure.in)
 
-VERSION=0.2.99.3
+VERSION=0.2.99.4
 PACKAGE=g3dviewer
 
 AM_CONFIG_HEADER(config.h)

@@ -1,3 +1,6 @@
+changes since version 0.2.99.3:
+	* thumbnailer: some files where missing in the distribution tarball
+
 changes since version 0.2.99.2:
 	* gui: fullscreen function
 	* gl: support for different texture environment parameters
