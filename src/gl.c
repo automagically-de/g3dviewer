@@ -30,6 +30,7 @@
 #include <GL/glu.h>
 
 #include <g3d/types.h>
+#include <g3d/matrix.h>
 
 #if 0
 #include "main.h"
@@ -361,7 +362,7 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 }
 
 void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
-	gfloat *quat, G3DModel *model)
+	gfloat *quat, gfloat offx, gfloat offy, G3DModel *model)
 {
 	GLfloat m[4][4];
 	static gchar *previous_name = NULL;
@@ -369,6 +370,7 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	static gint32 dlist = -1;
 	GLenum error;
 	gfloat f;
+	gfloat tmat[16];
 
 	if(! _initialized)
 	{
@@ -380,6 +382,11 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(zoom, aspect, 1, 100);
+
+	/* translation of view */
+	g3d_matrix_identity(tmat);
+	g3d_matrix_translate(offx, offy, 0.0, tmat);
+	glMultMatrixf(tmat);
 	glMatrixMode(GL_MODELVIEW);
 
 	glClearColor(

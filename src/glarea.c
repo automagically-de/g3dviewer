@@ -63,7 +63,9 @@ gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext)) return TRUE;
 
 	gl_draw(viewer->glflags, viewer->zoom, viewer->aspect, viewer->bgcolor,
-		viewer->quat, viewer->model);
+		viewer->quat,
+		(gfloat)viewer->offx, (gfloat)viewer->offy,
+		viewer->model);
 
 	gdk_gl_drawable_swap_buffers(gldrawable);
 	gdk_gl_drawable_gl_end(gldrawable);
@@ -201,19 +203,29 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 	/* left button pressed */
 	if(state & GDK_BUTTON1_MASK)
 	{
-		gfloat spin_quat[4];
-		trackball(spin_quat,
-			(2.0*viewer->mouse.beginx -              area.width) / area.width,
-			(            area.height - 2.0*viewer->mouse.beginy) / area.height,
-			(                  2.0*x -              area.width) / area.width,
-			(            area.height -                   2.0*y) / area.height);
-		add_quats(spin_quat, viewer->quat, viewer->quat);
+		if(state & GDK_SHIFT_MASK)
+		{
+			/* shift pressed, translate view */
+			viewer->offx += (x - viewer->mouse.beginx) / 10;
+			viewer->offy -= (y - viewer->mouse.beginy) / 10;
+		}
+		else
+		{
+			/* rotate view */
+			gfloat spin_quat[4];
+			trackball(spin_quat,
+				(2.0 * viewer->mouse.beginx - area.width) / area.width,
+				(area.height - 2.0 * viewer->mouse.beginy) / area.height,
+				(2.0 * x - area.width) / area.width,
+				(area.height - 2.0 * y) / area.height);
+			add_quats(spin_quat, viewer->quat, viewer->quat);
 
-		text = g_strdup_printf("quat: %-.2f, %-.2f, %-.2f, %-.2f",
-			viewer->quat[0], viewer->quat[1],
-			viewer->quat[2], viewer->quat[3]);
-		gui_glade_status(viewer, text);
-		g_free(text);
+			text = g_strdup_printf("quat: %-.2f, %-.2f, %-.2f, %-.2f",
+				viewer->quat[0], viewer->quat[1],
+				viewer->quat[2], viewer->quat[3]);
+			gui_glade_status(viewer, text);
+			g_free(text);
+		}
 
 		glarea_update(widget);
 	}

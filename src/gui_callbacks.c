@@ -149,6 +149,9 @@ void gui_on_zoomfit_cb(GtkWidget *widget, gpointer user_data)
 	/* zoom */
 	viewer->zoom = 45;
 
+	/* reset offsets */
+	viewer->offx = viewer->offy = 0;
+
 	/* reset trackball */
 #if 1
 	trackball(viewer->quat, 0.0, 0.0, 0.0, 0.0);

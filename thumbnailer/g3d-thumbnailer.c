@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 			45 /* zoom */,
 			(gfloat)width / (gfloat)height,
 			bgcolor,
-			quat,
+			quat, 0, 0,
 			model);
 
 		glXWaitGL();

@@ -32,6 +32,6 @@ void gl_set_twoside(gboolean twoside);
 void gl_set_textures(gboolean textures);
 void gl_load_texture(gpointer key, gpointer value, gpointer data);
 void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
-	gfloat *quat, G3DModel *model);
+	gfloat *quat, gfloat offx, gfloat offy, G3DModel *model);
 
 #endif

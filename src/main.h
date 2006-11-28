@@ -40,6 +40,7 @@ typedef struct {
 	GLfloat aspect;
 	GLfloat bgcolor[4];
 	guint32 glflags;
+	gint32 offx, offy; /* view offsets */
 
 	/* mouse */
 	struct {
