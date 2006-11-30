@@ -1,5 +1,6 @@
 usr/bin/g3dviewer
 usr/share/g3dviewer/glade/g3dviewer.glade
+usr/share/g3dviewer/glade/*.png
 usr/share/g3dviewer/pixmaps/*.xpm
 usr/share/g3dviewer/pixmaps/*.png
 usr/share/locale/de/LC_MESSAGES/g3dviewer.mo
