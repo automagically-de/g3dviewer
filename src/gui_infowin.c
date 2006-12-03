@@ -232,7 +232,7 @@ static gboolean gui_infowin_create_columns(GtkWidget *treeview,
 	renderer = gtk_cell_renderer_text_new();
 	column = gtk_tree_view_column_new_with_attributes("Value",
 		renderer,
-		"text", COL_VALUE,
+		"markup", COL_VALUE,
 		NULL);
 	gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
 
@@ -298,6 +298,7 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 	GtkTreeIter iter1, iter2;
 	G3DMaterial *material;
 	gchar *matname, *stmp;
+	guint8 r, g, b, fg;
 
 	mlist = materials;
 	while(mlist != NULL)
@@ -321,10 +322,14 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 		add_texture(viewer, &iter1, material->tex_image);
 
 		/* material properties */
-		stmp = g_strdup_printf("#%02X%02X%02X",
-			(gint)(material->r * 255),
-			(gint)(material->g * 255),
-			(gint)(material->b * 255));
+		r = (gint)(material->r * 255);
+		g = (gint)(material->g * 255);
+		b = (gint)(material->b * 255);
+		fg = ((material->r + material->g + material->b) > 1.5) ? 0x00 : 0xFF;
+		stmp = g_strdup_printf(
+			"<span background=\"#%02X%02X%02X\" foreground=\"#%02X%02X%02X\">"
+			"#%02X%02X%02X</span>",
+				r, g, b, fg, fg, fg, r, g, b);
 		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter1);
 		gtk_tree_store_set(viewer->info.treestore, &iter2,
 			COL_TYPE, TYPE_PROPERTY,
