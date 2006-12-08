@@ -206,11 +206,14 @@ void gl_update_material(gint32 glflags, G3DMaterial *material)
 	else
 		facetype = GL_FRONT;
 
-	glColor4f(
-		material->r,
-		material->g,
-		material->b,
-		material->a);
+	if(glflags & G3D_FLAG_GL_COLORS)
+		glColor4f(
+			material->r,
+			material->g,
+			material->b,
+			material->a);
+	else
+		glColor4f(0.7, 0.7, 0.7, 1.0);
 
 	return;
 
@@ -362,11 +365,10 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 }
 
 void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
-	gfloat *quat, gfloat offx, gfloat offy, G3DModel *model)
+	gfloat *quat, gfloat offx, gfloat offy, gboolean rebuild_list,
+	G3DModel *model)
 {
 	GLfloat m[4][4];
-	static gchar *previous_name = NULL;
-	static gint32 previous_glflags = -1;
 	static gint32 dlist = -1;
 	GLenum error;
 	gfloat f;
@@ -417,11 +419,9 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	g_timer_start(timer);
 #endif
 
-	/* FIXME: better detection of new model */
-	if((dlist < 0) || (glflags != previous_glflags) ||
-		(previous_name == NULL) || strcmp(previous_name, model->filename))
+	if(rebuild_list)
 	{
-#if DEBUG > 0
+#if DEBUG > 2
 		g_printerr("[gl] creating new display list\n");
 #endif
 		/* create and execute display list */
@@ -434,10 +434,6 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 		for(f = 1.0; f >= 0.0; f -= 0.2)
 			gl_draw_objects(glflags, model->objects, f, f + 0.2);
 		glEndList();
-
-		if(previous_name) g_free(previous_name);
-		previous_name = g_strdup(model->filename);
-		previous_glflags = glflags;
 	}
 
 	/* execute display list */

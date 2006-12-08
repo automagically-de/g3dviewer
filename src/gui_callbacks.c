@@ -175,6 +175,9 @@ void gui_on_shininess_cb(GtkWidget *widget, gpointer user_data)
 		viewer->glflags |= G3D_FLAG_GL_SHININESS;
 	else
 		viewer->glflags &= ~G3D_FLAG_GL_SHININESS;
+
+	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	glarea_update(viewer->interface.glarea);
 }
 
 /*
@@ -190,6 +193,29 @@ void gui_on_twosided_cb(GtkWidget *widget, gpointer user_data)
 
 	gl_set_twoside(
 		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)));
+
+	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	glarea_update(viewer->interface.glarea);
+}
+
+/*
+ * View->Colors
+ */
+
+void gui_on_colors_cb(GtkWidget *widget, gpointer user_data)
+{
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
+
+	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
+		viewer->glflags |= G3D_FLAG_GL_COLORS;
+	else
+		viewer->glflags &= ~G3D_FLAG_GL_COLORS;
+
+	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	glarea_update(viewer->interface.glarea);
 }
 
 /*
@@ -207,6 +233,9 @@ void gui_on_textures_cb(GtkWidget *widget, gpointer user_data)
 		viewer->glflags |= G3D_FLAG_GL_TEXTURES;
 	else
 		viewer->glflags &= ~G3D_FLAG_GL_TEXTURES;
+
+	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	glarea_update(viewer->interface.glarea);
 }
 
 /*
@@ -224,6 +253,9 @@ void gui_on_specular_cb(GtkWidget *widget, gpointer user_data)
 		viewer->glflags |= G3D_FLAG_GL_SPECULAR;
 	else
 		viewer->glflags &= ~G3D_FLAG_GL_SPECULAR;
+
+	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	glarea_update(viewer->interface.glarea);
 }
 
 /*
@@ -247,6 +279,9 @@ void gui_on_wireframe_cb(GtkWidget *widget, gpointer user_data)
 		glPolygonMode(GL_FRONT, GL_FILL);
 		glPolygonMode(GL_BACK, GL_FILL);
 	}
+
+	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	glarea_update(viewer->interface.glarea);
 }
 
 /*
@@ -284,9 +319,10 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 		viewer->bgcolor[0] = (gdouble)color.red   / 65536.0;
 		viewer->bgcolor[1] = (gdouble)color.green / 65536.0;
 		viewer->bgcolor[2] = (gdouble)color.blue  / 65536.0;
-
-		glarea_update(viewer->interface.glarea);
 	}
+
+	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	glarea_update(viewer->interface.glarea);
 }
 
 /*

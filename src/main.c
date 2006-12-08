@@ -84,7 +84,8 @@ int main(int argc, char **argv)
 		/* G3D_FLAG_GL_SPECULAR | */
 		G3D_FLAG_GL_SHININESS |
 		G3D_FLAG_GL_ALLTWOSIDE |
-		G3D_FLAG_GL_TEXTURES;
+		G3D_FLAG_GL_TEXTURES |
+		G3D_FLAG_GL_COLORS;
 
 	viewer->g3dcontext = g3d_context_new();
 

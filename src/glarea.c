@@ -65,7 +65,9 @@ gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 	gl_draw(viewer->glflags, viewer->zoom, viewer->aspect, viewer->bgcolor,
 		viewer->quat,
 		(gfloat)viewer->offx, (gfloat)viewer->offy,
+		viewer->flags & G3DV_FLAG_REBUILD_LIST,
 		viewer->model);
+	viewer->flags &= ~G3DV_FLAG_REBUILD_LIST;
 
 	gdk_gl_drawable_swap_buffers(gldrawable);
 	gdk_gl_drawable_gl_end(gldrawable);

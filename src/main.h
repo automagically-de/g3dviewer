@@ -29,10 +29,13 @@
 #include <glade/glade-xml.h>
 #include <g3d/g3d.h>
 
+#define G3DV_FLAG_REBUILD_LIST     0x01
+
 typedef struct {
 	G3DContext *g3dcontext;
 	G3DModel *model;
 	gchar *filename;
+	guint32 flags;
 
 	/* GL stuff */
 	GLfloat quat[4];

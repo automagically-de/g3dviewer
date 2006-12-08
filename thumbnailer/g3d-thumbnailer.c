@@ -145,11 +145,12 @@ int main(int argc, char *argv[])
 
 		gl_draw(
 			G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_ALLTWOSIDE |
-			G3D_FLAG_GL_TEXTURES,
+			G3D_FLAG_GL_TEXTURES | G3D_FLAG_GL_COLORS,
 			45 /* zoom */,
 			(gfloat)width / (gfloat)height,
 			bgcolor,
 			quat, 0, 0,
+			TRUE,
 			model);
 
 		glXWaitGL();
