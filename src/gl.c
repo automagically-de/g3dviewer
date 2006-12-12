@@ -170,7 +170,7 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 		case G3D_TEXENV_MODULATE: env = GL_MODULATE; break;
 		case G3D_TEXENV_DECAL: env = GL_DECAL; break;
 		case G3D_TEXENV_REPLACE: env = GL_REPLACE; break;
-		default: env = GL_BLEND; break;
+		default: env = GL_MODULATE; break;
 	}
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, env);
 
