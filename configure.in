@@ -30,8 +30,8 @@ PKG_CHECK_MODULES(LIBGLADE, libglade-2.0 >= 2.4.0,,
 AM_PATH_GTKGLEXT_1_0(1.0.0,,AC_MSG_ERROR([GtkGlExt >= 1.0.0 is required]))
 
 # libg3d
-PKG_CHECK_MODULES(LIBG3D, libg3d >= 0.0.5,,
-	AC_MSG_ERROR([libg3d >= 0.0.5 is required]))
+PKG_CHECK_MODULES(LIBG3D, libg3d >= 0.0.6,,
+	AC_MSG_ERROR([libg3d >= 0.0.6 is required]))
 
 # Check OpenGL stuff
 AC_PATH_XTRA
