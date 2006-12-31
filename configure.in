@@ -96,6 +96,7 @@ AC_OUTPUT(Makefile
 	thumbnailer/Makefile
 	pixmaps/Makefile
 	glade/Makefile
+	examples/Makefile
 	po/Makefile.in
 )
 	

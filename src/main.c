@@ -28,6 +28,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
 
@@ -112,7 +116,27 @@ int main(int argc, char **argv)
 		glarea_update(viewer->interface.glarea);
 	}
 	else
-		gui_glade_open_dialog(viewer);
+	{
+		/* try to show example model */
+		viewer->filename = g_strdup(DATA_DIR "/examples/g3d.ac");
+		if(model_load(viewer))
+		{
+			/* rotate a little bit */
+			gfloat q1[4], q2[4];
+			gfloat a1[3] = { 0.0, 1.0, 0.0 }, a2[3] = {1.0, 0.0, 1.0};
+
+			axis_to_quat(a1, - 45.0 * M_PI / 180.0, q1);
+			axis_to_quat(a2, - 45.0 * M_PI / 180.0, q2);
+			add_quats(q1, q2, viewer->quat);
+
+			glarea_update(viewer->interface.glarea);
+		}
+		else
+		{
+			/* show "open" dialog */
+			gui_glade_open_dialog(viewer);
+		}
+	}
 
 	/* for debugging reasons */
 	if(parse_only)
