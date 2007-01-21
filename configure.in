@@ -98,6 +98,7 @@ AC_OUTPUT(Makefile
 	glade/Makefile
 	examples/Makefile
 	po/Makefile.in
+	g3dviewer.desktop
 )
 	
 

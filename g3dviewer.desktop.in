@@ -1,0 +1,13 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=G3DViewer
+GenericName=G3DViewer
+Icon=@prefix@/share/g3dviewer/glade/g3d48.png
+Comment=3D model viewer
+Comment[de_DE]=3D-Modell-Betrachter
+Exec=@prefix@/bin/g3dviewer
+Terminal=false
+StartupNotify=false
+Type=Application
+TryExec=@prefix@/bin/g3dviewer
+Categories=GTK;3DGraphics;Application;Graphics;
