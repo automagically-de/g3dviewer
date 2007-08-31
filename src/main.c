@@ -140,7 +140,10 @@ int main(int argc, char **argv)
 
 	/* for debugging reasons */
 	if(parse_only)
+	{
+		main_cleanup(viewer);
 		return EXIT_SUCCESS;
+	}
 
 	/* ... aaaand go! */
 	gtk_main();
