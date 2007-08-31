@@ -180,7 +180,7 @@ static int main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
 		}
 		else
 		{
-			viewer->filename = **argv;
+			viewer->filename = g_strdup(**argv);
 		}
 		(*argv)++;
 		(*argc)--;
