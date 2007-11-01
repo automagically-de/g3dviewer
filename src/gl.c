@@ -51,11 +51,20 @@ static gulong avg_msec = 0;
 
 GLuint evil;
 
+#define TRAP_GL_ERROR(text) \
+	error = glGetError(); \
+	if(error != GL_NO_ERROR) \
+		g_printerr("[gl] %s: E: %d\n", text, error);
+
 void gl_init(void)
 {
+	GLenum error;
+
 #if DEBUG > 1
 	g_printerr("init OpenGL\n");
 #endif
+
+	TRAP_GL_ERROR("gl_init - start");
 
 	GLfloat light0_pos[4] = { -50.0, 50.0, 0.0, 0.0 };
 	GLfloat light0_col[4] = { 0.6, 0.6, 0.6, 1.0 };
@@ -78,6 +87,8 @@ void gl_init(void)
 
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_DEPTH_TEST);
+
+	TRAP_GL_ERROR("gl_init - alpha, blend, depth");
 
 #if 0
 	glEnable(GL_LINE_SMOOTH);
@@ -107,12 +118,18 @@ void gl_init(void)
 	glEnable(GL_LIGHT1);
 	glEnable(GL_LIGHTING);
 
+	TRAP_GL_ERROR("gl_init - light stuff");
+
 	/* colors and materials */
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 	glEnable(GL_COLOR_MATERIAL);
 
+	TRAP_GL_ERROR("gl_init - color material");
+
 	/* texture stuff */
 	glEnable(GL_TEXTURE_2D);
+
+	TRAP_GL_ERROR("gl_init - enable texture");
 
 #ifdef TIMING
 	timer = g_timer_new();
@@ -143,10 +160,13 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 {
 	G3DImage *image = (G3DImage *)value;
 	gint32 env;
+	GLenum error;
+
+	TRAP_GL_ERROR("gl_load_texture - start");
 
 #if 0
 	/* predefined - update object->_tex_images else... */
-	glGenTextures(1, &(image->gl_texid));
+	glGenTextures(1, &(image->tex_id));
 #endif
 
 #if DEBUG > 0
@@ -164,6 +184,8 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 		GL_LINEAR_MIPMAP_NEAREST);
 
+	TRAP_GL_ERROR("gl_load_texture - bind, param");
+
 	switch(image->tex_env)
 	{
 		case G3D_TEXENV_BLEND: env = GL_BLEND; break;
@@ -173,6 +195,7 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 		default: env = GL_MODULATE; break;
 	}
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, env);
+	TRAP_GL_ERROR("gl_load_texture - texenv");
 
 	glTexImage2D(
 		GL_TEXTURE_2D /* target */,
@@ -184,6 +207,7 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 		GL_RGBA /* format */,
 		GL_UNSIGNED_BYTE /* type */,
 		image->pixeldata /* pixels */);
+	TRAP_GL_ERROR("gl_load_texture - teximage");
 	gluBuild2DMipmaps(
 		GL_TEXTURE_2D,
 		GL_RGBA,
@@ -192,6 +216,7 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 		GL_RGBA,
 		GL_UNSIGNED_BYTE,
 		image->pixeldata);
+	TRAP_GL_ERROR("gl_load_texture - mipmaps");
 }
 
 void gl_update_material(gint32 glflags, G3DMaterial *material)
@@ -374,6 +399,8 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	gfloat f;
 	gfloat tmat[16];
 
+	TRAP_GL_ERROR("gl_draw - start");
+
 	if(! _initialized)
 	{
 		gl_init();
@@ -409,8 +436,12 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	build_rotmatrix(m, quat);
 	glMultMatrixf(&m[0][0]);
 
+	TRAP_GL_ERROR("gl_draw - rotation done");
+
 	/* reset texture */
 	glBindTexture (GL_TEXTURE_2D, 0);
+
+	TRAP_GL_ERROR("gl_draw - bind texture 0");
 
 	if(model == NULL)
 		return;
@@ -434,14 +465,14 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 		for(f = 1.0; f >= 0.0; f -= 0.2)
 			gl_draw_objects(glflags, model->objects, f, f + 0.2);
 		glEndList();
+
+		TRAP_GL_ERROR("gl_draw - building list");
 	}
 
 	/* execute display list */
 	glCallList(dlist);
 
-	error = glGetError();
-	if(error != GL_NO_ERROR)
-		g_printerr("[gl] E: %d\n", error);
+	TRAP_GL_ERROR("gl_draw - call list");
 
 #ifdef TIMING /* get time to draw one frame to compare algorithms */
 	g_timer_stop(timer);
