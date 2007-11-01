@@ -113,6 +113,7 @@ int main(int argc, char **argv)
 	if(viewer->filename != NULL)
 	{
 		model_load(viewer);
+		gui_glade_set_open_path(viewer, viewer->filename);
 		glarea_update(viewer->interface.glarea);
 	}
 	else

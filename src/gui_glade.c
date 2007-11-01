@@ -206,6 +206,35 @@ gboolean gui_glade_load(G3DViewer *viewer)
 }
 
 /*
+ * set the file chooser in open dialog to a specific path, useful
+ * when first opening a file by command line or drag and drop.
+ */
+gboolean gui_glade_set_open_path(G3DViewer *viewer, const gchar *path)
+{
+	GtkWidget *opendialog;
+	gchar *tmp, *dir;
+	gboolean retval;
+
+	opendialog = glade_xml_get_widget(viewer->interface.xml, "open_dialog");
+
+	dir = g_path_get_dirname(path);
+	if(g_path_is_absolute(path))
+		tmp = g_strdup(dir);
+	else
+		tmp = g_strdup_printf("%s%c%s",
+			g_get_current_dir(), G_DIR_SEPARATOR, dir);
+	g_free(dir);
+
+	g_printerr("D: setting open path to '%s'\n", tmp);
+
+	retval = gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(opendialog),
+		tmp);
+	g_free(tmp);
+
+	return retval;
+}
+
+/*
  * custom log handler to suppress warning in gui_glade_clone_menuitem
  */
 static void gui_glade_null_logger(const gchar *log_domain,
@@ -298,6 +327,42 @@ gboolean gui_glade_status(G3DViewer *viewer, const gchar *text)
 	return TRUE;
 }
 
+static void drop_file_cb(GtkWidget *widget, GdkDragContext *drag_context,
+	gint x, gint y, GtkSelectionData *data, guint info, guint time)
+{
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer != NULL);
+
+
+	if((data->length > 7) &&
+		(strncmp((gchar *)data->data, "file://", 7) == 0))
+	{
+		if(viewer->filename)
+			g_free(viewer->filename);
+		viewer->filename = g_strndup(
+			(gchar *)data->data + 7, data->length - 7);
+		g_strchomp(viewer->filename);
+
+#if DEBUG > 0
+		g_printerr("D: loading '%s' from dropped URI\n", viewer->filename);
+#endif
+
+		model_load(viewer);
+
+		gui_glade_set_open_path(viewer, viewer->filename);
+		glarea_update(viewer->interface.glarea);
+		gtk_drag_finish(drag_context, TRUE, FALSE, time);
+	}
+	else
+	{
+		g_warning("unhandled drop event received (%.*s)\n",
+			data->length, (gchar *)data->data);
+		gtk_drag_finish(drag_context, FALSE, FALSE, time);
+	}
+}
+
 /*
  * create GL widget (called from libglade)
  */
@@ -342,6 +407,15 @@ GtkWidget *gui_glade_create_glwidget(void)
 		GTK_SIGNAL_FUNC(glarea_configure), NULL);
 	g_signal_connect(G_OBJECT(glarea), "destroy_event",
 		GTK_SIGNAL_FUNC(glarea_destroy), NULL);
+
+	/* drag and drop stuff */
+	gtk_drag_dest_set(glarea,
+		GTK_DEST_DEFAULT_ALL,
+		NULL, 0,
+		GDK_ACTION_COPY );
+	gtk_drag_dest_add_text_targets(glarea);
+	g_signal_connect(G_OBJECT(glarea), "drag-data-received",
+		GTK_SIGNAL_FUNC(drop_file_cb), NULL);
 
 	return glarea;
 }

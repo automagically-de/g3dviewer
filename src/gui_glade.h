@@ -27,6 +27,7 @@
 
 gboolean gui_glade_init(G3DViewer *viewer);
 gboolean gui_glade_load(G3DViewer *viewer);
+gboolean gui_glade_set_open_path(G3DViewer *viewer, const gchar *path);
 gboolean gui_glade_open_dialog(G3DViewer *viewer);
 gboolean gui_glade_status(G3DViewer *viewer, const gchar *text);
 

@@ -1,4 +1,4 @@
-/* $Id: glarea.h,v 1.3.4.2 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
