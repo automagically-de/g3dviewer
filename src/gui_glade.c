@@ -331,19 +331,18 @@ static void drop_file_cb(GtkWidget *widget, GdkDragContext *drag_context,
 	gint x, gint y, GtkSelectionData *data, guint info, guint time)
 {
 	G3DViewer *viewer;
+	gchar *filename;
 
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer != NULL);
 
-
-	if((data->length > 7) &&
-		(strncmp((gchar *)data->data, "file://", 7) == 0))
+	filename = g_filename_from_uri((gchar *)data->data, NULL, NULL);
+	if(filename)
 	{
 		if(viewer->filename)
 			g_free(viewer->filename);
-		viewer->filename = g_strndup(
-			(gchar *)data->data + 7, data->length - 7);
-		g_strchomp(viewer->filename);
+		g_strchomp(filename);
+		viewer->filename = filename;
 
 #if DEBUG > 0
 		g_printerr("D: loading '%s' from dropped URI\n", viewer->filename);
