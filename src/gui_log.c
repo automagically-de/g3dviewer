@@ -90,16 +90,32 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	gint32 level;
 	gchar *family = "Sans Serif";
 	gchar *bgcolor = "#FFFFFF";
+	gboolean free_iter = FALSE;
 #define LOG_MAX_DEPTH 20
-	static GtkTreeIter *nodes[LOG_MAX_DEPTH];
+	static GtkTreeIter *nodes[LOG_MAX_DEPTH], *misciter = NULL;
 	static gboolean init_nodes = TRUE;
+
+	viewer = (G3DViewer *)user_data;
 
 	if(init_nodes) {
 		memset(nodes, '\0', sizeof(nodes));
 		init_nodes = FALSE;
-	}
 
-	viewer = (G3DViewer *)user_data;
+		misciter = g_new0(GtkTreeIter, 1);
+		gtk_tree_store_append(viewer->info.logtreestore, misciter, NULL);
+		gtk_tree_store_set(viewer->info.logtreestore, misciter,
+			COL_LOGLEVEL, G_LOG_LEVEL_INFO,
+			COL_ICON, "gtk-directory",
+			COL_MESSAGE, g_strdup("messages"),
+			-1);
+		nodes[0] = g_new0(GtkTreeIter, 1);
+		gtk_tree_store_append(viewer->info.logtreestore, nodes[0], NULL);
+		gtk_tree_store_set(viewer->info.logtreestore, nodes[0],
+			COL_LOGLEVEL, G_LOG_LEVEL_INFO,
+			COL_ICON, "gtk-directory",
+			COL_MESSAGE, g_strdup("file tree"),
+			-1);
+	}
 
 	switch(log_level)
 	{
@@ -123,23 +139,30 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	}
 
 	stripped_msg = (gchar *)message;
-	while(*stripped_msg == ' ') stripped_msg ++;
-
-	level = stripped_msg - message;
-	if(level > LOG_MAX_DEPTH) {
-		fprintf(stderr,
-			"gui_log_handler: maximum depth (%d) exceeded:\n'%s'\n",
-			level, message);
-		return;
+	if(message[0] == '\\') {
+		/* build tree */
+		stripped_msg ++;
+		while(*stripped_msg == ' ') stripped_msg ++;
+		level = stripped_msg - message;
+		if(level > LOG_MAX_DEPTH) {
+			fprintf(stderr,
+				"gui_log_handler: maximum depth (%d) exceeded:\n'%s'\n",
+				level, message);
+			return;
+		}
+		parentiter = nodes[level - 1];
+		iter = g_new0(GtkTreeIter, 1);
+		gtk_tree_store_append(viewer->info.logtreestore, iter, parentiter);
+		if(nodes[level])
+			g_free(nodes[level]);
+		nodes[level] = iter;
 	}
-
-	parentiter = nodes[level - 1];
-	iter = g_new0(GtkTreeIter, 1);
-	gtk_tree_store_append(viewer->info.logtreestore, iter, parentiter);
-	if(nodes[level])
-		g_free(nodes[level]);
-	nodes[level] = iter;
-
+	else {
+		/* out of tree messages */
+		iter = g_new0(GtkTreeIter, 1);
+		gtk_tree_store_append(viewer->info.logtreestore, iter, misciter);
+		free_iter = TRUE;
+	}
 	gtk_tree_store_set(viewer->info.logtreestore, iter,
 		COL_LOGLEVEL, log_level,
 		COL_ICON, stock_id,
@@ -149,6 +172,8 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 		COL_SET_BG, TRUE,
 		COL_BGCOLOR, bgcolor,
 		-1);
+	if(free_iter)
+		g_free(iter);
 }
 
 /*
@@ -220,7 +245,10 @@ static gboolean gui_log_remove_children(GtkTreeStore *treestore,
 	for(i = 0; i < n; i ++)
 	{
 		gui_log_remove_children(treestore, &iter_child);
-		gtk_tree_store_remove(treestore, &iter_child);
+		if(iter_parent != NULL)
+			gtk_tree_store_remove(treestore, &iter_child);
+		else
+			gtk_tree_model_iter_next(GTK_TREE_MODEL(treestore), &iter_child);
 	}
 
 	return TRUE;
