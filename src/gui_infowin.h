@@ -1,4 +1,4 @@
-/* $Id: gui_callbacks.c,v 1.1.2.3 2006/01/23 23:44:01 dahms Exp $ */
+/* $Id$ */
 
 /*
 	G3DViewer - 3D object viewer
