@@ -78,10 +78,16 @@ AC_ARG_ENABLE(debug,
 AC_MSG_RESULT($DEBUG)
 AC_SUBST(DEBUG)
 
+AC_ARG_ENABLE(profile,
+	[[  --enable-profile        enable gprof profiling]],
+	[if test "x$enableval" = "xyes" ; then profile="-pg"
+		else profile=""; fi],
+	profile="")
+
 if test "$DEBUG" = "0"; then
-	DBG_CFLAGS="-O2"
+	DBG_CFLAGS="-O2 $profile"
 else
-	DBG_CFLAGS="-g -DGLIB_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
+	DBG_CFLAGS="-g $profile -DGLIB_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED"
 fi
 AC_SUBST(DBG_CFLAGS)
 
