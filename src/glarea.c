@@ -208,8 +208,10 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 		if(state & GDK_SHIFT_MASK)
 		{
 			/* shift pressed, translate view */
-			viewer->offx += (x - viewer->mouse.beginx) / 10;
-			viewer->offy -= (y - viewer->mouse.beginy) / 10;
+			viewer->offx += (gdouble)(x - viewer->mouse.beginx) /
+				(gdouble)(viewer->zoom * 10);
+			viewer->offy -= (gdouble)(y - viewer->mouse.beginy) /
+				(gdouble)(viewer->zoom * 10);
 		}
 		else
 		{

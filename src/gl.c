@@ -86,6 +86,7 @@ void gl_init(void)
 	glEnable(GL_BLEND);
 
 	glDepthFunc(GL_LEQUAL);
+	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);
 
 	TRAP_GL_ERROR("gl_init - alpha, blend, depth");
