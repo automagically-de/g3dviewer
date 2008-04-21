@@ -163,6 +163,8 @@ static void main_showhelp(void)
 		"usage: g3dviewer [--option ...] [<filename>]\n"
 		"where option can be:\n"
 		"  --help               show this help screen\n"
+		"  --debug-tree         show file debug tree\n"
+		"  --debug-tree-data    show file debug data\n"
 		);
 	exit(1);
 }
@@ -178,12 +180,14 @@ static int main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
 		g_printerr("arg: %s\n", **argv);
 #endif
 		if(strcmp(**argv, "--help") == 0) main_showhelp();
-		else if(strcmp(**argv, "--parse-only") == 0)
-		{
+		else if(strcmp(**argv, "--parse-only") == 0) {
 			parse_only = TRUE;
-		}
-		else
-		{
+		} else if(strcmp(**argv, "--debug-tree") == 0) {
+			viewer->debug_flags |= G3DV_FLAG_DEBUG_TREE;
+		} else if(strcmp(**argv, "--debug-tree-data") == 0) {
+			viewer->debug_flags |= G3DV_FLAG_DEBUG_TREE |
+				G3DV_FLAG_DEBUG_TREE_DATA;
+		} else {
 			viewer->filename = g_strdup(**argv);
 		}
 		(*argv)++;

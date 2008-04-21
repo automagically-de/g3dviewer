@@ -85,7 +85,7 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	const gchar *message, gpointer user_data)
 {
 	G3DViewer *viewer;
-	GtkTreeIter *iter, *parentiter;
+	GtkTreeIter *iter = NULL, *parentiter;
 	gchar *stock_id, *stripped_msg;
 	gint32 level;
 	gchar *family = "Sans Serif";
@@ -139,7 +139,7 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	}
 
 	stripped_msg = (gchar *)message;
-	if(message[0] == '\\') {
+	if((message[0] == '\\') || (message[0] == '|')) {
 		/* build tree */
 		stripped_msg ++;
 		while(*stripped_msg == ' ') stripped_msg ++;
@@ -150,12 +150,18 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 				level, message);
 			return;
 		}
-		parentiter = nodes[level - 1];
-		iter = g_new0(GtkTreeIter, 1);
-		gtk_tree_store_append(viewer->info.logtreestore, iter, parentiter);
-		if(nodes[level])
-			g_free(nodes[level]);
-		nodes[level] = iter;
+		if(viewer->debug_flags & G3DV_FLAG_DEBUG_TREE) {
+			if((message[0] != '|') ||
+				(viewer->debug_flags & G3DV_FLAG_DEBUG_TREE_DATA)) {
+				parentiter = nodes[level - 1];
+				iter = g_new0(GtkTreeIter, 1);
+				gtk_tree_store_append(viewer->info.logtreestore, iter,
+					parentiter);
+				if(nodes[level])
+					g_free(nodes[level]);
+				nodes[level] = iter;
+			} /* G3DV_FLAG_DEBUG_TREE_DATA if '|' ? */
+		} /* G3DV_FLAG_DEBUG_TREE ? */
 	}
 	else {
 		/* out of tree messages */
@@ -163,6 +169,7 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 		gtk_tree_store_append(viewer->info.logtreestore, iter, misciter);
 		free_iter = TRUE;
 	}
+	if(iter != NULL)
 	gtk_tree_store_set(viewer->info.logtreestore, iter,
 		COL_LOGLEVEL, log_level,
 		COL_ICON, stock_id,

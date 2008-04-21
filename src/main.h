@@ -31,11 +31,18 @@
 
 #define G3DV_FLAG_REBUILD_LIST     0x01
 
+#define G3DV_FLAG_DEBUG_TREE       (1 << 0)
+#define G3DV_FLAG_DEBUG_TREE_DATA  (1 << 1)
+
 typedef struct {
 	G3DContext *g3dcontext;
 	G3DModel *model;
 	gchar *filename;
 	guint32 flags;
+
+	/* debugging stuff */
+	guint32 debug_level;
+	guint32 debug_flags;
 
 	/* GL stuff */
 	GLfloat quat[4];
