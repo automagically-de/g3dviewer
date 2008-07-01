@@ -62,12 +62,14 @@ gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 
 	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext)) return TRUE;
 
-	gl_draw(viewer->glflags, viewer->zoom, viewer->aspect, viewer->bgcolor,
+	gl_draw(viewer->renderoptions, viewer->model);
+	/*
+	viewer->glflags, viewer->zoom, viewer->aspect, viewer->bgcolor,
 		viewer->quat,
 		(gfloat)viewer->offx, (gfloat)viewer->offy,
 		viewer->flags & G3DV_FLAG_REBUILD_LIST,
 		viewer->model);
-	viewer->flags &= ~G3DV_FLAG_REBUILD_LIST;
+	*/
 
 	gdk_gl_drawable_swap_buffers(gldrawable);
 	gdk_gl_drawable_gl_end(gldrawable);
@@ -91,7 +93,7 @@ gint glarea_configure(GtkWidget *widget, GdkEventConfigure *event)
 
 	viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget), "viewer");
 	glViewport(0,0, widget->allocation.width, widget->allocation.height);
-	viewer->aspect = (gfloat)widget->allocation.width /
+	viewer->renderoptions->aspect = (gfloat)widget->allocation.width /
 		(gfloat)widget->allocation.height;
 #if DEBUG > 3
 		g_printerr("DEBUG: glarea_configure (%f)\n", viewer->aspect);
@@ -127,8 +129,10 @@ gint glarea_scroll(GtkWidget *widget, GdkEventScroll *event)
 		"viewer");
 
 #define ZOOM_BY 10
-	if(event->direction == GDK_SCROLL_DOWN) viewer->zoom += ZOOM_BY;
-	else viewer->zoom -= ZOOM_BY;
+	if(event->direction == GDK_SCROLL_DOWN)
+		viewer->renderoptions->zoom += ZOOM_BY;
+	else
+		viewer->renderoptions->zoom -= ZOOM_BY;
 #undef ZOOM_BY
 
 	area.x = 0;
@@ -136,8 +140,8 @@ gint glarea_scroll(GtkWidget *widget, GdkEventScroll *event)
 	area.width = widget->allocation.width;
 	area.height = widget->allocation.height;
 
-	if(viewer->zoom < 1)   viewer->zoom = 1;
-	if(viewer->zoom > 120) viewer->zoom = 120;
+	if(viewer->renderoptions->zoom < 1)   viewer->renderoptions->zoom = 1;
+	if(viewer->renderoptions->zoom > 120) viewer->renderoptions->zoom = 120;
 
 	glarea_update(widget);
 
@@ -208,10 +212,12 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 		if(state & GDK_SHIFT_MASK)
 		{
 			/* shift pressed, translate view */
-			viewer->offx += (gdouble)(x - viewer->mouse.beginx) /
-				(gdouble)(viewer->zoom * 10);
-			viewer->offy -= (gdouble)(y - viewer->mouse.beginy) /
-				(gdouble)(viewer->zoom * 10);
+			viewer->renderoptions->offx +=
+				(gdouble)(x - viewer->mouse.beginx) /
+				(gdouble)(viewer->renderoptions->zoom * 10);
+			viewer->renderoptions->offy -=
+				(gdouble)(y - viewer->mouse.beginy) /
+				(gdouble)(viewer->renderoptions->zoom * 10);
 		}
 		else
 		{
@@ -222,11 +228,14 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 				(area.height - 2.0 * viewer->mouse.beginy) / area.height,
 				(2.0 * x - area.width) / area.width,
 				(area.height - 2.0 * y) / area.height);
-			add_quats(spin_quat, viewer->quat, viewer->quat);
+			add_quats(spin_quat,
+				viewer->renderoptions->quat, viewer->renderoptions->quat);
 
 			text = g_strdup_printf("quat: %-.2f, %-.2f, %-.2f, %-.2f",
-				viewer->quat[0], viewer->quat[1],
-				viewer->quat[2], viewer->quat[3]);
+				viewer->renderoptions->quat[0],
+				viewer->renderoptions->quat[1],
+				viewer->renderoptions->quat[2],
+				viewer->renderoptions->quat[3]);
 			gui_glade_status(viewer, text);
 			g_free(text);
 		}
@@ -237,10 +246,12 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 	/* middle mouse button */
 	if(state & GDK_BUTTON2_MASK)
 	{
-		viewer->zoom +=
+		viewer->renderoptions->zoom +=
 			((y - viewer->mouse.beginy) / (gfloat)area.height) * 40;
-		if(viewer->zoom < 1)   viewer->zoom = 1;
-		if(viewer->zoom > 120) viewer->zoom = 120;
+		if(viewer->renderoptions->zoom < 1)
+			viewer->renderoptions->zoom = 1;
+		if(viewer->renderoptions->zoom > 120)
+			viewer->renderoptions->zoom = 120;
 
 		glarea_update(widget);
 	}

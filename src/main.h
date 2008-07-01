@@ -29,7 +29,7 @@
 #include <glade/glade-xml.h>
 #include <g3d/g3d.h>
 
-#define G3DV_FLAG_REBUILD_LIST     0x01
+#include "gl.h"
 
 #define G3DV_FLAG_DEBUG_TREE       (1 << 0)
 #define G3DV_FLAG_DEBUG_TREE_DATA  (1 << 1)
@@ -45,12 +45,7 @@ typedef struct {
 	guint32 debug_flags;
 
 	/* GL stuff */
-	GLfloat quat[4];
-	GLfloat zoom;
-	GLfloat aspect;
-	GLfloat bgcolor[4];
-	guint32 glflags;
-	gdouble offx, offy; /* view offsets */
+	G3DGLRenderOptions *renderoptions;
 
 	/* mouse */
 	struct {

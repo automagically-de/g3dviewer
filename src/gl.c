@@ -42,14 +42,9 @@
 #define TIMING
 #endif
 
-static int _initialized = 0;
-
 #ifdef TIMING
 static GTimer *timer = NULL;
-static gulong avg_msec = 0;
 #endif
-
-GLuint evil;
 
 #define TRAP_GL_ERROR(text) \
 	error = glGetError(); \
@@ -390,9 +385,7 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 	} /* while olist != NULL */
 }
 
-void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
-	gfloat *quat, gfloat offx, gfloat offy, gboolean rebuild_list,
-	G3DModel *model)
+void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 {
 	GLfloat m[4][4];
 	static gint32 dlist = -1;
@@ -402,28 +395,28 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 
 	TRAP_GL_ERROR("gl_draw - start");
 
-	if(! _initialized)
+	if(!options->initialized)
 	{
 		gl_init();
-		_initialized = 1;
+		options->initialized = TRUE;
 	}
 
 	/* draw scene... */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(zoom, aspect, 1, 100);
+	gluPerspective(options->zoom, options->aspect, 1, 100);
 
 	/* translation of view */
 	g3d_matrix_identity(tmat);
-	g3d_matrix_translate(offx, offy, 0.0, tmat);
+	g3d_matrix_translate(options->offx, options->offy, 0.0, tmat);
 	glMultMatrixf(tmat);
 	glMatrixMode(GL_MODELVIEW);
 
 	glClearColor(
-		bgcolor[0],
-		bgcolor[1],
-		bgcolor[2],
-		bgcolor[3]);
+		options->bgcolor[0],
+		options->bgcolor[1],
+		options->bgcolor[2],
+		options->bgcolor[3]);
 	glClearDepth(1.0);
 	glClearIndex(0.3);
 	glClear(
@@ -434,7 +427,7 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 
 	glLoadIdentity();
 	glTranslatef(0, 0, -30);
-	build_rotmatrix(m, quat);
+	build_rotmatrix(m, options->quat);
 	glMultMatrixf(&m[0][0]);
 
 	TRAP_GL_ERROR("gl_draw - rotation done");
@@ -451,8 +444,9 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 	g_timer_start(timer);
 #endif
 
-	if(rebuild_list)
+	if(options->updated)
 	{
+		options->updated = FALSE;
 #if DEBUG > 2
 		g_printerr("[gl] creating new display list\n");
 #endif
@@ -464,7 +458,7 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 		glNewList(dlist, GL_COMPILE);
 		/* draw all objects */
 		for(f = 1.0; f >= 0.0; f -= 0.2)
-			gl_draw_objects(glflags, model->objects, f, f + 0.2);
+			gl_draw_objects(options->glflags, model->objects, f, f + 0.2);
 		glEndList();
 
 		TRAP_GL_ERROR("gl_draw - building list");
@@ -484,7 +478,7 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 		gdouble sec;
 
 		sec = g_timer_elapsed(timer, &msec);
-		avg_msec = (gulong)sec * 1000000 + msec;
+		options->avg_msec = (gulong)sec * 1000000 + msec;
 	}
 	else
 	{
@@ -493,7 +487,7 @@ void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
 
 		sec = g_timer_elapsed(timer, &msec);
 		add = (gulong)sec * 1000000 + msec;
-		avg_msec = (avg_msec + add) / 2;
+		options->avg_msec = (avg_msec + add) / 2;
 	}
 
 	g_printerr("average time to render frame: %lu µs\n", avg_msec);

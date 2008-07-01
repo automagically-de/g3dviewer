@@ -29,11 +29,24 @@
 #define G3D_FLAG_GL_TEXTURES        (1L << 3)
 #define G3D_FLAG_GL_COLORS          (1L << 4)
 
+typedef struct {
+	/* to be set by caller */
+	gfloat zoom;
+	gfloat aspect;
+	gfloat bgcolor[4];
+	gfloat quat[4];
+	gfloat offx;
+	gfloat offy;
+	gint32 glflags;
+	gboolean updated;
+	gboolean initialized;
+	/* can be read by caller */
+	guint32 avg_msec;
+} G3DGLRenderOptions;
+
 void gl_set_twoside(gboolean twoside);
 void gl_set_textures(gboolean textures);
 void gl_load_texture(gpointer key, gpointer value, gpointer data);
-void gl_draw(gint32 glflags, gfloat zoom, gfloat aspect, gfloat *bgcolor,
-	gfloat *quat, gfloat offx, gfloat offy, gboolean rebuild_list,
-	G3DModel *model);
+void gl_draw(G3DGLRenderOptions *options, G3DModel *model);
 
 #endif

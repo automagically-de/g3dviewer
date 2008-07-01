@@ -76,15 +76,20 @@ int main(int argc, char **argv)
 	/* create viewer and fill with defaults
 	 * TODO: move to separate function */
 	viewer = g_new0(G3DViewer, 1);
-	viewer->zoom = 45;
+
 	viewer->mouse.beginx = 0;
 	viewer->mouse.beginy = 0;
 	viewer->filename = NULL;
-	viewer->bgcolor[0] = 0.9;
-	viewer->bgcolor[1] = 0.8;
-	viewer->bgcolor[2] = 0.6;
-	viewer->bgcolor[3] = 1.0;
-	viewer->glflags =
+
+	viewer->renderoptions = g_new0(G3DGLRenderOptions, 1);
+	viewer->renderoptions->updated = TRUE;
+	viewer->renderoptions->initialized = FALSE;
+	viewer->renderoptions->zoom = 45;
+	viewer->renderoptions->bgcolor[0] = 0.9;
+	viewer->renderoptions->bgcolor[1] = 0.8;
+	viewer->renderoptions->bgcolor[2] = 0.6;
+	viewer->renderoptions->bgcolor[3] = 1.0;
+	viewer->renderoptions->glflags =
 		/* G3D_FLAG_GL_SPECULAR | */
 		G3D_FLAG_GL_SHININESS |
 		G3D_FLAG_GL_ALLTWOSIDE |
@@ -95,7 +100,7 @@ int main(int argc, char **argv)
 
 	main_parseargs(&argc, &argv, viewer);
 
-	trackball(viewer->quat, 0.0, 0.0, 0.0, 0.0);
+	trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0);
 
 	/* the gui related stuff */
 	gui_glade_init(viewer);
@@ -128,7 +133,7 @@ int main(int argc, char **argv)
 
 			axis_to_quat(a1, - 45.0 * M_PI / 180.0, q1);
 			axis_to_quat(a2, - 45.0 * M_PI / 180.0, q2);
-			add_quats(q1, q2, viewer->quat);
+			add_quats(q1, q2, viewer->renderoptions->quat);
 
 			glarea_update(viewer->interface.glarea);
 		}

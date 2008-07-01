@@ -185,7 +185,7 @@ static void gui_infowin_object_hide_cb(GtkCellRendererToggle *renderer,
 	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, COL_SHOWHIDE,
 		toggle_item, -1);
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	glarea_update(viewer->interface.glarea);
 }
 

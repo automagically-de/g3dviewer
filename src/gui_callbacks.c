@@ -147,14 +147,14 @@ void gui_on_zoomfit_cb(GtkWidget *widget, gpointer user_data)
 	g_assert(viewer);
 
 	/* zoom */
-	viewer->zoom = 45;
+	viewer->renderoptions->zoom = 45;
 
 	/* reset offsets */
-	viewer->offx = viewer->offy = 0;
+	viewer->renderoptions->offx = viewer->renderoptions->offy = 0;
 
 	/* reset trackball */
 #if 1
-	trackball(viewer->quat, 0.0, 0.0, 0.0, 0.0);
+	trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0);
 #endif
 
 	glarea_update(viewer->interface.glarea);
@@ -172,11 +172,11 @@ void gui_on_shininess_cb(GtkWidget *widget, gpointer user_data)
 	g_assert(viewer);
 
 	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->glflags |= G3D_FLAG_GL_SHININESS;
+		viewer->renderoptions->glflags |= G3D_FLAG_GL_SHININESS;
 	else
-		viewer->glflags &= ~G3D_FLAG_GL_SHININESS;
+		viewer->renderoptions->glflags &= ~G3D_FLAG_GL_SHININESS;
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	glarea_update(viewer->interface.glarea);
 }
 
@@ -194,7 +194,7 @@ void gui_on_twosided_cb(GtkWidget *widget, gpointer user_data)
 	gl_set_twoside(
 		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)));
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	glarea_update(viewer->interface.glarea);
 }
 
@@ -210,11 +210,11 @@ void gui_on_colors_cb(GtkWidget *widget, gpointer user_data)
 	g_assert(viewer);
 
 	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->glflags |= G3D_FLAG_GL_COLORS;
+		viewer->renderoptions->glflags |= G3D_FLAG_GL_COLORS;
 	else
-		viewer->glflags &= ~G3D_FLAG_GL_COLORS;
+		viewer->renderoptions->glflags &= ~G3D_FLAG_GL_COLORS;
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	glarea_update(viewer->interface.glarea);
 }
 
@@ -230,11 +230,11 @@ void gui_on_textures_cb(GtkWidget *widget, gpointer user_data)
 	g_assert(viewer);
 
 	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->glflags |= G3D_FLAG_GL_TEXTURES;
+		viewer->renderoptions->glflags |= G3D_FLAG_GL_TEXTURES;
 	else
-		viewer->glflags &= ~G3D_FLAG_GL_TEXTURES;
+		viewer->renderoptions->glflags &= ~G3D_FLAG_GL_TEXTURES;
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	glarea_update(viewer->interface.glarea);
 }
 
@@ -250,11 +250,11 @@ void gui_on_specular_cb(GtkWidget *widget, gpointer user_data)
 	g_assert(viewer);
 
 	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->glflags |= G3D_FLAG_GL_SPECULAR;
+		viewer->renderoptions->glflags |= G3D_FLAG_GL_SPECULAR;
 	else
-		viewer->glflags &= ~G3D_FLAG_GL_SPECULAR;
+		viewer->renderoptions->glflags &= ~G3D_FLAG_GL_SPECULAR;
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	glarea_update(viewer->interface.glarea);
 }
 
@@ -280,7 +280,7 @@ void gui_on_wireframe_cb(GtkWidget *widget, gpointer user_data)
 		glPolygonMode(GL_BACK, GL_FILL);
 	}
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	glarea_update(viewer->interface.glarea);
 }
 
@@ -302,9 +302,9 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 	colordialog = glade_xml_get_widget(viewer->interface.xml, "color_dialog");
 
 	/* set active background color */
-	color.red   = viewer->bgcolor[0] * 0xFFFF;
-	color.green = viewer->bgcolor[1] * 0xFFFF;
-	color.blue  = viewer->bgcolor[2] * 0xFFFF;
+	color.red   = viewer->renderoptions->bgcolor[0] * 0xFFFF;
+	color.green = viewer->renderoptions->bgcolor[1] * 0xFFFF;
+	color.blue  = viewer->renderoptions->bgcolor[2] * 0xFFFF;
 	gtk_color_selection_set_previous_color(GTK_COLOR_SELECTION(colorsel),
 		&color);
 	gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorsel),
@@ -316,12 +316,15 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 	{
 		gtk_color_selection_get_previous_color(GTK_COLOR_SELECTION(colorsel),
 			&color);
-		viewer->bgcolor[0] = (gdouble)color.red   / 65536.0;
-		viewer->bgcolor[1] = (gdouble)color.green / 65536.0;
-		viewer->bgcolor[2] = (gdouble)color.blue  / 65536.0;
+		viewer->renderoptions->bgcolor[0] = (gdouble)color.red   / 65536.0;
+		viewer->renderoptions->bgcolor[1] = (gdouble)color.green / 65536.0;
+		viewer->renderoptions->bgcolor[2] = (gdouble)color.blue  / 65536.0;
 	}
 
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+#if 0
+	/* no need to rebuild list on bg color change */
+	viewer->renderoptions->updated = TRUE;
+#endif
 	glarea_update(viewer->interface.glarea);
 }
 
@@ -355,9 +358,9 @@ void gui_color_changed_cb(GtkColorSelection *colorsel,
 	g_assert(viewer != NULL);
 
 	gtk_color_selection_get_current_color(colorsel, &color);
-	viewer->bgcolor[0] = (gdouble)color.red   / 65536.0;
-	viewer->bgcolor[1] = (gdouble)color.green / 65536.0;
-	viewer->bgcolor[2] = (gdouble)color.blue  / 65536.0;
+	viewer->renderoptions->bgcolor[0] = (gdouble)color.red   / 65536.0;
+	viewer->renderoptions->bgcolor[1] = (gdouble)color.green / 65536.0;
+	viewer->renderoptions->bgcolor[2] = (gdouble)color.blue  / 65536.0;
 
 #if DEBUG > 4
 	g_printerr("D: gui_color_changed_cb: color %.2f, %.2f, %.2f\n",

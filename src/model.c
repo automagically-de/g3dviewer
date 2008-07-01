@@ -44,7 +44,7 @@ gboolean model_load(G3DViewer *viewer)
 	gui_log_clean(viewer);
 
 	model = g3d_model_load(viewer->g3dcontext, viewer->filename);
-	viewer->flags |= G3DV_FLAG_REBUILD_LIST;
+	viewer->renderoptions->updated = TRUE;
 	if(model)
 	{
 		viewer->model = model;
