@@ -218,19 +218,20 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 	TRAP_GL_ERROR("gl_load_texture - mipmaps");
 }
 
-static inline void gl_update_material(gint32 glflags, G3DMaterial *material)
+static inline void gl_update_material(G3DGLRenderOptions *options,
+	G3DMaterial *material)
 {
 	GLenum facetype;
 	GLfloat normspec[4] = { 0.0, 0.0, 0.0, 1.0 };
 
 	g_return_if_fail(material != NULL);
 
-	if(glflags & G3D_FLAG_GL_ALLTWOSIDE)
+	if(options->glflags & G3D_FLAG_GL_ALLTWOSIDE)
 		facetype = GL_FRONT_AND_BACK;
 	else
 		facetype = GL_FRONT;
 
-	if(glflags & G3D_FLAG_GL_COLORS)
+	if(options->glflags & G3D_FLAG_GL_COLORS)
 		glColor4f(
 			material->r,
 			material->g,
@@ -241,33 +242,32 @@ static inline void gl_update_material(gint32 glflags, G3DMaterial *material)
 
 	return;
 
-	if(glflags & G3D_FLAG_GL_SPECULAR)
+	if(options->glflags & G3D_FLAG_GL_SPECULAR)
 		glMaterialfv(facetype, GL_SPECULAR, material->specular);
 	else
 		glMaterialfv(facetype, GL_SPECULAR, normspec);
 
-	if(glflags & G3D_FLAG_GL_SHININESS)
+	if(options->glflags & G3D_FLAG_GL_SHININESS)
 		glMaterialf(facetype, GL_SHININESS, material->shininess * 10);
 	else
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
 
-static inline void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
-	gfloat min_a, gfloat max_a, gboolean *dont_render, gboolean *init)
+static inline void gl_draw_face(G3DGLRenderOptions *options,
+	G3DObject *object, gint32 i, gfloat min_a, gfloat max_a,
+	gboolean *dont_render, gboolean *init)
 {
-	static G3DMaterial *prev_material = NULL;
-	static guint32 prev_texid = 0;
 	gint32 j;
 
 	if(*init)
 	{
-		prev_material = NULL;
-		prev_texid = 0;
+		options->state->prev_material = NULL;
+		options->state->prev_texid = 0;
 		*init = FALSE;
 	}
 
 	/* material check */
-	if(prev_material != object->_materials[i])
+	if(options->state->prev_material != object->_materials[i])
 	{
 		if((object->_materials[i]->a < min_a) ||
 			(object->_materials[i]->a >= max_a))
@@ -279,25 +279,25 @@ static inline void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
 		*dont_render = FALSE;
 
 		glEnd();
-		gl_update_material(glflags, object->_materials[i]);
+		gl_update_material(options, object->_materials[i]);
 		glBegin(GL_TRIANGLES);
-		prev_material = object->_materials[i];
+		options->state->prev_material = object->_materials[i];
 
-		prev_texid = 0;
+		options->state->prev_texid = 0;
 	}
 
 	if(*dont_render) return;
 
 	/* texture stuff */
-	if((glflags & G3D_FLAG_GL_TEXTURES) &&
+	if((options->glflags & G3D_FLAG_GL_TEXTURES) &&
 		(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
 	{
 		/* if texture has changed update to new texture */
-		if(object->_tex_images[i] != prev_texid)
+		if(object->_tex_images[i] != options->state->prev_texid)
 		{
-			prev_texid = object->_tex_images[i];
+			options->state->prev_texid = object->_tex_images[i];
 			glEnd();
-			glBindTexture(GL_TEXTURE_2D, prev_texid);
+			glBindTexture(GL_TEXTURE_2D, options->state->prev_texid);
 			glBegin(GL_TRIANGLES);
 #if DEBUG > 5
 			g_print("gl: binding to texture id %d\n", prev_texid);
@@ -309,7 +309,7 @@ static inline void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
 	/* draw triangles */
 	for(j = 0; j < 3; j ++)
 	{
-		if((glflags & G3D_FLAG_GL_TEXTURES) &&
+		if((options->glflags & G3D_FLAG_GL_TEXTURES) &&
 			(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
 		{
 			glTexCoord2f(
@@ -334,8 +334,8 @@ static inline void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
 	} /* 1 .. 3 */
 }
 
-static inline void gl_draw_objects(gint32 glflags, GSList *objects,
-	gfloat min_a, gfloat max_a)
+static inline void gl_draw_objects(G3DGLRenderOptions *options,
+	GSList *objects, gfloat min_a, gfloat max_a)
 {
 	GSList *olist;
 	int i;
@@ -374,14 +374,14 @@ static inline void gl_draw_objects(gint32 glflags, GSList *objects,
 
 		for(i = 0; i < object->_num_faces; i ++)
 		{
-			gl_draw_face(glflags, object, i, min_a, max_a,
+			gl_draw_face(options, object, i, min_a, max_a,
 				&dont_render, &init);
 		} /* all faces */
 
 		glEnd();
 
 		/* handle sub-objects */
-		gl_draw_objects(glflags, object->objects, min_a, max_a);
+		gl_draw_objects(options, object->objects, min_a, max_a);
 
 		glPopMatrix();
 
@@ -476,7 +476,7 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 		glNewList(options->state->gl_dlist, GL_COMPILE);
 		/* draw all objects */
 		for(f = 1.0; f >= 0.0; f -= 0.2)
-			gl_draw_objects(options->glflags, model->objects, f, f + 0.2);
+			gl_draw_objects(options, model->objects, f, f + 0.2);
 		glEndList();
 
 		TRAP_GL_ERROR("gl_draw - building list");
