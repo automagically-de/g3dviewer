@@ -111,10 +111,23 @@ int main(int argc, char *argv[])
 {
 	G3DContext *context;
 	G3DModel *model;
-	gfloat bgcolor[4] = { 1.0, 1.0, 1.0, 0.0 };
-	gfloat quat[4] = { 0.10, -0.31, -0.87, 0.38 };
+	G3DGLRenderOptions *options;
 	guint32 width = 128;
 	guint32 height = 128;
+
+	options = g_new0(G3DGLRenderOptions, 1);
+	options->updated = TRUE;
+	options->glflags =
+		G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_ALLTWOSIDE |
+		G3D_FLAG_GL_TEXTURES | G3D_FLAG_GL_COLORS;
+	options->zoom = 45;
+	options->aspect = (gfloat)width / (gfloat)height;
+	options->bgcolor[0] = options->bgcolor[1] = options->bgcolor[2] = 1.0;
+	options->bgcolor[3] = 0.0;
+	options->quat[0] = 0.1;
+	options->quat[1] = -0.31;
+	options->quat[2] = -0.87;
+	options->quat[3] = 0.38;
 
 	gtk_init(&argc, &argv);
 
@@ -143,15 +156,7 @@ int main(int argc, char *argv[])
 	{
 		texture_load_all_textures(model);
 
-		gl_draw(
-			G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_ALLTWOSIDE |
-			G3D_FLAG_GL_TEXTURES | G3D_FLAG_GL_COLORS,
-			45 /* zoom */,
-			(gfloat)width / (gfloat)height,
-			bgcolor,
-			quat, 0, 0,
-			TRUE,
-			model);
+		gl_draw(options, model);
 
 		glXWaitGL();
 
