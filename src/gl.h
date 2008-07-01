@@ -23,11 +23,15 @@
 #ifndef _GL_H
 #define _GL_H
 
+#include <glib.h>
+
 #define G3D_FLAG_GL_SPECULAR        (1L << 0)
 #define G3D_FLAG_GL_SHININESS       (1L << 1)
 #define G3D_FLAG_GL_ALLTWOSIDE      (1L << 2)
 #define G3D_FLAG_GL_TEXTURES        (1L << 3)
 #define G3D_FLAG_GL_COLORS          (1L << 4)
+
+typedef struct _G3DGLRenderState G3DGLRenderState;
 
 typedef struct {
 	/* to be set by caller */
@@ -42,6 +46,8 @@ typedef struct {
 	gboolean initialized;
 	/* can be read by caller */
 	guint32 avg_msec;
+	/* to be used by caller only */
+	G3DGLRenderState *state;
 } G3DGLRenderOptions;
 
 void gl_set_twoside(gboolean twoside);

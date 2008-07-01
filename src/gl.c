@@ -32,13 +32,16 @@
 #include <g3d/types.h>
 #include <g3d/matrix.h>
 
-#if 0
-#include "main.h"
-#endif
 #include "gl.h"
 #include "trackball.h"
 
-#if DEBUG > 1
+struct _G3DGLRenderState {
+	gint32 gl_dlist;
+	G3DMaterial *prev_material;
+	guint32 prev_texid;
+};
+
+#if DEBUG > 0
 #define TIMING
 #endif
 
@@ -51,7 +54,7 @@ static GTimer *timer = NULL;
 	if(error != GL_NO_ERROR) \
 		g_printerr("[gl] %s: E: %d\n", text, error);
 
-void gl_init(void)
+static void gl_init(void)
 {
 	GLenum error;
 
@@ -215,7 +218,7 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 	TRAP_GL_ERROR("gl_load_texture - mipmaps");
 }
 
-void gl_update_material(gint32 glflags, G3DMaterial *material)
+static inline void gl_update_material(gint32 glflags, G3DMaterial *material)
 {
 	GLenum facetype;
 	GLfloat normspec[4] = { 0.0, 0.0, 0.0, 1.0 };
@@ -249,7 +252,7 @@ void gl_update_material(gint32 glflags, G3DMaterial *material)
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
 
-static void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
+static inline void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
 	gfloat min_a, gfloat max_a, gboolean *dont_render, gboolean *init)
 {
 	static G3DMaterial *prev_material = NULL;
@@ -331,7 +334,7 @@ static void gl_draw_face(gint32 glflags, G3DObject *object, gint32 i,
 	} /* 1 .. 3 */
 }
 
-static void gl_draw_objects(gint32 glflags, GSList *objects,
+static inline void gl_draw_objects(gint32 glflags, GSList *objects,
 	gfloat min_a, gfloat max_a)
 {
 	GSList *olist;
@@ -385,31 +388,16 @@ static void gl_draw_objects(gint32 glflags, GSList *objects,
 	} /* while olist != NULL */
 }
 
-void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
+static inline void gl_setup_view(G3DGLRenderOptions *options)
 {
 	GLfloat m[4][4];
-	static gint32 dlist = -1;
-	GLenum error;
-	gfloat f;
-	gfloat tmat[16];
 
-	TRAP_GL_ERROR("gl_draw - start");
-
-	if(!options->initialized)
-	{
-		gl_init();
-		options->initialized = TRUE;
-	}
-
-	/* draw scene... */
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(options->zoom, options->aspect, 1, 100);
-
 	/* translation of view */
-	g3d_matrix_identity(tmat);
-	g3d_matrix_translate(options->offx, options->offy, 0.0, tmat);
-	glMultMatrixf(tmat);
+	glTranslatef(options->offx, options->offy, 0.0);
+
 	glMatrixMode(GL_MODELVIEW);
 
 	glClearColor(
@@ -429,12 +417,34 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 	glTranslatef(0, 0, -30);
 	build_rotmatrix(m, options->quat);
 	glMultMatrixf(&m[0][0]);
+}
 
-	TRAP_GL_ERROR("gl_draw - rotation done");
+void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
+{
+	GLenum error;
+	gfloat f;
+#ifdef TIMING
+	gboolean ignore_timing = FALSE;
+	gulong msec, add;
+	gdouble sec;
+#endif
+
+	TRAP_GL_ERROR("gl_draw - start");
+
+	if(!options->initialized)
+	{
+		gl_init();
+		options->initialized = TRUE;
+#ifdef TIMING
+		ignore_timing = TRUE;
+#endif
+	}
+
+	/* prepare viewport */
+	gl_setup_view(options);
 
 	/* reset texture */
 	glBindTexture (GL_TEXTURE_2D, 0);
-
 	TRAP_GL_ERROR("gl_draw - bind texture 0");
 
 	if(model == NULL)
@@ -444,18 +454,26 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 	g_timer_start(timer);
 #endif
 
-	if(options->updated)
-	{
+	if(options->updated) {
 		options->updated = FALSE;
+#ifdef TIMING
+		ignore_timing = TRUE;
+#endif
 #if DEBUG > 2
 		g_printerr("[gl] creating new display list\n");
 #endif
-		/* create and execute display list */
-		if(dlist >= 0)
-			glDeleteLists(dlist, 1);
-		dlist = glGenLists(1);
 
-		glNewList(dlist, GL_COMPILE);
+		/* update render state */
+		if(options->state) {
+			glDeleteLists(options->state->gl_dlist, 1);
+			g_free(options->state);
+		}
+		options->state = g_new0(G3DGLRenderState, 1);
+
+		/* create and execute display list */
+		options->state->gl_dlist = glGenLists(1);
+
+		glNewList(options->state->gl_dlist, GL_COMPILE);
 		/* draw all objects */
 		for(f = 1.0; f >= 0.0; f -= 0.2)
 			gl_draw_objects(options->glflags, model->objects, f, f + 0.2);
@@ -464,33 +482,26 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 		TRAP_GL_ERROR("gl_draw - building list");
 	}
 
+	g_return_if_fail(options->state != NULL);
+
 	/* execute display list */
-	glCallList(dlist);
+	glCallList(options->state->gl_dlist);
 
 	TRAP_GL_ERROR("gl_draw - call list");
 
 #ifdef TIMING /* get time to draw one frame to compare algorithms */
 	g_timer_stop(timer);
 
-	if(avg_msec == 0)
-	{
-		gulong msec;
-		gdouble sec;
-
-		sec = g_timer_elapsed(timer, &msec);
-		options->avg_msec = (gulong)sec * 1000000 + msec;
+	if(!ignore_timing) {
+		if(options->avg_msec == 0) {
+			sec = g_timer_elapsed(timer, &msec);
+			options->avg_msec = (gulong)sec * 1000000 + msec;
+		} else {
+			sec = g_timer_elapsed(timer, &msec);
+			add = (gulong)sec * 1000000 + msec;
+			options->avg_msec = (options->avg_msec + add) / 2;
+		}
 	}
-	else
-	{
-		gulong msec, add;
-		gdouble sec;
-
-		sec = g_timer_elapsed(timer, &msec);
-		add = (gulong)sec * 1000000 + msec;
-		options->avg_msec = (avg_msec + add) / 2;
-	}
-
-	g_printerr("average time to render frame: %lu µs\n", avg_msec);
 #endif
 
 #if DEBUG > 3

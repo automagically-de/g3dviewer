@@ -154,6 +154,14 @@ int main(int argc, char **argv)
 	/* ... aaaand go! */
 	gtk_main();
 
+	/* output timing statistics */
+#if DEBUG > 0
+	if(viewer->renderoptions->avg_msec != 0) {
+		g_printerr("STAT: average time to render frame in µs: %u\n",
+			viewer->renderoptions->avg_msec);
+	}
+#endif
+
 	/* cleaning up :-/ */
 	main_cleanup(viewer);
 
