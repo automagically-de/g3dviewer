@@ -196,17 +196,6 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, env);
 	TRAP_GL_ERROR("gl_load_texture - texenv");
 
-	glTexImage2D(
-		GL_TEXTURE_2D /* target */,
-		0 /* level */,
-		GL_RGBA /* internalFormat */,
-		image->width /* width */,
-		image->height /* height */,
-		0 /* border */,
-		GL_RGBA /* format */,
-		GL_UNSIGNED_BYTE /* type */,
-		image->pixeldata /* pixels */);
-	TRAP_GL_ERROR("gl_load_texture - teximage");
 	gluBuild2DMipmaps(
 		GL_TEXTURE_2D,
 		GL_RGBA,
