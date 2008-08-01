@@ -369,6 +369,18 @@ static inline void gl_draw_objects(G3DGLRenderOptions *options,
 
 		glEnd();
 
+		if(options->glflags & G3D_FLAG_GL_POINTS) {
+			glColor4f(0.2, 0.2, 0.2, 1.0);
+			glBegin(GL_POINTS);
+			for(i = 0; i < object->vertex_count; i ++) {
+				glVertex3f(
+					object->vertex_data[i * 3 + 0],
+					object->vertex_data[i * 3 + 1],
+					object->vertex_data[i * 3 + 2]);
+			}
+			glEnd();
+		}
+
 		/* handle sub-objects */
 		gl_draw_objects(options, object->objects, min_a, max_a);
 

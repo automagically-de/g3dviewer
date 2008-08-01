@@ -219,6 +219,26 @@ void gui_on_colors_cb(GtkWidget *widget, gpointer user_data)
 }
 
 /*
+ * View->Points
+ */
+
+void gui_on_points_cb(GtkWidget *widget, gpointer user_data)
+{
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
+
+	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
+		viewer->renderoptions->glflags |= G3D_FLAG_GL_POINTS;
+	else
+		viewer->renderoptions->glflags &= ~G3D_FLAG_GL_POINTS;
+
+	viewer->renderoptions->updated = TRUE;
+	glarea_update(viewer->interface.glarea);
+}
+
+/*
  * View->Textures
  */
 
