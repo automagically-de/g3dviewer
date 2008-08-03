@@ -24,13 +24,8 @@
 #include <config.h>
 #endif
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
 
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
@@ -46,7 +41,7 @@
 
 static gboolean parse_only = FALSE;
 
-static int main_parseargs(int *argc, char ***argv, G3DViewer *viewer);
+static gboolean main_parseargs(int *argc, char ***argv, G3DViewer *viewer);
 static void main_cleanup(G3DViewer *viewer);
 
 int main(int argc, char **argv)
@@ -115,38 +110,32 @@ int main(int argc, char **argv)
 		gui_glade_update_progress_bar_cb, viewer);
 
 	/* load model or show open dialog */
-	if(viewer->filename != NULL)
-	{
-		model_load(viewer);
+	if(viewer->filename != NULL) {
 		gui_glade_set_open_path(viewer, viewer->filename);
+
+		model_load(viewer);
 		glarea_update(viewer->interface.glarea);
-	}
-	else
-	{
+	} else {
 		/* try to show example model */
 		viewer->filename = g_strdup(DATA_DIR "/examples/g3d.ac");
-		if(model_load(viewer))
-		{
+		if(model_load(viewer)) {
 			/* rotate a little bit */
 			gfloat q1[4], q2[4];
 			gfloat a1[3] = { 0.0, 1.0, 0.0 }, a2[3] = {1.0, 0.0, 1.0};
 
-			axis_to_quat(a1, - 45.0 * M_PI / 180.0, q1);
-			axis_to_quat(a2, - 45.0 * M_PI / 180.0, q2);
+			axis_to_quat(a1, - 45.0 * G_PI / 180.0, q1);
+			axis_to_quat(a2, - 45.0 * G_PI / 180.0, q2);
 			add_quats(q1, q2, viewer->renderoptions->quat);
 
 			glarea_update(viewer->interface.glarea);
-		}
-		else
-		{
+		} else {
 			/* show "open" dialog */
 			gui_glade_open_dialog(viewer);
 		}
 	}
 
 	/* for debugging reasons */
-	if(parse_only)
-	{
+	if(parse_only) {
 		main_cleanup(viewer);
 		return EXIT_SUCCESS;
 	}
@@ -170,7 +159,7 @@ int main(int argc, char **argv)
 
 static void main_showhelp(void)
 {
-	printf(
+	g_print(
 		"g3dviewer - a 3D model viewer\n"
 		"\n"
 		"usage: g3dviewer [--option ...] [<filename>]\n"
@@ -182,13 +171,12 @@ static void main_showhelp(void)
 	exit(1);
 }
 
-static int main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
+static gboolean main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
 {
 	/* program name */
 	(*argc)--;
 	(*argv)++;
-	while(*argc > 0)
-	{
+	while(*argc > 0) {
 #if DEBUG > 3
 		g_printerr("arg: %s\n", **argv);
 #endif
@@ -206,8 +194,7 @@ static int main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
 		(*argv)++;
 		(*argc)--;
 	}
-
-	return EXIT_SUCCESS;
+	return TRUE;
 }
 
 static void main_cleanup(G3DViewer *viewer)
