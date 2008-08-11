@@ -378,40 +378,46 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 		add_texture(viewer, &iter, object->tex_image);
 
 		/* vertices */
-		stmp = g_strdup_printf("%d", object->vertex_count);
-		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
-		gtk_tree_store_set(viewer->info.treestore, &iter2,
-			COL_TYPE, TYPE_PROPERTY,
-			COL_TITLE, _("number of vertices"),
-			COL_VALUE, stmp,
-			COL_CHECK, FALSE,
-			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
-			-1);
-		g_free(stmp);
+		if(object->vertex_count > 0) {
+			stmp = g_strdup_printf("%d", object->vertex_count);
+			gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
+			gtk_tree_store_set(viewer->info.treestore, &iter2,
+				COL_TYPE, TYPE_PROPERTY,
+				COL_TITLE, _("number of vertices"),
+				COL_VALUE, stmp,
+				COL_CHECK, FALSE,
+				COL_ICON, viewer->interface.icons[ICON_PROPERTY],
+				-1);
+			g_free(stmp);
+		}
 
 		/* faces */
-		stmp = g_strdup_printf("%d", g_slist_length(object->faces));
-		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
-		gtk_tree_store_set(viewer->info.treestore, &iter2,
-			COL_TYPE, TYPE_PROPERTY,
-			COL_TITLE, _("number of faces"),
-			COL_VALUE, stmp,
-			COL_CHECK, FALSE,
-			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
-			-1);
-		g_free(stmp);
+		if(g_slist_length(object->faces) > 0) {
+			stmp = g_strdup_printf("%d", g_slist_length(object->faces));
+			gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
+			gtk_tree_store_set(viewer->info.treestore, &iter2,
+				COL_TYPE, TYPE_PROPERTY,
+				COL_TITLE, _("number of faces"),
+				COL_VALUE, stmp,
+				COL_CHECK, FALSE,
+				COL_ICON, viewer->interface.icons[ICON_PROPERTY],
+				-1);
+			g_free(stmp);
+		}
 
 		/* materials */
-		stmp = g_strdup_printf("%d", g_slist_length(object->materials));
-		gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
-		gtk_tree_store_set(viewer->info.treestore, &iter2,
-			COL_TYPE, TYPE_PROPERTY,
-			COL_TITLE, _("number of materials"),
-			COL_VALUE, stmp,
-			COL_CHECK, FALSE,
-			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
-			-1);
-		g_free(stmp);
+		if(g_slist_length(object->materials) > 0) {
+			stmp = g_strdup_printf("%d", g_slist_length(object->materials));
+			gtk_tree_store_append(viewer->info.treestore, &iter2, &iter);
+			gtk_tree_store_set(viewer->info.treestore, &iter2,
+				COL_TYPE, TYPE_PROPERTY,
+				COL_TITLE, _("number of materials"),
+				COL_VALUE, stmp,
+				COL_CHECK, FALSE,
+				COL_ICON, viewer->interface.icons[ICON_PROPERTY],
+				-1);
+			g_free(stmp);
+		}
 
 		/* add object-specific materials */
 		add_materials(viewer, &iter, object->materials);
