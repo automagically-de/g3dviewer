@@ -550,9 +550,9 @@
             <property name="can_focus">True</property>
             <property name="xpad">5</property>
             <property name="ypad">5</property>
-            <property name="label" translatable="yes">&lt;span foreground="blue"&gt;http://automagically.de/?g3dviewer&lt;/span&gt;
+            <property name="label" translatable="yes">&lt;span foreground="blue"&gt;http://g3dviewer.automagically.de/&lt;/span&gt;
 
-(C) 2005, 2006 Markus Dahms
+(C) 2005 - 2008 Markus Dahms
 &amp;lt;mad@automagically.de&amp;gt;</property>
             <property name="use_markup">True</property>
             <property name="justify">GTK_JUSTIFY_CENTER</property>
