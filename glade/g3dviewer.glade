@@ -550,7 +550,7 @@
             <property name="can_focus">True</property>
             <property name="xpad">5</property>
             <property name="ypad">5</property>
-            <property name="label" translatable="yes">&lt;span foreground="blue"&gt;http://g3dviewer.automagically.de/&lt;/span&gt;
+            <property name="label" translatable="yes">&lt;span foreground="blue"&gt;http://automagically.de/g3dviewer/&lt;/span&gt;
 
 (C) 2005 - 2008 Markus Dahms
 &amp;lt;mad@automagically.de&amp;gt;</property>
