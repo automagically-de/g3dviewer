@@ -31,6 +31,7 @@
 #define G3D_FLAG_GL_TEXTURES        (1L << 3)
 #define G3D_FLAG_GL_COLORS          (1L << 4)
 #define G3D_FLAG_GL_POINTS          (1L << 5)
+#define G3D_FLAG_GL_COORD_AXES      (1L << 6)
 
 typedef struct _G3DGLRenderState G3DGLRenderState;
 

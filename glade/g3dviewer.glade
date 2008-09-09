@@ -162,7 +162,6 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">T_wo-sided faces</property>
                         <property name="use_underline">True</property>
-                        <property name="active">True</property>
                         <signal name="activate" handler="gui_on_twosided_cb"/>
                       </widget>
                     </child>
@@ -190,6 +189,14 @@
                         <property name="label" translatable="yes">_Points</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="gui_on_points_cb"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkCheckMenuItem" id="mi_axes">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">_Coordinate axes</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="gui_on_axes_cb"/>
                       </widget>
                     </child>
                     <child>

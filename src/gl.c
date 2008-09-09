@@ -104,7 +104,7 @@ static void gl_init(void)
 	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
 
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_lc);
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
 
@@ -420,6 +420,30 @@ static inline void gl_setup_view(G3DGLRenderOptions *options)
 	glMultMatrixf(&m[0][0]);
 }
 
+void gl_draw_coord_system(G3DGLRenderOptions *options)
+{
+	if(options->glflags & G3D_FLAG_GL_COORD_AXES) {
+		/* x: red */
+		glColor3f(1.0, 0.0, 0.0);
+		glBegin(GL_LINES);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(10.0, 0.0, 0.0);
+		glEnd();
+		/* y: green */
+		glColor3f(0.0, 1.0, 0.0);
+		glBegin(GL_LINES);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 10.0, 0.0);
+		glEnd();
+		/* z: blue */
+		glColor3f(0.0, 0.0, 1.0);
+		glBegin(GL_LINES);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 10.0);
+		glEnd();
+	}
+}
+
 void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 {
 	GLenum error;
@@ -484,6 +508,8 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 	}
 
 	g_return_if_fail(options->state != NULL);
+
+	gl_draw_coord_system(options);
 
 	/* execute display list */
 	glCallList(options->state->gl_dlist);

@@ -85,9 +85,7 @@ int main(int argc, char **argv)
 	viewer->renderoptions->bgcolor[2] = 0.6;
 	viewer->renderoptions->bgcolor[3] = 1.0;
 	viewer->renderoptions->glflags =
-		/* G3D_FLAG_GL_SPECULAR | */
 		G3D_FLAG_GL_SHININESS |
-		G3D_FLAG_GL_ALLTWOSIDE |
 		G3D_FLAG_GL_TEXTURES |
 		G3D_FLAG_GL_COLORS;
 

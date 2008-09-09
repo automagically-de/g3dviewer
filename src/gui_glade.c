@@ -127,6 +127,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"mi_shininess",
 		"mi_colors",
 		"mi_points",
+		"mi_axes",
 		"mi_textures",
 		"mi_twosided",
 		"mi_bgcolor",
