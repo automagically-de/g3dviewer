@@ -26,6 +26,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
