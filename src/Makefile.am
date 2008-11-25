@@ -27,7 +27,17 @@ g3dviewer_CFLAGS = \
 	@LIBG3D_CFLAGS@ \
 	-DDEBUG=@DEBUG@
 
+if OS_WIN32
+extra_ldflags = -Wl,--export-all-symbols
+extra_libs = @GLIB_LIBS@
+else
+extra_ldflags =
+extra_libs = 
+endif
+
 g3dviewer_LDFLAGS = \
+	$(extra_ldflags)
+g3dviewer_LDADD = \
 	@GTK_LIBS@ @LIBGLADE_LIBS@ \
-	@GTKGLEXT_LIBS@ @X_LIBS@ @GL_LIBS@ @LIBG3D_LIBS@
+	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ $(extra_libs)
 

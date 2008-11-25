@@ -1,4 +1,7 @@
+if OS_WIN32
+else
 bin_PROGRAMS = g3d-thumbnailer
+endif
 
 g3d_thumbnailer_SOURCES = \
 	g3d-thumbnailer.c \

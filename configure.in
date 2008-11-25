@@ -1,6 +1,6 @@
 AC_INIT(configure.in)
 
-VERSION=0.2.99.4
+VERSION=0.2.99.5
 PACKAGE=g3dviewer
 
 AM_CONFIG_HEADER(config.h)
@@ -9,6 +9,10 @@ AM_INIT_AUTOMAKE($PACKAGE, $VERSION, no-define)
 AC_SUBST(VERSION)
 
 AC_PROG_CC
+AM_PROG_CC_C_O
+
+AC_DISABLE_STATIC
+AC_IS_WIN32
 
 ALL_LINGUAS="de"
 AM_GLIB_GNU_GETTEXT
@@ -33,6 +37,7 @@ AM_PATH_GTKGLEXT_1_0(1.0.0,,AC_MSG_ERROR([GtkGlExt >= 1.0.0 is required]))
 PKG_CHECK_MODULES(LIBG3D, libg3d >= 0.0.6,,
 	AC_MSG_ERROR([libg3d >= 0.0.6 is required]))
 
+if test "$os_win32" != "yes" ; then
 # Check OpenGL stuff
 AC_PATH_XTRA
 
@@ -54,6 +59,8 @@ else
 	GL_LIBS="-lGL -lGLU $GTK_LIBS"
 	AC_SUBST(GL_LIBS)
 fi
+
+fi # !os_win32
 
 # Check some UNIX headers
 AC_CHECK_HEADERS(dirent.h sys/stat.h unistd.h,,

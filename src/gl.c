@@ -105,7 +105,9 @@ static void gl_init(void)
 
 	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_lc);
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
+#ifdef GL_LIGHT_MODEL_COLOR_CONTROL
 	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
+#endif
 	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
 
 	glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
