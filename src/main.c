@@ -116,7 +116,11 @@ int main(int argc, char **argv)
 		glarea_update(viewer->interface.glarea);
 	} else {
 		/* try to show example model */
+#ifdef G_OS_WIN32
+		viewer->filename = g_strdup("examples\\g3d.ac");
+#else
 		viewer->filename = g_strdup(DATA_DIR "/examples/g3d.ac");
+#endif
 		if(model_load(viewer)) {
 			/* rotate a little bit */
 			gfloat q1[4], q2[4];

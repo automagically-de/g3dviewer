@@ -91,23 +91,24 @@ gboolean gui_infowin_initialize(G3DViewer *viewer, GtkWidget *treeview)
 	/* initial nodes */
 	gtk_tree_store_append(treestore, &iter, NULL);
 
+#ifdef G_OS_WIN32
+#	define G3DV_PIXMAP_PATH "pixmaps\\"
+#else
+#	define G3DV_PIXMAP_PATH DATA_DIR "/pixmaps/"
+#endif
+
 	/* load icons */
 	viewer->interface.icons = g_new0(GdkPixbuf *, N_ICONS);
 	viewer->interface.icons[ICON_MODEL] =
-		gdk_pixbuf_new_from_file(
-			DATA_DIR "/pixmaps/icon16_model.xpm", NULL);
+		gdk_pixbuf_new_from_file(G3DV_PIXMAP_PATH "icon16_model.xpm", NULL);
 	viewer->interface.icons[ICON_OBJECT] =
-		gdk_pixbuf_new_from_file(
-			DATA_DIR "/pixmaps/icon16_object.png", NULL);
+		gdk_pixbuf_new_from_file(G3DV_PIXMAP_PATH "icon16_object.png", NULL);
 	viewer->interface.icons[ICON_MATERIAL] =
-		gdk_pixbuf_new_from_file(
-			DATA_DIR "/pixmaps/icon16_material.xpm", NULL);
+		gdk_pixbuf_new_from_file(G3DV_PIXMAP_PATH "icon16_material.xpm", NULL);
 	viewer->interface.icons[ICON_TEXTURE] =
-		gdk_pixbuf_new_from_file(
-			DATA_DIR "/pixmaps/icon16_texture.xpm", NULL);
+		gdk_pixbuf_new_from_file(G3DV_PIXMAP_PATH "icon16_texture.xpm", NULL);
 	viewer->interface.icons[ICON_PROPERTY] =
-		gdk_pixbuf_new_from_file(
-			DATA_DIR "/pixmaps/icon16_property.png", NULL);
+		gdk_pixbuf_new_from_file(G3DV_PIXMAP_PATH "icon16_property.png", NULL);
 
 	return TRUE;
 }

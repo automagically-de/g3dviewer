@@ -143,8 +143,11 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		NULL };
 
 	/* load main window from xml */
-	xml = glade_xml_new(DATA_DIR "/glade/g3dviewer.glade",
-		NULL, NULL);
+#ifdef G_OS_WIN32
+	xml = glade_xml_new("glade\\g3dviewer.glade", NULL, NULL);
+#else
+	xml = glade_xml_new(DATA_DIR "/glade/g3dviewer.glade", NULL, NULL);
+#endif
 
 	viewer->interface.xml = xml;
 
