@@ -52,13 +52,15 @@ gboolean gui_glade_init(G3DViewer *viewer)
 	return TRUE;
 }
 
-static void gui_glade_add_open_filters(G3DViewer *viewer)
+gboolean gui_glade_add_open_filters(G3DViewer *viewer)
 {
 	GtkWidget *opendialog;
 	GtkFileFilter *filter;
 	GSList *plugins;
 	G3DPlugin *plugin;
 	gchar *name, *exts, **ext, *glob, *tmp;
+
+	g_return_val_if_fail(viewer->g3dcontext != NULL, FALSE);
 
 	opendialog = glade_xml_get_widget(viewer->interface.xml, "open_dialog");
 
@@ -102,6 +104,7 @@ static void gui_glade_add_open_filters(G3DViewer *viewer)
 
 		gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(opendialog), filter);
 	}
+	return TRUE;
 }
 
 /*
@@ -190,9 +193,6 @@ gboolean gui_glade_load(G3DViewer *viewer)
 	statusbar = glade_xml_get_widget(viewer->interface.xml, "statusbar");
 	viewer->interface.status_context_id = gtk_statusbar_get_context_id(
 		GTK_STATUSBAR(statusbar), "default");
-
-	/* update "open" dialog */
-	gui_glade_add_open_filters(viewer);
 
 	/* initialize log */
 	gui_log_initialize(viewer, glade_xml_get_widget(xml, "logtree"));

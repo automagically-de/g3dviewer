@@ -90,15 +90,18 @@ int main(int argc, char **argv)
 		G3D_FLAG_GL_TEXTURES |
 		G3D_FLAG_GL_COLORS;
 
-	viewer->g3dcontext = g3d_context_new();
-
 	main_parseargs(&argc, &argv, viewer);
 
 	trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0);
 
+	/* initialize libg3d */
+	viewer->g3dcontext = g3d_context_new();
+
 	/* the gui related stuff */
 	gui_glade_init(viewer);
 	gui_glade_load(viewer);
+
+	gui_glade_add_open_filters(viewer);
 
 	/* register gui callbacks */
 	g3d_context_set_set_bgcolor_func(viewer->g3dcontext,
