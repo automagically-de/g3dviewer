@@ -30,10 +30,10 @@
 #include <GL/glu.h>
 
 #include <g3d/types.h>
+#include <g3d/quat.h>
 #include <g3d/matrix.h>
 
 #include "gl.h"
-#include "trackball.h"
 
 struct _G3DGLRenderState {
 	gint32 gl_dlist;
@@ -391,9 +391,19 @@ static inline void gl_draw_objects(G3DGLRenderOptions *options,
 	} /* while olist != NULL */
 }
 
+static inline void matrix_g3d_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4])
+{
+	guint32 i, j;
+
+	for(i = 0; i < 4; i ++)
+		for(j = 0; j < 4; j ++)
+			glm[i][j] = g3dm[i * 4 + j];
+}
+
 static inline void gl_setup_view(G3DGLRenderOptions *options)
 {
 	GLfloat m[4][4];
+	G3DMatrix *g3dm;
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -418,7 +428,13 @@ static inline void gl_setup_view(G3DGLRenderOptions *options)
 
 	glLoadIdentity();
 	glTranslatef(0, 0, -30);
+	g3dm = g3d_matrix_new();
+	g3d_quat_to_matrix(options->quat, g3dm);
+	matrix_g3d_to_gl(g3dm, m);
+#if 0
 	build_rotmatrix(m, options->quat);
+#endif
+	g3d_matrix_free(g3dm);
 	glMultMatrixf(&m[0][0]);
 }
 

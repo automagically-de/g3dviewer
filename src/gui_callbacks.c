@@ -29,11 +29,12 @@
 
 #include <gtk/gtk.h>
 
+#include <g3d/quat.h>
+
 #include "main.h"
 #include "gl.h"
 #include "glarea.h"
 #include "gui_glade.h"
-#include "trackball.h"
 #include "screenshot.h"
 
 /*
@@ -154,7 +155,7 @@ void gui_on_zoomfit_cb(GtkWidget *widget, gpointer user_data)
 
 	/* reset trackball */
 #if 1
-	trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0);
+	g3d_quat_trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 #endif
 
 	glarea_update(viewer->interface.glarea);

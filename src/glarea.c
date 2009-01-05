@@ -29,12 +29,12 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
 #include <GL/gl.h>
+#include <g3d/quat.h>
 
 #include "main.h"
 #include "gl.h"
 #include "glarea.h"
 #include "gui_glade.h"
-#include "trackball.h"
 
 /*
  * updates glarea widget (redraw)
@@ -63,14 +63,6 @@ gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext)) return TRUE;
 
 	gl_draw(viewer->renderoptions, viewer->model);
-	/*
-	viewer->glflags, viewer->zoom, viewer->aspect, viewer->bgcolor,
-		viewer->quat,
-		(gfloat)viewer->offx, (gfloat)viewer->offy,
-		viewer->flags & G3DV_FLAG_REBUILD_LIST,
-		viewer->model);
-	*/
-
 	gdk_gl_drawable_swap_buffers(gldrawable);
 	gdk_gl_drawable_gl_end(gldrawable);
 
@@ -223,13 +215,20 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 		{
 			/* rotate view */
 			gfloat spin_quat[4];
-			trackball(spin_quat,
+			g3d_quat_trackball(spin_quat,
 				(2.0 * viewer->mouse.beginx - area.width) / area.width,
 				(area.height - 2.0 * viewer->mouse.beginy) / area.height,
 				(2.0 * x - area.width) / area.width,
-				(area.height - 2.0 * y) / area.height);
-			add_quats(spin_quat,
-				viewer->renderoptions->quat, viewer->renderoptions->quat);
+				(area.height - 2.0 * y) / area.height,
+				0.8 /* trackball radius */);
+			g3d_quat_add(viewer->renderoptions->quat,
+				spin_quat, viewer->renderoptions->quat);
+			/* normalize quat some times */
+			viewer->renderoptions->norm_count ++;
+			if(viewer->renderoptions->norm_count > 97) {
+				viewer->renderoptions->norm_count = 0;
+				g3d_quat_normalize(viewer->renderoptions->quat);
+			}
 
 			text = g_strdup_printf("quat: %-.2f, %-.2f, %-.2f, %-.2f",
 				viewer->renderoptions->quat[0],

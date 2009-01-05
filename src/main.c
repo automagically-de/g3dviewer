@@ -1,4 +1,4 @@
-/* $Id$ */
+/* $Id:$ */
 
 /*
 	G3DViewer - 3D object viewer
@@ -32,12 +32,12 @@
 #include <gtk/gtkgl.h>
 
 #include <g3d/types.h>
+#include <g3d/quat.h>
 
 #include "main.h"
 #include "model.h"
 #include "glarea.h"
 #include "gui_glade.h"
-#include "trackball.h"
 #include "gl.h"
 
 static gboolean parse_only = FALSE;
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 
 	main_parseargs(&argc, &argv, viewer);
 
-	trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0);
+	g3d_quat_trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 
 	/* initialize libg3d */
 	viewer->g3dcontext = g3d_context_new();
@@ -129,9 +129,9 @@ int main(int argc, char **argv)
 			gfloat q1[4], q2[4];
 			gfloat a1[3] = { 0.0, 1.0, 0.0 }, a2[3] = {1.0, 0.0, 1.0};
 
-			axis_to_quat(a1, - 45.0 * G_PI / 180.0, q1);
-			axis_to_quat(a2, - 45.0 * G_PI / 180.0, q2);
-			add_quats(q1, q2, viewer->renderoptions->quat);
+			g3d_quat_rotate(q1, a1, - 45.0 * G_PI / 180.0);
+			g3d_quat_rotate(q2, a2, - 45.0 * G_PI / 180.0);
+			g3d_quat_add(viewer->renderoptions->quat, q1, q2);
 
 			glarea_update(viewer->interface.glarea);
 		} else {

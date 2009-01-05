@@ -41,6 +41,7 @@ typedef struct {
 	gfloat aspect;
 	gfloat bgcolor[4];
 	gfloat quat[4];
+	guint32 norm_count;
 	gfloat offx;
 	gfloat offy;
 	gint32 glflags;

@@ -7,7 +7,6 @@ g3dviewer_SOURCES = \
 	main.c main.h \
 	gl.c gl.h \
 	glarea.h glarea.c \
-	trackball.c trackball.h \
 	gui_glade.c gui_glade.h \
 	gui_infowin.c gui_infowin.h \
 	gui_log.c gui_log.h \
