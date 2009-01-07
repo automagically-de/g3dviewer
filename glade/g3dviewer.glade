@@ -184,6 +184,15 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkCheckMenuItem" id="mi_shadow">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Shado_w</property>
+                        <property name="use_underline">True</property>
+                        <property name="active">False</property>
+                        <signal name="activate" handler="gui_on_shadow_cb"/>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkCheckMenuItem" id="mi_points">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Points</property>

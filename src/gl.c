@@ -36,7 +36,7 @@
 #include "gl.h"
 
 struct _G3DGLRenderState {
-	gint32 gl_dlist;
+	gint32 gl_dlist, gl_dlist_shadow;
 	G3DMaterial *prev_material;
 	guint32 prev_texid;
 };
@@ -246,7 +246,7 @@ static inline void gl_update_material(G3DGLRenderOptions *options,
 
 static inline void gl_draw_face(G3DGLRenderOptions *options,
 	G3DObject *object, gint32 i, gfloat min_a, gfloat max_a,
-	gboolean *dont_render, gboolean *init)
+	gboolean *dont_render, gboolean *init, gboolean is_shadow)
 {
 	gint32 j;
 
@@ -258,7 +258,7 @@ static inline void gl_draw_face(G3DGLRenderOptions *options,
 	}
 
 	/* material check */
-	if(options->state->prev_material != object->_materials[i])
+	if(!is_shadow && (options->state->prev_material != object->_materials[i]))
 	{
 		if((object->_materials[i]->a < min_a) ||
 			(object->_materials[i]->a >= max_a))
@@ -280,12 +280,11 @@ static inline void gl_draw_face(G3DGLRenderOptions *options,
 	if(*dont_render) return;
 
 	/* texture stuff */
-	if((options->glflags & G3D_FLAG_GL_TEXTURES) &&
+	if(!is_shadow && (options->glflags & G3D_FLAG_GL_TEXTURES) &&
 		(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
 	{
 		/* if texture has changed update to new texture */
-		if(object->_tex_images[i] != options->state->prev_texid)
-		{
+		if(object->_tex_images[i] != options->state->prev_texid) {
 			options->state->prev_texid = object->_tex_images[i];
 			glEnd();
 			glBindTexture(GL_TEXTURE_2D, options->state->prev_texid);
@@ -296,11 +295,10 @@ static inline void gl_draw_face(G3DGLRenderOptions *options,
 		}
 	}
 
-
 	/* draw triangles */
 	for(j = 0; j < 3; j ++)
 	{
-		if((options->glflags & G3D_FLAG_GL_TEXTURES) &&
+		if(!is_shadow && (options->glflags & G3D_FLAG_GL_TEXTURES) &&
 			(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
 		{
 			glTexCoord2f(
@@ -326,7 +324,7 @@ static inline void gl_draw_face(G3DGLRenderOptions *options,
 }
 
 static inline void gl_draw_objects(G3DGLRenderOptions *options,
-	GSList *objects, gfloat min_a, gfloat max_a)
+	GSList *objects, gfloat min_a, gfloat max_a, gboolean is_shadow)
 {
 	GSList *olist;
 	int i;
@@ -366,12 +364,12 @@ static inline void gl_draw_objects(G3DGLRenderOptions *options,
 		for(i = 0; i < object->_num_faces; i ++)
 		{
 			gl_draw_face(options, object, i, min_a, max_a,
-				&dont_render, &init);
+				&dont_render, &init, is_shadow);
 		} /* all faces */
 
 		glEnd();
 
-		if(options->glflags & G3D_FLAG_GL_POINTS) {
+		if(!is_shadow && (options->glflags & G3D_FLAG_GL_POINTS)) {
 			glColor4f(0.2, 0.2, 0.2, 1.0);
 			glBegin(GL_POINTS);
 			for(i = 0; i < object->vertex_count; i ++) {
@@ -384,7 +382,7 @@ static inline void gl_draw_objects(G3DGLRenderOptions *options,
 		}
 
 		/* handle sub-objects */
-		gl_draw_objects(options, object->objects, min_a, max_a);
+		gl_draw_objects(options, object->objects, min_a, max_a, is_shadow);
 
 		glPopMatrix();
 
@@ -431,11 +429,39 @@ static inline void gl_setup_view(G3DGLRenderOptions *options)
 	g3dm = g3d_matrix_new();
 	g3d_quat_to_matrix(options->quat, g3dm);
 	matrix_g3d_to_gl(g3dm, m);
-#if 0
-	build_rotmatrix(m, options->quat);
-#endif
+
 	g3d_matrix_free(g3dm);
 	glMultMatrixf(&m[0][0]);
+}
+
+static void gl_setup_shadow_matrix(G3DGLRenderOptions *options,
+	G3DVector *l, G3DVector *p, G3DVector *n)
+{
+	G3DDouble c, d;
+	G3DMatrix *m = options->shadow_matrix;
+
+	d = n[0] * l[0] + n[1] * l[1] + n[2] * l[2];
+	c = p[0] * n[0] + p[1] * n[1] + p[2] * n[2] - d;
+
+	m[0 * 4 + 0] = l[0] * n[0] + c;
+	m[1 * 4 + 0] = l[0] * n[1];
+	m[2 * 4 + 0] = l[0] * n[2];
+	m[3 * 4 + 0] = - l[0] * c - l[0] * d;
+
+	m[0 * 4 + 1] = l[1] * n[0];
+	m[1 * 4 + 1] = l[1] * n[1] + c;
+	m[2 * 4 + 1] = l[1] * n[2];
+	m[3 * 4 + 1] = - l[1] * c - l[1] * d;
+
+	m[0 * 4 + 2] = l[2] * n[0];
+	m[1 * 4 + 2] = l[2] * n[1];
+	m[2 * 4 + 2] = l[2] * n[2] + c;
+	m[3 * 4 + 2] = - l[2] * c - l[2] * d;
+
+	m[0 * 4 + 3] = n[0];
+	m[1 * 4 + 3] = n[1];
+	m[2 * 4 + 3] = n[2];
+	m[3 * 4 + 3] = -d;
 }
 
 void gl_draw_coord_system(G3DGLRenderOptions *options)
@@ -462,6 +488,22 @@ void gl_draw_coord_system(G3DGLRenderOptions *options)
 	}
 }
 
+void gl_draw_plane(G3DGLRenderOptions *options)
+{
+	glColor3f(0.8, 0.8, 0.8);
+	glBegin(GL_QUADS);
+	glNormal3f(0.0, -1.0, 0.0);
+#define PLANE_MAX 100
+#define PLANE_Y -20
+	glVertex3f(-PLANE_MAX, PLANE_Y - 0.1,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, PLANE_Y - 0.1,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, PLANE_Y - 0.1, -PLANE_MAX);
+	glVertex3f(-PLANE_MAX, PLANE_Y - 0.1, -PLANE_MAX);
+#undef PLANE_Y
+#undef PLANE_MAX
+	glEnd();
+}
+
 void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 {
 	GLenum error;
@@ -471,6 +513,9 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 	gulong msec, add;
 	gdouble sec;
 #endif
+	G3DVector light[3] = { 10.0, 40.0, 10.0 };
+	G3DVector plane[3] = { 0.0, -20.0, 0.0 };
+	G3DVector normal[3] = { 0.0, -1.0, 0.0 };
 
 	TRAP_GL_ERROR("gl_draw - start");
 
@@ -509,18 +554,26 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 		/* update render state */
 		if(options->state) {
 			glDeleteLists(options->state->gl_dlist, 1);
+			glDeleteLists(options->state->gl_dlist_shadow, 1);
 			g_free(options->state);
 		}
 		options->state = g_new0(G3DGLRenderState, 1);
 
 		/* create and execute display list */
 		options->state->gl_dlist = glGenLists(1);
+		options->state->gl_dlist_shadow = glGenLists(1);
 
 		glNewList(options->state->gl_dlist, GL_COMPILE);
 		/* draw all objects */
 		for(f = 1.0; f >= 0.0; f -= 0.2)
-			gl_draw_objects(options, model->objects, f, f + 0.2);
+			gl_draw_objects(options, model->objects, f, f + 0.2, FALSE);
 		glEndList();
+
+		if(options->glflags & G3D_FLAG_GL_SHADOW) {
+			glNewList(options->state->gl_dlist_shadow, GL_COMPILE);
+			gl_draw_objects(options, model->objects, 0.0, 1.0, TRUE);
+			glEndList();
+		}
 
 		TRAP_GL_ERROR("gl_draw - building list");
 	}
@@ -528,6 +581,19 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 	g_return_if_fail(options->state != NULL);
 
 	gl_draw_coord_system(options);
+
+	if(options->glflags & G3D_FLAG_GL_SHADOW) {
+		gl_draw_plane(options);
+		gl_setup_shadow_matrix(options, light, plane, normal);
+		glPushMatrix();
+		glBindTexture (GL_TEXTURE_2D, 0);
+		glColor4f(0.2, 0.2, 0.2, 1.0);
+		glDisable(GL_LIGHTING);
+		glMultMatrixf(options->shadow_matrix);
+		glCallList(options->state->gl_dlist_shadow);
+		glEnable(GL_LIGHTING);
+		glPopMatrix();
+	}
 
 	/* execute display list */
 	glCallList(options->state->gl_dlist);

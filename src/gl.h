@@ -23,7 +23,7 @@
 #ifndef _GL_H
 #define _GL_H
 
-#include <glib.h>
+#include <g3d/types.h>
 
 #define G3D_FLAG_GL_SPECULAR        (1L << 0)
 #define G3D_FLAG_GL_SHININESS       (1L << 1)
@@ -32,6 +32,7 @@
 #define G3D_FLAG_GL_COLORS          (1L << 4)
 #define G3D_FLAG_GL_POINTS          (1L << 5)
 #define G3D_FLAG_GL_COORD_AXES      (1L << 6)
+#define G3D_FLAG_GL_SHADOW          (1L << 7)
 
 typedef struct _G3DGLRenderState G3DGLRenderState;
 
@@ -41,6 +42,7 @@ typedef struct {
 	gfloat aspect;
 	gfloat bgcolor[4];
 	gfloat quat[4];
+	G3DMatrix shadow_matrix[16];
 	guint32 norm_count;
 	gfloat offx;
 	gfloat offy;
