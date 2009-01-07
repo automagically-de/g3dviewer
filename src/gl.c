@@ -488,18 +488,35 @@ void gl_draw_coord_system(G3DGLRenderOptions *options)
 	}
 }
 
-void gl_draw_plane(G3DGLRenderOptions *options)
+static G3DFloat gl_min_y(GSList *objects)
+{
+	G3DFloat min_y = 10.0, tmp_y;
+	GSList *oitem;
+	G3DObject *object;
+	gint32 i;
+
+	for(oitem = objects; oitem != NULL; oitem = oitem->next) {
+		object = oitem->data;
+		for(i = 0; i < object->vertex_count; i ++)
+			if(object->vertex_data[i * 3 + 1] < min_y)
+				min_y = object->vertex_data[i * 3 + 1];
+		tmp_y = gl_min_y(object->objects);
+		if(tmp_y < min_y)
+			min_y = tmp_y;
+	}
+	return min_y;
+}
+
+static void gl_draw_plane(G3DGLRenderOptions *options)
 {
 	glColor3f(0.8, 0.8, 0.8);
 	glBegin(GL_QUADS);
 	glNormal3f(0.0, -1.0, 0.0);
 #define PLANE_MAX 100
-#define PLANE_Y -20
-	glVertex3f(-PLANE_MAX, PLANE_Y - 0.1,  PLANE_MAX);
-	glVertex3f( PLANE_MAX, PLANE_Y - 0.1,  PLANE_MAX);
-	glVertex3f( PLANE_MAX, PLANE_Y - 0.1, -PLANE_MAX);
-	glVertex3f(-PLANE_MAX, PLANE_Y - 0.1, -PLANE_MAX);
-#undef PLANE_Y
+	glVertex3f(-PLANE_MAX, options->min_y - 0.1,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, options->min_y - 0.1,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, options->min_y - 0.1, -PLANE_MAX);
+	glVertex3f(-PLANE_MAX, options->min_y - 0.1, -PLANE_MAX);
 #undef PLANE_MAX
 	glEnd();
 }
@@ -550,6 +567,7 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 #if DEBUG > 2
 		g_printerr("[gl] creating new display list\n");
 #endif
+		options->min_y = gl_min_y(model->objects);
 
 		/* update render state */
 		if(options->state) {
@@ -583,6 +601,7 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 	gl_draw_coord_system(options);
 
 	if(options->glflags & G3D_FLAG_GL_SHADOW) {
+		plane[1] = options->min_y;
 		gl_draw_plane(options);
 		gl_setup_shadow_matrix(options, light, plane, normal);
 		glPushMatrix();

@@ -43,6 +43,7 @@ typedef struct {
 	gfloat bgcolor[4];
 	gfloat quat[4];
 	G3DMatrix shadow_matrix[16];
+	G3DFloat min_y;
 	guint32 norm_count;
 	gfloat offx;
 	gfloat offy;
