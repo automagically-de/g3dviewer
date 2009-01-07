@@ -5,7 +5,6 @@ endif
 
 g3d_thumbnailer_SOURCES = \
 	g3d-thumbnailer.c \
-	../src/trackball.c \
 	../src/gl.c \
 	../src/texture.c \
 	../src/screenshot.c

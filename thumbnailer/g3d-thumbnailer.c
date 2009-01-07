@@ -29,9 +29,9 @@
 #include <gtk/gtk.h>
 #include <glib.h>
 #include <g3d/g3d.h>
+#include <g3d/quat.h>
 
 #include "gl.h"
-#include "trackball.h"
 #include "screenshot.h"
 #include "texture.h"
 
