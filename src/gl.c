@@ -398,10 +398,17 @@ static inline void gl_setup_view(G3DGLRenderOptions *options)
 {
 	GLfloat m[4][4];
 	G3DMatrix *g3dm;
+	G3DFloat w, h;
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(options->zoom, options->aspect, 1, 100);
+	if(options->glflags & G3D_FLAG_GL_ISOMETRIC) {
+		w = 0.5 * options->zoom;
+		h = w / options->aspect;
+		glOrtho(-w / 2.0, w / 2.0, -h / 2.0, h / 2.0, 1, 100);
+	} else {
+		gluPerspective(options->zoom, options->aspect, 1, 100);
+	}
 	/* translation of view */
 	glTranslatef(options->offx, options->offy, 0.0);
 
@@ -543,7 +550,7 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 	gulong msec, add;
 	gdouble sec;
 #endif
-	G3DVector light[3] = { 10.0, 40.0, 10.0 };
+	G3DVector light[3] = { 100.0, 500.0, 20.0 };
 	G3DVector plane[3] = { 0.0, -20.0, 0.0 };
 	G3DVector normal[3] = { 0.0, -1.0, 0.0 };
 

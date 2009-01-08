@@ -125,6 +125,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"mi_show_toolbar",
 		"mi_fullscreen",
 		"mi_zoomfit",
+		"mi_isometric",
 		"mi_wireframe",
 		"mi_specular",
 		"mi_shininess",

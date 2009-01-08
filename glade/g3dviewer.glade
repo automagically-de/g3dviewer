@@ -133,6 +133,16 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkCheckMenuItem" id="mi_isometric">
+                        <property name="visible">True</property>
+						<property name="label" translatable="yes"
+							>Is_ometric view</property>
+                        <property name="use_underline">True</property>
+                        <property name="active">False</property>
+                        <signal name="activate" handler="gui_on_isometric_cb"/>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkCheckMenuItem" id="mi_wireframe">
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Wireframe</property>
