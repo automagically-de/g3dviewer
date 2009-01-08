@@ -181,6 +181,7 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 	gchar *text;
 	GdkRectangle area;
 	GdkModifierType state;
+	G3DFloat rx, ry, rz;
 	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
@@ -230,11 +231,10 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 				g3d_quat_normalize(viewer->renderoptions->quat);
 			}
 
-			text = g_strdup_printf("quat: %-.2f, %-.2f, %-.2f, %-.2f",
-				viewer->renderoptions->quat[0],
-				viewer->renderoptions->quat[1],
-				viewer->renderoptions->quat[2],
-				viewer->renderoptions->quat[3]);
+			g3d_quat_to_rotation_xyz(viewer->renderoptions->quat,
+				&rx, &ry, &rz);
+			text = g_strdup_printf("%-.2f°, %-.2f°, %-.2f°",
+				rx * 180.0 / G_PI, ry * 180.0 / G_PI, rz * 180.0 / G_PI);
 			gui_glade_status(viewer, text);
 			g_free(text);
 		}
