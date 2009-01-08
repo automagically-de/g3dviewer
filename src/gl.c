@@ -70,10 +70,6 @@ static void gl_init(void)
 	GLfloat light1_col[4] = { 0.4, 0.4, 0.4, 1.0 };
 	GLfloat ambient_lc[4] = { 0.35, 0.35, 0.35, 1.0 };
 
-#if 0
-	glEnable(GL_CULL_FACE);
-#endif
-
 	/* transparency and blending */
 #if 0
 	glAlphaFunc(GL_GREATER, 0.1);
@@ -509,16 +505,33 @@ static G3DFloat gl_min_y(GSList *objects)
 
 static void gl_draw_plane(G3DGLRenderOptions *options)
 {
-	glColor3f(0.8, 0.8, 0.8);
 	glBegin(GL_QUADS);
 	glNormal3f(0.0, -1.0, 0.0);
-#define PLANE_MAX 100
+#define PLANE_MAX 12
 	glVertex3f(-PLANE_MAX, options->min_y - 0.1,  PLANE_MAX);
 	glVertex3f( PLANE_MAX, options->min_y - 0.1,  PLANE_MAX);
 	glVertex3f( PLANE_MAX, options->min_y - 0.1, -PLANE_MAX);
 	glVertex3f(-PLANE_MAX, options->min_y - 0.1, -PLANE_MAX);
 #undef PLANE_MAX
 	glEnd();
+}
+
+static void gl_setup_floor_stencil(G3DGLRenderOptions *options)
+{
+	glDepthMask(GL_FALSE);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 0xffffffff);
+
+	gl_draw_plane(options);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDepthMask(GL_TRUE);
+
+	glStencilFunc(GL_EQUAL, 1, 0xffffffff);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
 void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
@@ -602,16 +615,36 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 
 	if(options->glflags & G3D_FLAG_GL_SHADOW) {
 		plane[1] = options->min_y;
-		gl_draw_plane(options);
-		gl_setup_shadow_matrix(options, light, plane, normal);
+
+		/* reflection */
 		glPushMatrix();
-		glBindTexture (GL_TEXTURE_2D, 0);
-		glColor4f(0.2, 0.2, 0.2, 1.0);
+		gl_setup_floor_stencil(options);
+		glTranslatef(0.0, (options->min_y * 2), 0.0);
+		glScalef(1.0, -1.0, 1.0);
+		glCallList(options->state->gl_dlist);
+		glPopMatrix();
+
+		/* plane */
 		glDisable(GL_LIGHTING);
+		glBindTexture (GL_TEXTURE_2D, 0);
+		glColor4f(0.5, 0.5, 0.5, 0.7);
+		gl_draw_plane(options);
+		glEnable(GL_LIGHTING);
+
+		/* shadow */
+		glPushMatrix();
+		gl_setup_shadow_matrix(options, light, plane, normal);
+		glBindTexture (GL_TEXTURE_2D, 0);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		glColor4f(0.3, 0.3, 0.3, 0.7);
 		glMultMatrixf(options->shadow_matrix);
 		glCallList(options->state->gl_dlist_shadow);
+		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHTING);
 		glPopMatrix();
+
+		glDisable(GL_STENCIL_TEST);
 	}
 
 	/* execute display list */

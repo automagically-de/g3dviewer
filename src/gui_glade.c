@@ -377,13 +377,14 @@ GtkWidget *gui_glade_create_glwidget(void)
 	GdkGLConfig *glconfig;
 
 	glconfig = gdk_gl_config_new_by_mode(
-		GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH | GDK_GL_MODE_DOUBLE);
+		GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH | GDK_GL_MODE_DOUBLE |
+		GDK_GL_MODE_STENCIL);
 
 	if(glconfig == NULL)
 	{
 		glconfig = gdk_gl_config_new_by_mode(
 			GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH |
-			GDK_GL_MODE_ALPHA | GDK_GL_MODE_DOUBLE);
+			GDK_GL_MODE_ALPHA | GDK_GL_MODE_DOUBLE | GDK_GL_MODE_STENCIL);
 	}
 
 	if(glconfig == NULL) return NULL;
