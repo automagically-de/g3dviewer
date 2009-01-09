@@ -515,10 +515,10 @@ static void gl_draw_plane(G3DGLRenderOptions *options)
 	glBegin(GL_QUADS);
 	glNormal3f(0.0, -1.0, 0.0);
 #define PLANE_MAX 12
-	glVertex3f(-PLANE_MAX, options->min_y - 0.1,  PLANE_MAX);
-	glVertex3f( PLANE_MAX, options->min_y - 0.1,  PLANE_MAX);
-	glVertex3f( PLANE_MAX, options->min_y - 0.1, -PLANE_MAX);
-	glVertex3f(-PLANE_MAX, options->min_y - 0.1, -PLANE_MAX);
+	glVertex3f(-PLANE_MAX, options->min_y - 0.001,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, options->min_y - 0.001,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, options->min_y - 0.001, -PLANE_MAX);
+	glVertex3f(-PLANE_MAX, options->min_y - 0.001, -PLANE_MAX);
 #undef PLANE_MAX
 	glEnd();
 }
@@ -667,7 +667,7 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 		gl_setup_shadow_stencil(options);
 		glPopMatrix();
 		glPushMatrix();
-		glTranslatef(0.0, 0.01, 0.0);
+		glTranslatef(0.0, 0.001, 0.0);
 		glColor4f(0.3, 0.3, 0.3, 0.7);
 		gl_draw_plane(options);
 		glEnable(GL_DEPTH_TEST);

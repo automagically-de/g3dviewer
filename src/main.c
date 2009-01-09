@@ -88,6 +88,7 @@ int main(int argc, char **argv)
 	viewer->renderoptions->glflags =
 		G3D_FLAG_GL_SHININESS |
 		G3D_FLAG_GL_TEXTURES |
+		G3D_FLAG_GL_ALLTWOSIDE |
 		G3D_FLAG_GL_COLORS;
 
 	main_parseargs(&argc, &argv, viewer);
