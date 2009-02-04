@@ -21,7 +21,7 @@ GETTEXT_PACKAGE=$PACKAGE
 AC_SUBST(GETTEXT_PACKAGE)
 
 # glib 2.0
-AM_PATH_GLIB_2_0(2.4.0,,AC_MSG_ERROR([GLib >= 2.4.0 is required]))
+AM_PATH_GLIB_2_0(2.6.0,,AC_MSG_ERROR([GLib >= 2.6.0 is required]))
 
 # gtk+ 2.0
 AM_PATH_GTK_2_0(2.4.0,,AC_MSG_ERROR([GTK+ >= 2.4.0 is required]))
