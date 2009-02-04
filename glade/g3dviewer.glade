@@ -125,6 +125,7 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="gui_on_zoomfit_cb"/>
+						<accelerator key="f" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -139,7 +140,8 @@
 							>Is_ometric view</property>
                         <property name="use_underline">True</property>
                         <property name="active">False</property>
-                        <signal name="activate" handler="gui_on_isometric_cb"/>
+						<signal name="activate" handler="gui_on_isometric_cb"/>
+						<accelerator key="i" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -147,7 +149,8 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Wireframe</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="gui_on_wireframe_cb"/>
+						<signal name="activate" handler="gui_on_wireframe_cb"/>
+						<accelerator key="w" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -173,7 +176,8 @@
                         <property name="label" translatable="yes">T_wo-sided faces</property>
                         <property name="use_underline">True</property>
 						<property name="active">True</property>
-                        <signal name="activate" handler="gui_on_twosided_cb"/>
+						<signal name="activate" handler="gui_on_twosided_cb"/>
+						<accelerator key="t" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -183,6 +187,7 @@
                         <property name="use_underline">True</property>
                         <property name="active">True</property>
                         <signal name="activate" handler="gui_on_textures_cb"/>
+						<accelerator key="x" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -191,7 +196,8 @@
                         <property name="label" translatable="yes">_Colors</property>
                         <property name="use_underline">True</property>
                         <property name="active">True</property>
-                        <signal name="activate" handler="gui_on_colors_cb"/>
+						<signal name="activate" handler="gui_on_colors_cb"/>
+						<accelerator key="c" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -200,7 +206,8 @@
                         <property name="label" translatable="yes">Shado_w</property>
                         <property name="use_underline">True</property>
                         <property name="active">False</property>
-                        <signal name="activate" handler="gui_on_shadow_cb"/>
+						<signal name="activate" handler="gui_on_shadow_cb"/>
+						<accelerator key="s" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -208,7 +215,8 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Points</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="gui_on_points_cb"/>
+						<signal name="activate" handler="gui_on_points_cb"/>
+						<accelerator key="p" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
@@ -216,7 +224,8 @@
                         <property name="visible">True</property>
                         <property name="label" translatable="yes">_Coordinate axes</property>
                         <property name="use_underline">True</property>
-                        <signal name="activate" handler="gui_on_axes_cb"/>
+						<signal name="activate" handler="gui_on_axes_cb"/>
+						<accelerator key="y" modifiers="" signal="activate"/>
                       </widget>
                     </child>
                     <child>
