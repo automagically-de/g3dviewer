@@ -23,6 +23,8 @@
 #ifndef _SCREENSHOT_H
 #define _SCREENSHOT_H
 
+gboolean screenshot_save_from_pixels(guint8 *pixels, const gchar *filename,
+	guint32 width, guint32 height);
 gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height);
 
 #endif /* _SCREENSHOT_H */

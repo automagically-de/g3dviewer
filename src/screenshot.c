@@ -38,15 +38,12 @@ static guint8 *screenshot_get_pixels(guint32 width, guint32 height)
 	return pixels;
 }
 
-gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height)
+gboolean screenshot_save_from_pixels(guint8 *pixels, const gchar *filename,
+	guint32 width, guint32 height)
 {
-	guint8 *pixels;
 	GdkPixbuf *pixbuf, *flipped;
 
-	pixels = screenshot_get_pixels(width, height);
-
-	if(pixels == NULL)
-		return FALSE;
+	g_return_val_if_fail(pixels != NULL, FALSE);
 
 	pixbuf = gdk_pixbuf_new_from_data(pixels,
 		GDK_COLORSPACE_RGB, TRUE,
@@ -64,10 +61,20 @@ gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height)
 
 	gdk_pixbuf_save(flipped, filename, "png", NULL, NULL);
 
-	g_free(pixels);
-
 	gdk_pixbuf_unref(pixbuf);
 	gdk_pixbuf_unref(flipped);
 
 	return TRUE;
 }
+
+gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height)
+{
+	guint8 *pixels;
+	gboolean retval;
+
+	pixels = screenshot_get_pixels(width, height);
+	retval = screenshot_save_from_pixels(pixels, filename, width, height);
+	g_free(pixels);
+	return retval;
+}
+

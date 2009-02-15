@@ -62,6 +62,15 @@ fi
 
 fi # !os_win32
 
+# OSMesa stuff
+AC_CHECK_HEADERS(GL/osmesa.h, have_osmesa_h=yes)
+AC_CHECK_LIB(OSMesa, OSMesaCreateContext, have_osmesa=yes)
+AM_CONDITIONAL(HAVE_OSMESA,
+	[test "$have_osmesa_h" = "yes" -a "$have_osmesa" = "yes" ])
+OSMESA_LIBS=-lOSMesa
+AC_SUBST(OSMESA_CFLAGS)
+AC_SUBST(OSMESA_LIBS)
+
 # Check some UNIX headers
 AC_CHECK_HEADERS(dirent.h sys/stat.h unistd.h,,
 	AC_MSG_ERROR([missing header file]),
