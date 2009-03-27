@@ -1,4 +1,5 @@
 changes since version 0.2.99.4:
+	* general: trackball stuff moved to libg3d
 	* general: show G3D logo if no file was given in argument list
 	* general: drag and drop target implemented
 	* filechooser: set to correct path of drop/argv file

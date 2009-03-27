@@ -7,5 +7,5 @@ deb:
 	fakeroot dpkg-buildpackage
 
 EXTRA_DIST = \
-	CREDITS COPYING.trackball README.thumbnailer \
+	CREDITS README.thumbnailer \
 	g3dviewer.desktop.in
