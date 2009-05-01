@@ -403,17 +403,17 @@ GtkWidget *gui_glade_create_glwidget(void)
 		GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
 	g_signal_connect(G_OBJECT(glarea), "scroll_event",
-		GTK_SIGNAL_FUNC(glarea_scroll), NULL);
+		G_CALLBACK(glarea_scroll), NULL);
 	g_signal_connect(G_OBJECT(glarea), "expose_event",
-		GTK_SIGNAL_FUNC(glarea_expose), NULL);
+		G_CALLBACK(glarea_expose), NULL);
 	g_signal_connect(G_OBJECT(glarea), "motion_notify_event",
-		GTK_SIGNAL_FUNC(glarea_motion_notify), NULL);
+		G_CALLBACK(glarea_motion_notify), NULL);
 	g_signal_connect(G_OBJECT(glarea), "button_press_event",
-		GTK_SIGNAL_FUNC(glarea_button_pressed), NULL);
+		G_CALLBACK(glarea_button_pressed), NULL);
 	g_signal_connect(G_OBJECT(glarea), "configure_event",
-		GTK_SIGNAL_FUNC(glarea_configure), NULL);
+		G_CALLBACK(glarea_configure), NULL);
 	g_signal_connect(G_OBJECT(glarea), "destroy_event",
-		GTK_SIGNAL_FUNC(glarea_destroy), NULL);
+		G_CALLBACK(glarea_destroy), NULL);
 
 	/* drag and drop stuff */
 	gtk_drag_dest_set(glarea,
@@ -422,7 +422,7 @@ GtkWidget *gui_glade_create_glwidget(void)
 		GDK_ACTION_COPY );
 	gtk_drag_dest_add_text_targets(glarea);
 	g_signal_connect(G_OBJECT(glarea), "drag-data-received",
-		GTK_SIGNAL_FUNC(drop_file_cb), NULL);
+		G_CALLBACK(drop_file_cb), NULL);
 
 	return glarea;
 }
