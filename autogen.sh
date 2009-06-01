@@ -12,6 +12,8 @@ glib-gettextize --copy --force
 
 aclocal -I m4/ $ACLOCAL_FLAGS $INCLUDES
 
+libtoolize --copy --automake
+
 autoheader
 
 automake --gnu --add-missing --copy
