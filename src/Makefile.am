@@ -24,7 +24,8 @@ g3dviewer_CFLAGS = \
 	@LIBGLADE_CFLAGS@ \
 	@X_CFLAGS@ \
 	@LIBG3D_CFLAGS@ \
-	-DDEBUG=@DEBUG@
+	-DDEBUG=@DEBUG@ \
+	-DPACKAGE=\"@PACKAGE@\"
 
 if OS_WIN32
 extra_ldflags = -Wl,--export-all-symbols

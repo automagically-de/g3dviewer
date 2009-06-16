@@ -40,25 +40,46 @@
 #include "gui_glade.h"
 #include "gl.h"
 
-static gboolean parse_only = FALSE;
-
-static gboolean main_parseargs(int *argc, char ***argv, G3DViewer *viewer);
 static void main_cleanup(G3DViewer *viewer);
 
 int main(int argc, char **argv)
 {
 	G3DViewer *viewer;
+	gboolean opt_debug_tree = FALSE;
+	gboolean opt_debug_data = FALSE;
+	gboolean opt_parse_only = FALSE;
+	GError *error = NULL;
+	GOptionContext *opt_ctxt;
+	GOptionEntry opt_entries[] = {
+		{ "debug-tree", 't', 0, G_OPTION_ARG_NONE, &opt_debug_tree,
+			"show hierarchical debugging data in info window", NULL },
+		{ "debug-data", 'd', 0, G_OPTION_ARG_NONE, &opt_debug_data,
+			"show additional debugging data in info window", NULL },
+		{ "parse-only", 'p', 0, G_OPTION_ARG_NONE, &opt_parse_only,
+			"only parse model and quit (deprecated, use g3d-stat)", NULL },
+		{ NULL }
+	};
 
 	/* localization stuff */
 	setlocale(LC_ALL, "");
-	bindtextdomain("g3dviewer", LOCALEDIR);
-	textdomain("g3dviewer");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 
 #if DEBUG > 3
 	/* memory debugging */
 	atexit(g_mem_profile);
 	g_mem_set_vtable(glib_mem_profiler_table);
 #endif
+
+	opt_ctxt = g_option_context_new("[<filename>] - inspect 3D models");
+	g_option_context_add_main_entries(opt_ctxt, opt_entries, PACKAGE);
+	g_option_context_parse(opt_ctxt, &argc, &argv, &error);
+	if(error) {
+		g_warning("option parser: %s", error->message);
+		g_error_free(error);
+		error = NULL;
+	}
+	g_option_context_free(opt_ctxt);
 
 	gtk_init(&argc, &argv);
 
@@ -75,8 +96,10 @@ int main(int argc, char **argv)
 
 	viewer->mouse.beginx = 0;
 	viewer->mouse.beginy = 0;
-	viewer->filename = NULL;
-
+	viewer->filename = (argc > 1) ? g_strdup(argv[1]) : NULL;
+	viewer->debug_flags =
+		(opt_debug_tree & G3DV_FLAG_DEBUG_TREE) |
+		(opt_debug_data & G3DV_FLAG_DEBUG_TREE_DATA);
 	viewer->renderoptions = g_new0(G3DGLRenderOptions, 1);
 	viewer->renderoptions->updated = TRUE;
 	viewer->renderoptions->initialized = FALSE;
@@ -90,8 +113,6 @@ int main(int argc, char **argv)
 		G3D_FLAG_GL_TEXTURES |
 		G3D_FLAG_GL_ALLTWOSIDE |
 		G3D_FLAG_GL_COLORS;
-
-	main_parseargs(&argc, &argv, viewer);
 
 	g3d_quat_trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 
@@ -142,7 +163,7 @@ int main(int argc, char **argv)
 	}
 
 	/* for debugging reasons */
-	if(parse_only) {
+	if(opt_parse_only) {
 		main_cleanup(viewer);
 		return EXIT_SUCCESS;
 	}
@@ -162,46 +183,6 @@ int main(int argc, char **argv)
 	main_cleanup(viewer);
 
 	return EXIT_SUCCESS;
-}
-
-static void main_showhelp(void)
-{
-	g_print(
-		"g3dviewer - a 3D model viewer\n"
-		"\n"
-		"usage: g3dviewer [--option ...] [<filename>]\n"
-		"where option can be:\n"
-		"  --help               show this help screen\n"
-		"  --debug-tree         show file debug tree\n"
-		"  --debug-tree-data    show file debug data\n"
-		);
-	exit(1);
-}
-
-static gboolean main_parseargs(int *argc, char ***argv, G3DViewer *viewer)
-{
-	/* program name */
-	(*argc)--;
-	(*argv)++;
-	while(*argc > 0) {
-#if DEBUG > 3
-		g_printerr("arg: %s\n", **argv);
-#endif
-		if(strcmp(**argv, "--help") == 0) main_showhelp();
-		else if(strcmp(**argv, "--parse-only") == 0) {
-			parse_only = TRUE;
-		} else if(strcmp(**argv, "--debug-tree") == 0) {
-			viewer->debug_flags |= G3DV_FLAG_DEBUG_TREE;
-		} else if(strcmp(**argv, "--debug-tree-data") == 0) {
-			viewer->debug_flags |= G3DV_FLAG_DEBUG_TREE |
-				G3DV_FLAG_DEBUG_TREE_DATA;
-		} else {
-			viewer->filename = g_strdup(**argv);
-		}
-		(*argv)++;
-		(*argc)--;
-	}
-	return TRUE;
 }
 
 static void main_cleanup(G3DViewer *viewer)
