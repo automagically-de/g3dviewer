@@ -1,4 +1,6 @@
+src/main.c
 src/gui_glade.c
 src/gui_callbacks.c
 src/gui_infowin.c
 glade/g3dviewer.glade
+thumbnailer/g3d-thumbnailer.c

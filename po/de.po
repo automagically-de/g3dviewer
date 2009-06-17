@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: g3dviewer 0.2.99.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-06-16 19:33+0200\n"
+"POT-Creation-Date: 2009-06-17 08:50+0200\n"
 "PO-Revision-Date: 2006-01-31 21:37+0100\n"
 "Last-Translator: Markus Dahms <mad@automagically.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
@@ -15,6 +15,18 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: src/main.c:55
+msgid "show hierarchical debugging data in info window"
+msgstr "zeige hierarchische Debug-Ausgaben im Info-Fenster"
+
+#: src/main.c:57
+msgid "show additional debugging data in info window"
+msgstr "zeige zusätzliche Debug-Ausgaben im Info-Fenster"
+
+#: src/main.c:59
+msgid "only parse model and quit (deprecated, use g3d-stat)"
+msgstr "nur das Modell lesen und beenden (veraltet, g3d-stat benutzen)"
 
 #: src/gui_glade.c:69
 msgid "all files"

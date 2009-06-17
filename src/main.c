@@ -52,11 +52,11 @@ int main(int argc, char **argv)
 	GOptionContext *opt_ctxt;
 	GOptionEntry opt_entries[] = {
 		{ "debug-tree", 't', 0, G_OPTION_ARG_NONE, &opt_debug_tree,
-			"show hierarchical debugging data in info window", NULL },
+			_("show hierarchical debugging data in info window"), NULL },
 		{ "debug-data", 'd', 0, G_OPTION_ARG_NONE, &opt_debug_data,
-			"show additional debugging data in info window", NULL },
+			_("show additional debugging data in info window"), NULL },
 		{ "parse-only", 'p', 0, G_OPTION_ARG_NONE, &opt_parse_only,
-			"only parse model and quit (deprecated, use g3d-stat)", NULL },
+			_("only parse model and quit (deprecated, use g3d-stat)"), NULL },
 		{ NULL }
 	};
 
