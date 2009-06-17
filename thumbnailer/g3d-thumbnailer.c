@@ -51,16 +51,37 @@ int main(int argc, char *argv[])
 	guint32 height = 128;
 	gint retval = EXIT_FAILURE;
 	guint8 *imgbuf;
+	GError *error = NULL;
+	GOptionContext *opt_ctxt;
+	gdouble opt_angle_x = 45.0;
+	gdouble opt_angle_y = 45.0;
+	GOptionEntry opt_entries[] = {
+		{ "angle-x", 'x', 0, G_OPTION_ARG_DOUBLE, &opt_angle_x,
+			"x rotation of view angle", NULL },
+		{ "angle-y", 'y', 0, G_OPTION_ARG_DOUBLE, &opt_angle_y,
+			"y rotation of view angle", NULL },
+		{ NULL }
+	};
 
-	gtk_init(&argc, &argv);
-	g_log_set_handler("LibG3D", G_LOG_LEVEL_DEBUG, log_handler, NULL);
-
+	opt_ctxt = g_option_context_new(
+		"<input model> <output image> [<width in px>]");
+	g_option_context_add_main_entries(opt_ctxt, opt_entries, PACKAGE);
+	g_option_context_parse(opt_ctxt, &argc, &argv, &error);
+	if(error) {
+		g_warning("option parser: %s", error->message);
+		g_error_free(error);
+		error = NULL;
+	}
 	if(argc < 3) {
 		g_print("usage: %s <input file: model> <output file: image> "
 			"[<width in px>]\n",
 			argv[0]);
 		return EXIT_FAILURE;
 	}
+	g_option_context_free(opt_ctxt);
+
+	gtk_init(&argc, &argv);
+	g_log_set_handler("LibG3D", G_LOG_LEVEL_DEBUG, log_handler, NULL);
 
 	if(argc > 3) {
 		/* size */
@@ -82,8 +103,8 @@ int main(int argc, char *argv[])
 	options->bgcolor[3] = 0.0;
 
 	g3d_quat_trackball(options->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
-	g3d_quat_rotate(q1, a1, - 45.0 * G_PI / 180.0);
-	g3d_quat_rotate(q2, a2, - 45.0 * G_PI / 180.0);
+	g3d_quat_rotate(q1, a1, - opt_angle_y * G_PI / 180.0);
+	g3d_quat_rotate(q2, a2, - opt_angle_x * G_PI / 180.0);
 	g3d_quat_add(options->quat, q1, q2);
 
 	/* initialize OSMesa */

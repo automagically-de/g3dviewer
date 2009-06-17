@@ -13,7 +13,8 @@ g3d_thumbnailer_CFLAGS = \
 	-Wall -ansi \
 	@X_CFLAGS@ @LIBG3D_CFLAGS@ \
 	@GTK_CFLAGS@ @OSMESA_CFLAGS@ \
-	-DDEBUG=@DEBUG@
+	-DDEBUG=@DEBUG@ \
+	-DPACKAGE=\"@PACKAGE@\"
 
 g3d_thumbnailer_LDFLAGS = \
 	@X_LIBS@ @GTK_LIBS@ @LIBG3D_LIBS@ @OSMESA_LIBS@ @GL_LIBS@
