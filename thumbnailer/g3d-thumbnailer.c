@@ -56,6 +56,7 @@ int main(int argc, char *argv[])
 	GOptionContext *opt_ctxt;
 	gdouble opt_angle_x = 45.0;
 	gdouble opt_angle_y = 45.0;
+	gint32 opt_height = 0;
 	gchar *opt_bgcolor = NULL;
 	guint32 bgcolor;
 	GOptionEntry opt_entries[] = {
@@ -65,6 +66,8 @@ int main(int argc, char *argv[])
 			"y rotation of view angle", NULL },
 		{ "bgcolor", 'c', 0, G_OPTION_ARG_STRING, &opt_bgcolor,
 			"background color in #RRGGBBAA notation", NULL },
+		{ "height", 'h', 0, G_OPTION_ARG_INT, &opt_height,
+			"height of image in px (default: width)", NULL },
 		{ NULL }
 	};
 
@@ -93,7 +96,10 @@ int main(int argc, char *argv[])
 		/* size */
 		width = atoi(argv[3]);
 		/* height = width / 4 * 3; */
-		height = width;
+		if(opt_height > 0)
+			height = opt_height;
+		else
+			height = width;
 	}
 
 	/* initialize render options */
