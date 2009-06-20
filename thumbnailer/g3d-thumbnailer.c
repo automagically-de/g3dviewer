@@ -22,11 +22,12 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <GL/osmesa.h>
 
-#include <gtk/gtk.h>
 #include <glib.h>
+#include <glib-object.h>
 #include <g3d/g3d.h>
 #include <g3d/quat.h>
 
@@ -55,13 +56,19 @@ int main(int argc, char *argv[])
 	GOptionContext *opt_ctxt;
 	gdouble opt_angle_x = 45.0;
 	gdouble opt_angle_y = 45.0;
+	gchar *opt_bgcolor = NULL;
+	guint32 bgcolor;
 	GOptionEntry opt_entries[] = {
 		{ "angle-x", 'x', 0, G_OPTION_ARG_DOUBLE, &opt_angle_x,
 			"x rotation of view angle", NULL },
 		{ "angle-y", 'y', 0, G_OPTION_ARG_DOUBLE, &opt_angle_y,
 			"y rotation of view angle", NULL },
+		{ "bgcolor", 'c', 0, G_OPTION_ARG_STRING, &opt_bgcolor,
+			"background color in #RRGGBBAA notation", NULL },
 		{ NULL }
 	};
+
+	g_type_init();
 
 	opt_ctxt = g_option_context_new(
 		"<input model> <output image> [<width in px>]");
@@ -80,7 +87,6 @@ int main(int argc, char *argv[])
 	}
 	g_option_context_free(opt_ctxt);
 
-	gtk_init(&argc, &argv);
 	g_log_set_handler("LibG3D", G_LOG_LEVEL_DEBUG, log_handler, NULL);
 
 	if(argc > 3) {
@@ -101,6 +107,14 @@ int main(int argc, char *argv[])
 	options->aspect = (gfloat)width / (gfloat)height;
 	options->bgcolor[0] = options->bgcolor[1] = options->bgcolor[2] = 0.5;
 	options->bgcolor[3] = 0.0;
+
+	if(opt_bgcolor && (opt_bgcolor[0] == '#') && (strlen(opt_bgcolor) == 9)) {
+		bgcolor = strtoul(opt_bgcolor + 1, NULL, 16);
+		options->bgcolor[0] = ((bgcolor >> 24) & 0xFF) / 255.0;
+		options->bgcolor[1] = ((bgcolor >> 16) & 0xFF) / 255.0;
+		options->bgcolor[2] = ((bgcolor >> 8) & 0xFF) / 255.0;
+		options->bgcolor[3] = (bgcolor & 0xFF) / 255.0;
+	}
 
 	g3d_quat_trackball(options->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 	g3d_quat_rotate(q1, a1, - opt_angle_y * G_PI / 180.0);
