@@ -319,6 +319,108 @@ static inline void gl_draw_face(G3DGLRenderOptions *options,
 	} /* 1 .. 3 */
 }
 
+static inline void gl_draw_face_list(G3DGLRenderOptions *options,
+	G3DObject *object, gfloat min_a, gfloat max_a,
+	gboolean *init, gboolean is_shadow)
+{
+	GSList *fitem;
+	G3DFace *face;
+	gint32 prev_ftype = -1;
+	gint32 index, j, ftype;
+
+	if(*init)
+	{
+		options->state->prev_material = NULL;
+		options->state->prev_texid = 0;
+		*init = FALSE;
+	}
+
+	for(fitem = object->faces; fitem != NULL; fitem = fitem->next) {
+		face = fitem->data;
+		if(!is_shadow && (options->state->prev_material != face->material)) {
+			if((face->material->a < min_a) || (face->material->a >= max_a)) {
+				return;
+			}
+
+			if(prev_ftype != -1)
+				glEnd();
+			gl_update_material(options, face->material);
+			if(prev_ftype != -1)
+				glBegin(prev_ftype);
+			options->state->prev_material = face->material;
+
+			options->state->prev_texid = 0;
+		}
+
+		/* texture stuff */
+		if(!is_shadow && (options->glflags & G3D_FLAG_GL_TEXTURES) &&
+			(face->flags & G3D_FLAG_FAC_TEXMAP)) {
+			/* if texture has changed update to new texture */
+			if(face->tex_image) {
+				if(face->tex_image->tex_id != options->state->prev_texid) {
+					options->state->prev_texid = face->tex_image->tex_id;
+					if(prev_ftype != -1)
+						glEnd();
+					glBindTexture(GL_TEXTURE_2D, options->state->prev_texid);
+					if(prev_ftype != -1)
+						glBegin(prev_ftype);
+#if DEBUG > 5
+					g_print("gl: binding to texture id %d\n", prev_texid);
+#endif
+				}
+			}
+		} /* texture stuff */
+
+		switch(face->vertex_count) {
+			case 3: ftype = GL_TRIANGLES; break;
+			case 4: ftype = GL_QUADS; break;
+			case 2: ftype = GL_LINES; break;
+			default: ftype = GL_POLYGON;
+#if DEBUG > 0
+				g_debug("face vertex count: %d", face->vertex_count);
+#endif
+				break;
+		}
+		if(ftype != prev_ftype) {
+			if(prev_ftype != -1)
+				glEnd();
+			glBegin(ftype);
+			prev_ftype = ftype;
+		}
+
+		for(j = 0; j < face->vertex_count; j ++) {
+			index = face->vertex_indices[j];
+
+			if(!is_shadow && (options->glflags & G3D_FLAG_GL_TEXTURES) &&
+				(face->flags & G3D_FLAG_FAC_TEXMAP))
+			{
+				glTexCoord2f(
+					face->tex_vertex_data[j * 2 + 0],
+					face->tex_vertex_data[j * 2 + 1]);
+			}
+
+#if 0
+			glNormal3f(
+				object->_normals[(i*3+j)*3+0],
+				object->_normals[(i*3+j)*3+1],
+				object->_normals[(i*3+j)*3+2]);
+#endif
+
+			glVertex3f(
+				object->vertex_data[index * 3 + 0],
+				object->vertex_data[index * 3 + 1],
+				object->vertex_data[index * 3 + 2]);
+		}
+
+	} /* face loop */
+
+	if(prev_ftype != -1) {
+		/* something like GL_TRIANGLES is running */
+		glEnd();
+	}
+}
+
+
 static inline void gl_draw_objects(G3DGLRenderOptions *options,
 	GSList *objects, gfloat min_a, gfloat max_a, gboolean is_shadow)
 {
@@ -355,6 +457,10 @@ static inline void gl_draw_objects(G3DGLRenderOptions *options,
 			glMultMatrixf(object->transformation->matrix);
 		}
 
+#define EXPERIMENTAL
+#ifdef EXPERIMENTAL
+		gl_draw_face_list(options, object, min_a, max_a, &init, is_shadow);
+#else
 		glBegin(GL_TRIANGLES);
 
 		for(i = 0; i < object->_num_faces; i ++)
@@ -364,6 +470,7 @@ static inline void gl_draw_objects(G3DGLRenderOptions *options,
 		} /* all faces */
 
 		glEnd();
+#endif
 
 		if(!is_shadow && (options->glflags & G3D_FLAG_GL_POINTS)) {
 			glColor4f(0.2, 0.2, 0.2, 1.0);
