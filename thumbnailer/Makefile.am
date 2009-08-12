@@ -2,6 +2,8 @@ if HAVE_OSMESA
 bin_PROGRAMS = g3d-thumbnailer
 endif
 
+localedir = $(datadir)/locale
+
 g3d_thumbnailer_SOURCES = \
 	g3d-thumbnailer.c \
 	../src/gl.c \
@@ -11,6 +13,7 @@ g3d_thumbnailer_SOURCES = \
 g3d_thumbnailer_CFLAGS = \
 	-I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/src \
 	-Wall -ansi \
+	-DLOCALEDIR=\"$(localedir)\" \
 	@X_CFLAGS@ @LIBG3D_CFLAGS@ \
 	@GTK_CFLAGS@ @OSMESA_CFLAGS@ \
 	-DDEBUG=@DEBUG@ \

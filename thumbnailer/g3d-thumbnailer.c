@@ -23,10 +23,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <locale.h>
 
 #include <GL/osmesa.h>
 
 #include <glib.h>
+#include <glib/gi18n.h>
 #include <glib-object.h>
 #include <g3d/g3d.h>
 #include <g3d/quat.h>
@@ -61,20 +63,26 @@ int main(int argc, char *argv[])
 	guint32 bgcolor;
 	GOptionEntry opt_entries[] = {
 		{ "angle-x", 'x', 0, G_OPTION_ARG_DOUBLE, &opt_angle_x,
-			"x rotation of view angle", NULL },
+			_("x rotation of view angle"), NULL },
 		{ "angle-y", 'y', 0, G_OPTION_ARG_DOUBLE, &opt_angle_y,
-			"y rotation of view angle", NULL },
+			_("y rotation of view angle"), NULL },
 		{ "bgcolor", 'c', 0, G_OPTION_ARG_STRING, &opt_bgcolor,
-			"background color in #RRGGBBAA notation", NULL },
+			_("background color in #RRGGBBAA notation"), NULL },
 		{ "height", 'h', 0, G_OPTION_ARG_INT, &opt_height,
-			"height of image in px (default: width)", NULL },
+			_("height of image in px (default: width)"), NULL },
 		{ NULL }
 	};
+
+	/* localization stuff */
+	setlocale(LC_ALL, "");
+	bindtextdomain(PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
+
 
 	g_type_init();
 
 	opt_ctxt = g_option_context_new(
-		"<input model> <output image> [<width in px>]");
+		_("<input model> <output image> [<width in px>]"));
 	g_option_context_add_main_entries(opt_ctxt, opt_entries, PACKAGE);
 	g_option_context_parse(opt_ctxt, &argc, &argv, &error);
 	if(error) {
@@ -83,8 +91,8 @@ int main(int argc, char *argv[])
 		error = NULL;
 	}
 	if(argc < 3) {
-		g_print("usage: %s <input file: model> <output file: image> "
-			"[<width in px>]\n",
+		g_print(_("usage: %s <input file: model> <output file: image> "
+			"[<width in px>]\n"),
 			argv[0]);
 		return EXIT_FAILURE;
 	}
