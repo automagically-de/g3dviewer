@@ -1,0 +1,50 @@
+<html>
+	<head>
+		<title>...</title>
+		<script type="text/javascript" src="g3dnp.js"></script>
+		<style>
+div.g3dnp {
+	width: 400px;
+	height: 400px;
+	border: 2px dotted black;
+	float: left;
+	padding: 10px;
+	margin: 10px;
+}
+
+div.g3dnp .tool {
+	width: 24px;
+	height: 24px;
+	padding: 2px;
+	margin: 2px;
+	text-decoration: none;
+	font-weight: bold;
+	font-size: x-small;
+	background-color: red;
+	color: white;
+}
+		</style>
+	</head>
+	<body>
+		<div class="g3dnp" id="3dnp1"></div>
+		<script type="text/javascript"><!--
+
+np1 = new g3d.NP('images/melcher', 'png',
+	-30, 30, 10, 0,
+	0, 350, 10, 0);
+np1.insert('3dnp1');
+np1.addTools();
+np1.registerEventHandlers();
+
+		//--></script>
+		<div class="g3dnp" id="3dnp2"></div>
+		<script type="text/javascript"><!--
+np2 = new g3d.NP('images/melcher', 'png',
+	0, 0, 0, 0,
+	0, 350, 10, 0);
+np2.insert('3dnp2');
+np2.addTools();
+np2.registerEventHandlers();
+		//--></script>
+	</body>
+</html>
