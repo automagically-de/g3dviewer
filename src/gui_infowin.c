@@ -276,19 +276,30 @@ static gboolean add_texture(G3DViewer *viewer, GtkTreeIter *parentiter,
 {
 	GtkTreeIter iter;
 
+#if DEBUG > 5
+	g_print("<tex %p>\n", texture);
+#endif
+
 	if(texture)
 	{
 		gtk_tree_store_append(viewer->info.treestore, &iter, parentiter);
 		gtk_tree_store_set(viewer->info.treestore, &iter,
 			COL_TYPE, TYPE_TEXTURE,
-			COL_TITLE, texture->name,
+			COL_TITLE, texture->name ? texture->name : "unnamed texture",
 			COL_VALUE, "",
 			COL_CHECK, FALSE,
 			COL_ICON, viewer->interface.icons[ICON_TEXTURE],
 			-1);
 
+#if DEBUG > 5
+		g_print("</tex>\n");
+#endif
+
 		return TRUE;
 	}
+#if DEBUG > 5
+	g_print("</tex>\n");
+#endif
 
 	return FALSE;
 }
@@ -302,15 +313,17 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 	gchar *matname, *stmp;
 	guint8 r, g, b, fg;
 
-	mlist = materials;
-	while(mlist != NULL)
-	{
+	for(mlist = materials; mlist != NULL; mlist = mlist->next) {
 		material = (G3DMaterial *)mlist->data;
 
 		if(material->name && strlen(material->name))
 			matname = material->name;
 		else
 			matname = _("(unnamed material)");
+
+#if DEBUG > 5
+		g_print("mat: %s\n", matname);
+#endif
 
 		gtk_tree_store_append(viewer->info.treestore, &iter1, parentiter);
 		gtk_tree_store_set(viewer->info.treestore, &iter1,
@@ -341,9 +354,6 @@ static gboolean add_materials(G3DViewer *viewer, GtkTreeIter *parentiter,
 			COL_ICON, viewer->interface.icons[ICON_PROPERTY],
 			-1);
 		g_free(stmp);
-
-		/* next material */
-		mlist = mlist->next;
 	}
 
 	return TRUE;
@@ -355,10 +365,13 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 	GtkTreeIter iter, iter2;
 	G3DObject *object;
 	gchar *stmp;
+	GSList *item;
 
-	while(objects != NULL)
-	{
-		object = (G3DObject *)objects->data;
+	for(item = objects; item != NULL; item = item->next) {
+		object = (G3DObject *)item->data;
+
+		g_return_val_if_fail(object != NULL, FALSE);
+		g_return_val_if_fail(object->name != NULL, FALSE);
 
 		/* object node */
 		gtk_tree_store_append(viewer->info.treestore, &iter, parentiter);
@@ -376,8 +389,9 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 		add_objects(viewer, &iter, object->objects);
 
 		/* texture image */
+#if 0
 		add_texture(viewer, &iter, object->tex_image);
-
+#endif
 		/* vertices */
 		if(object->vertex_count > 0) {
 			stmp = g_strdup_printf("%d", object->vertex_count);
@@ -422,8 +436,6 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 
 		/* add object-specific materials */
 		add_materials(viewer, &iter, object->materials);
-
-		objects = objects->next;
 	}
 
 	return TRUE;
