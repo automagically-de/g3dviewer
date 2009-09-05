@@ -95,6 +95,8 @@ void gui_log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	static GtkTreeIter *nodes[LOG_MAX_DEPTH], *misciter = NULL;
 	static gboolean init_nodes = TRUE;
 
+	g_return_if_fail(message != NULL);
+
 	viewer = (G3DViewer *)user_data;
 
 	if(init_nodes) {

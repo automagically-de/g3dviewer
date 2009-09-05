@@ -242,6 +242,7 @@ static inline void gl_update_material(G3DGLRenderOptions *options,
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
 
+#if 0
 static inline void gl_draw_face(G3DGLRenderOptions *options,
 	G3DObject *object, gint32 i, gfloat min_a, gfloat max_a,
 	gboolean *dont_render, gboolean *init, gboolean is_shadow)
@@ -320,6 +321,7 @@ static inline void gl_draw_face(G3DGLRenderOptions *options,
 
 	} /* 1 .. 3 */
 }
+#endif
 
 static inline void gl_may_end(gint32 ftype)
 {
