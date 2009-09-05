@@ -32,6 +32,8 @@
 #include <g3d/types.h>
 #include <g3d/quat.h>
 #include <g3d/matrix.h>
+#include <g3d/vector.h>
+#include <g3d/face.h>
 
 #include "gl.h"
 
@@ -319,17 +321,29 @@ static inline void gl_draw_face(G3DGLRenderOptions *options,
 	} /* 1 .. 3 */
 }
 
+static inline void gl_may_end(gint32 ftype)
+{
+	if(ftype != -1)
+		glEnd();
+}
+
+static inline void gl_may_begin(gint32 ftype)
+{
+	if(ftype != -1)
+		glBegin(ftype);
+}
+
 static inline void gl_draw_face_list(G3DGLRenderOptions *options,
 	G3DObject *object, gfloat min_a, gfloat max_a,
 	gboolean *init, gboolean is_shadow)
 {
 	GSList *fitem;
 	G3DFace *face;
+	G3DVector nx, ny, nz;
 	gint32 prev_ftype = -1;
 	gint32 index, j, ftype;
 
-	if(*init)
-	{
+	if(*init) {
 		options->state->prev_material = NULL;
 		options->state->prev_texid = 0;
 		*init = FALSE;
@@ -342,11 +356,10 @@ static inline void gl_draw_face_list(G3DGLRenderOptions *options,
 				return;
 			}
 
-			if(prev_ftype != -1)
-				glEnd();
+			gl_may_end(prev_ftype);
 			gl_update_material(options, face->material);
-			if(prev_ftype != -1)
-				glBegin(prev_ftype);
+			gl_may_begin(prev_ftype);
+
 			options->state->prev_material = face->material;
 
 			options->state->prev_texid = 0;
@@ -359,11 +372,10 @@ static inline void gl_draw_face_list(G3DGLRenderOptions *options,
 			if(face->tex_image) {
 				if(face->tex_image->tex_id != options->state->prev_texid) {
 					options->state->prev_texid = face->tex_image->tex_id;
-					if(prev_ftype != -1)
-						glEnd();
+
+					gl_may_end(prev_ftype);
 					glBindTexture(GL_TEXTURE_2D, options->state->prev_texid);
-					if(prev_ftype != -1)
-						glBegin(prev_ftype);
+					gl_may_begin(prev_ftype);
 #if DEBUG > 5
 					g_print("gl: binding to texture id %d\n", prev_texid);
 #endif
@@ -382,10 +394,23 @@ static inline void gl_draw_face_list(G3DGLRenderOptions *options,
 				break;
 		}
 		if(ftype != prev_ftype) {
-			if(prev_ftype != -1)
-				glEnd();
+			gl_may_end(prev_ftype);
 			glBegin(ftype);
 			prev_ftype = ftype;
+		}
+
+		if(!(face->flags & G3D_FLAG_FAC_NORMALS)) {
+			face->normals = g_new0(G3DVector, face->vertex_count * 3);
+
+			g3d_face_get_normal(face, object, &nx, &ny, &nz);
+			g3d_vector_unify(&nx, &ny, &nz);
+
+			for(j = 0; j < face->vertex_count; j ++) {
+				face->normals[j * 3 + 0] = nx;
+				face->normals[j * 3 + 1] = ny;
+				face->normals[j * 3 + 2] = nz;
+			}
+			face->flags |= G3D_FLAG_FAC_NORMALS;
 		}
 
 		for(j = 0; j < face->vertex_count; j ++) {
@@ -399,12 +424,10 @@ static inline void gl_draw_face_list(G3DGLRenderOptions *options,
 					face->tex_vertex_data[j * 2 + 1]);
 			}
 
-#if 0
 			glNormal3f(
-				object->_normals[(i*3+j)*3+0],
-				object->_normals[(i*3+j)*3+1],
-				object->_normals[(i*3+j)*3+2]);
-#endif
+				face->normals[j * 3 + 0],
+				face->normals[j * 3 + 1],
+				face->normals[j * 3 + 2]);
 
 			glVertex3f(
 				object->vertex_data[index * 3 + 0],
@@ -414,10 +437,7 @@ static inline void gl_draw_face_list(G3DGLRenderOptions *options,
 
 	} /* face loop */
 
-	if(prev_ftype != -1) {
-		/* something like GL_TRIANGLES is running */
-		glEnd();
-	}
+	gl_may_end(prev_ftype);
 }
 
 
