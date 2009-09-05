@@ -3,7 +3,7 @@
 /*
 	G3DViewer - 3D object viewer
 
-	Copyright (C) 2005, 2006  Markus Dahms <mad@automagically.de>
+	Copyright (C) 2005 - 2009  Markus Dahms <mad@automagically.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,10 +43,10 @@ gboolean model_load(G3DViewer *viewer)
 	/* clean log */
 	gui_log_clean(viewer);
 
-	model = g3d_model_load(viewer->g3dcontext, viewer->filename);
+	model = g3d_model_load_full(viewer->g3dcontext, viewer->filename,
+		G3D_MODEL_SCALE | G3D_MODEL_CENTER);
 	viewer->renderoptions->updated = TRUE;
-	if(model)
-	{
+	if(model) {
 		viewer->model = model;
 		texture_load_all_textures(viewer->model);
 		title = g_strdup_printf(_("%s successfully loaded."),
