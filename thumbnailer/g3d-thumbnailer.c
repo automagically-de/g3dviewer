@@ -3,7 +3,7 @@
 /*
 	G3DViewer - 3D object viewer
 
-	Copyright (C) 2005, 2006  Markus Dahms <mad@automagically.de>
+	Copyright (C) 2005 - 2009  Markus Dahms <mad@automagically.de>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,7 +78,6 @@ int main(int argc, char *argv[])
 	bindtextdomain(PACKAGE, LOCALEDIR);
 	textdomain(PACKAGE);
 
-
 	g_type_init();
 
 	opt_ctxt = g_option_context_new(
@@ -149,7 +148,8 @@ int main(int argc, char *argv[])
 	}
 
 	context = g3d_context_new();
-	model = g3d_model_load(context, argv[1]);
+	model = g3d_model_load_full(context, argv[1],
+		G3D_MODEL_SCALE | G3D_MODEL_CENTER);
 
 	if(model) {
 		texture_load_all_textures(model);
