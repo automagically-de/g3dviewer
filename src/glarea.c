@@ -28,6 +28,7 @@
 
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
+#include <gdk/gdkkeysyms.h>
 #include <GL/gl.h>
 #include <g3d/quat.h>
 
@@ -151,6 +152,7 @@ gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event)
 	/* left mouse buttom: rotate object */
 	if(event->button == 1)
 	{
+		gtk_widget_grab_focus(widget);
 		viewer->mouse.beginx = event->x;
 		viewer->mouse.beginy = event->y;
 		return TRUE;
@@ -172,16 +174,38 @@ gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event)
 	return FALSE;
 }
 
+static void glarea_trackball(G3DViewer *viewer,
+	G3DFloat x1, G3DFloat y1, G3DFloat x2, G3DFloat y2)
+{
+	gfloat spin_quat[4];
+	G3DFloat rx, ry, rz;
+	gchar *text;
+
+	g3d_quat_trackball(spin_quat, x1, y1, x2, y2, 0.8);
+	g3d_quat_add(viewer->renderoptions->quat,
+		spin_quat, viewer->renderoptions->quat);
+	/* normalize quat some times */
+	viewer->renderoptions->norm_count ++;
+	if(viewer->renderoptions->norm_count > 97) {
+		viewer->renderoptions->norm_count = 0;
+		g3d_quat_normalize(viewer->renderoptions->quat);
+	}
+
+	g3d_quat_to_rotation_xyz(viewer->renderoptions->quat, &rx, &ry, &rz);
+	text = g_strdup_printf("%-.2f°, %-.2f°, %-.2f°",
+		rx * 180.0 / G_PI, ry * 180.0 / G_PI, rz * 180.0 / G_PI);
+	gui_glade_status(viewer, text);
+	g_free(text);
+}
+
 /*
  * handler for "motion notify" event
  */
 gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 {
 	gint x, y;
-	gchar *text;
 	GdkRectangle area;
 	GdkModifierType state;
-	G3DFloat rx, ry, rz;
 	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
@@ -200,10 +224,8 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 	area.height = widget->allocation.height;
 
 	/* left button pressed */
-	if(state & GDK_BUTTON1_MASK)
-	{
-		if(state & GDK_SHIFT_MASK)
-		{
+	if(state & GDK_BUTTON1_MASK) {
+		if(state & GDK_SHIFT_MASK) {
 			/* shift pressed, translate view */
 			viewer->renderoptions->offx +=
 				(gdouble)(x - viewer->mouse.beginx) /
@@ -211,40 +233,20 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 			viewer->renderoptions->offy -=
 				(gdouble)(y - viewer->mouse.beginy) /
 				(gdouble)(viewer->renderoptions->zoom * 10);
-		}
-		else
-		{
+		} else {
 			/* rotate view */
-			gfloat spin_quat[4];
-			g3d_quat_trackball(spin_quat,
+			glarea_trackball(viewer,
 				(2.0 * viewer->mouse.beginx - area.width) / area.width,
 				(area.height - 2.0 * viewer->mouse.beginy) / area.height,
 				(2.0 * x - area.width) / area.width,
-				(area.height - 2.0 * y) / area.height,
-				0.8 /* trackball radius */);
-			g3d_quat_add(viewer->renderoptions->quat,
-				spin_quat, viewer->renderoptions->quat);
-			/* normalize quat some times */
-			viewer->renderoptions->norm_count ++;
-			if(viewer->renderoptions->norm_count > 97) {
-				viewer->renderoptions->norm_count = 0;
-				g3d_quat_normalize(viewer->renderoptions->quat);
-			}
-
-			g3d_quat_to_rotation_xyz(viewer->renderoptions->quat,
-				&rx, &ry, &rz);
-			text = g_strdup_printf("%-.2f°, %-.2f°, %-.2f°",
-				rx * 180.0 / G_PI, ry * 180.0 / G_PI, rz * 180.0 / G_PI);
-			gui_glade_status(viewer, text);
-			g_free(text);
+				(area.height - 2.0 * y) / area.height);
 		}
 
 		glarea_update(widget);
 	}
 
 	/* middle mouse button */
-	if(state & GDK_BUTTON2_MASK)
-	{
+	if(state & GDK_BUTTON2_MASK) {
 		viewer->renderoptions->zoom +=
 			((y - viewer->mouse.beginy) / (gfloat)area.height) * 40;
 		if(viewer->renderoptions->zoom < 1)
@@ -259,4 +261,54 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 
 	return TRUE;
 }
+
+#define GLAREA_KEYPRESS_ROTATE_STEP 0.3
+#define GLAREA_KEYPRESS_PAN_STEP 0.5
+
+gboolean glarea_keypress_cb(GtkWidget *widget, GdkEventKey *event,
+	gpointer user_data)
+{
+	gfloat offx = 0.0, offy = 0.0;
+	gfloat panx = 0.0, pany = 0.0;
+	guint32 action = 0;
+	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
+		"viewer");
+
+	switch(event->keyval) {
+		case GDK_Left:
+			offx = GLAREA_KEYPRESS_ROTATE_STEP;
+			panx = -GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			break;
+		case GDK_Right:
+			offx = -GLAREA_KEYPRESS_ROTATE_STEP;
+			panx = GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			break;
+		case GDK_Up:
+			offy = -GLAREA_KEYPRESS_ROTATE_STEP;
+			pany = GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			break;
+		case GDK_Down:
+			offy = GLAREA_KEYPRESS_ROTATE_STEP;
+			pany = -GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			break;
+	}
+
+	if(action == 1) {
+		glarea_trackball(viewer, 0, 0, offx, offy);
+		glarea_update(widget);
+		return TRUE;
+	} else if(action == 2) {
+		viewer->renderoptions->offx += panx;
+		viewer->renderoptions->offy += pany;
+		glarea_update(widget);
+		return TRUE;
+	}	
+
+	return FALSE;
+}
+
 
