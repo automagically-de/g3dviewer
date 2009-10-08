@@ -419,6 +419,10 @@ GtkWidget *gui_glade_create_glwidget(void)
 		G_CALLBACK(glarea_destroy), NULL);
 	g_signal_connect(G_OBJECT(glarea), "key-press-event",
 		G_CALLBACK(glarea_keypress_cb), NULL);
+	g_signal_connect(G_OBJECT(glarea), "focus-in-event",
+		G_CALLBACK(glarea_focus_cb), NULL);
+	g_signal_connect(G_OBJECT(glarea), "focus-out-event",
+		G_CALLBACK(glarea_focus_cb), NULL);
 
 	/* drag and drop stuff */
 	gtk_drag_dest_set(glarea,

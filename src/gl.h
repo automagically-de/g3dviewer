@@ -40,6 +40,8 @@ typedef struct _G3DGLRenderState G3DGLRenderState;
 typedef struct {
 	/* to be set by caller */
 	gfloat zoom;
+	guint32 width;
+	guint32 height;
 	gfloat aspect;
 	gfloat bgcolor[4];
 	gfloat quat[4];
@@ -51,6 +53,7 @@ typedef struct {
 	gint32 glflags;
 	gboolean updated;
 	gboolean initialized;
+	gboolean focused;
 	/* can be read by caller */
 	guint32 avg_msec;
 	/* to be used by caller only */

@@ -35,5 +35,7 @@ gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event);
 gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event);
 gboolean glarea_keypress_cb(GtkWidget *widget, GdkEventKey *key,
 	gpointer user_data);
+gboolean glarea_focus_cb(GtkWidget *widget, GdkEventFocus *event,
+	gpointer user_data);
 
 #endif

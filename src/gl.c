@@ -523,25 +523,34 @@ static inline void matrix_g3d_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4])
 			glm[i][j] = g3dm[i * 4 + j];
 }
 
+static inline void gl_draw_osd(G3DGLRenderOptions *options)
+{
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, options->width, 0, options->height, 0, 1);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	if (options->focused) {
+		glColor3f(0.0, 0.0, 0.0);
+		glLineStipple(1, 0xAAAA);
+		glEnable(GL_LINE_STIPPLE);
+		glBegin(GL_LINE_LOOP);
+		glVertex3f(1, 1, 0);
+		glVertex3f(options->width - 2, 1, 0);
+		glVertex3f(options->width - 2, options->height - 2, 0);
+		glVertex3f(1, options->height - 2, 0);
+		glEnd();
+		glDisable(GL_LINE_STIPPLE);
+	}
+}
+
 static inline void gl_setup_view(G3DGLRenderOptions *options)
 {
 	GLfloat m[4][4];
 	G3DMatrix *g3dm;
 	G3DFloat w, h;
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	if(options->glflags & G3D_FLAG_GL_ISOMETRIC) {
-		w = 0.5 * options->zoom;
-		h = w / options->aspect;
-		glOrtho(-w / 2.0, w / 2.0, -h / 2.0, h / 2.0, 1, 100);
-	} else {
-		gluPerspective(options->zoom, options->aspect, 1, 100);
-	}
-	/* translation of view */
-	glTranslatef(options->offx, options->offy, 0.0);
-
-	glMatrixMode(GL_MODELVIEW);
 
 	glClearColor(
 		options->bgcolor[0],
@@ -556,7 +565,24 @@ static inline void gl_setup_view(G3DGLRenderOptions *options)
 		GL_ACCUM_BUFFER_BIT |
 		GL_STENCIL_BUFFER_BIT);
 
+	gl_draw_osd(options);
+
+	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+
+	if(options->glflags & G3D_FLAG_GL_ISOMETRIC) {
+		w = 0.5 * options->zoom;
+		h = w / options->aspect;
+		glOrtho(-w / 2.0, w / 2.0, -h / 2.0, h / 2.0, 1, 100);
+	} else {
+		gluPerspective(options->zoom, options->aspect, 1, 100);
+	}
+	/* translation of view */
+	glTranslatef(options->offx, options->offy, 0.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
 	glTranslatef(0, 0, -30);
 	g3dm = g3d_matrix_new();
 	g3d_quat_to_matrix(options->quat, g3dm);

@@ -86,6 +86,8 @@ gint glarea_configure(GtkWidget *widget, GdkEventConfigure *event)
 
 	viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget), "viewer");
 	glViewport(0,0, widget->allocation.width, widget->allocation.height);
+	viewer->renderoptions->width = widget->allocation.width;
+	viewer->renderoptions->height = widget->allocation.height;
 	viewer->renderoptions->aspect = (gfloat)widget->allocation.width /
 		(gfloat)widget->allocation.height;
 #if DEBUG > 3
@@ -311,4 +313,12 @@ gboolean glarea_keypress_cb(GtkWidget *widget, GdkEventKey *event,
 	return FALSE;
 }
 
+gboolean glarea_focus_cb(GtkWidget *widget, GdkEventFocus *event,
+	gpointer user_data)
+{
+	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
+		"viewer");
 
+	viewer->renderoptions->focused = event->in;
+	return FALSE;
+}
