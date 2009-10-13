@@ -153,6 +153,7 @@ int main(int argc, char *argv[])
 
 	if(model) {
 		texture_load_all_textures(model);
+		gl_setup_view(options);
 		gl_draw(options, model);
 		glFinish();
 		if(screenshot_save_from_pixels(imgbuf, argv[2], width, height))
