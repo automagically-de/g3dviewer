@@ -242,87 +242,6 @@ static inline void gl_update_material(G3DGLRenderOptions *options,
 		glMaterialf(facetype, GL_SHININESS, 0.0);
 }
 
-#if 0
-static inline void gl_draw_face(G3DGLRenderOptions *options,
-	G3DObject *object, gint32 i, gfloat min_a, gfloat max_a,
-	gboolean *dont_render, gboolean *init, gboolean is_shadow)
-{
-	gint32 j;
-
-	if(*init)
-	{
-		options->state->prev_material = NULL;
-		options->state->prev_texid = 0;
-		*init = FALSE;
-	}
-
-	/* material check */
-	if(!is_shadow && (options->state->prev_material != object->_materials[i]))
-	{
-		if((object->_materials[i]->a < min_a) ||
-			(object->_materials[i]->a >= max_a))
-		{
-			*dont_render = TRUE;
-			return;
-		}
-
-		*dont_render = FALSE;
-
-		glEnd();
-		gl_update_material(options, object->_materials[i]);
-		glBegin(GL_TRIANGLES);
-		options->state->prev_material = object->_materials[i];
-
-		options->state->prev_texid = 0;
-	}
-
-	if(*dont_render) return;
-
-	/* texture stuff */
-	if(!is_shadow && (options->glflags & G3D_FLAG_GL_TEXTURES) &&
-		(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
-	{
-		/* if texture has changed update to new texture */
-		if(object->_tex_images[i] != options->state->prev_texid) {
-			options->state->prev_texid = object->_tex_images[i];
-			glEnd();
-			glBindTexture(GL_TEXTURE_2D, options->state->prev_texid);
-			glBegin(GL_TRIANGLES);
-#if DEBUG > 5
-			g_print("gl: binding to texture id %d\n", prev_texid);
-#endif
-		}
-	}
-
-	/* draw triangles */
-	for(j = 0; j < 3; j ++)
-	{
-		if(!is_shadow && (options->glflags & G3D_FLAG_GL_TEXTURES) &&
-			(object->_flags[i] & G3D_FLAG_FAC_TEXMAP))
-		{
-			glTexCoord2f(
-				object->_tex_coords[(i * 3 + j) * 2 + 0],
-				object->_tex_coords[(i * 3 + j) * 2 + 1]);
-#if DEBUG > 5
-			g_print("gl: setting texture coords: %f, %f\n",
-				object->_tex_coords[(i * 3 + j) * 2 + 0],
-				object->_tex_coords[(i * 3 + j) * 2 + 1]);
-#endif
-		}
-
-		glNormal3f(
-			object->_normals[(i*3+j)*3+0],
-			object->_normals[(i*3+j)*3+1],
-			object->_normals[(i*3+j)*3+2]);
-		glVertex3f(
-			object->vertex_data[object->_indices[i*3+j]*3+0],
-			object->vertex_data[object->_indices[i*3+j]*3+1],
-			object->vertex_data[object->_indices[i*3+j]*3+2]);
-
-	} /* 1 .. 3 */
-}
-#endif
-
 static inline void gl_may_end(gint32 ftype)
 {
 	if(ftype != -1)
@@ -527,14 +446,14 @@ static inline void gl_draw_osd(G3DGLRenderOptions *options)
 {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(0, options->width, 0, options->height, 0, 1);
+	glOrtho(0, options->width - 1, options->height - 1, 0, 0, 1);
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
 	if (options->focused) {
 		glColor3f(0.0, 0.0, 0.0);
-		glLineStipple(1, 0xAAAA);
+		glLineStipple(1, 0xAAAA); /* dotted line */
 		glEnable(GL_LINE_STIPPLE);
 		glBegin(GL_LINE_LOOP);
 		glVertex3f(1, 1, 0);
@@ -546,7 +465,7 @@ static inline void gl_draw_osd(G3DGLRenderOptions *options)
 	}
 }
 
-static inline void gl_setup_view(G3DGLRenderOptions *options)
+void gl_setup_view(G3DGLRenderOptions *options)
 {
 	GLfloat m[4][4];
 	G3DMatrix *g3dm;
@@ -739,9 +658,6 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 		ignore_timing = TRUE;
 #endif
 	}
-
-	/* prepare viewport */
-	gl_setup_view(options);
 
 	/* reset texture */
 	glBindTexture (GL_TEXTURE_2D, 0);

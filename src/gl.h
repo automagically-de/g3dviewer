@@ -63,6 +63,7 @@ typedef struct {
 void gl_set_twoside(gboolean twoside);
 void gl_set_textures(gboolean textures);
 void gl_load_texture(gpointer key, gpointer value, gpointer data);
+void gl_setup_view(G3DGLRenderOptions *options);
 void gl_draw(G3DGLRenderOptions *options, G3DModel *model);
 
 #endif

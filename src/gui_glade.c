@@ -413,6 +413,8 @@ GtkWidget *gui_glade_create_glwidget(void)
 		G_CALLBACK(glarea_motion_notify), NULL);
 	g_signal_connect(G_OBJECT(glarea), "button_press_event",
 		G_CALLBACK(glarea_button_pressed), NULL);
+	g_signal_connect(G_OBJECT(glarea), "button_release_event",
+		G_CALLBACK(glarea_button_released), NULL);
 	g_signal_connect(G_OBJECT(glarea), "configure_event",
 		G_CALLBACK(glarea_configure), NULL);
 	g_signal_connect(G_OBJECT(glarea), "destroy_event",

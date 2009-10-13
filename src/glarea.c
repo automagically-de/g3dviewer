@@ -63,7 +63,11 @@ gint glarea_expose(GtkWidget *widget, GdkEventExpose *event)
 
 	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext)) return TRUE;
 
-	gl_draw(viewer->renderoptions, viewer->model);
+	/* prepare viewport */
+	gl_setup_view(viewer->gl.options);
+	gl_draw(viewer->gl.options, viewer->model);
+	if(viewer->gl.show_trackball)
+		gl_draw(viewer->gl.options_trackball, viewer->gl.model_trackball);
 	gdk_gl_drawable_swap_buffers(gldrawable);
 	gdk_gl_drawable_gl_end(gldrawable);
 
@@ -86,9 +90,9 @@ gint glarea_configure(GtkWidget *widget, GdkEventConfigure *event)
 
 	viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget), "viewer");
 	glViewport(0,0, widget->allocation.width, widget->allocation.height);
-	viewer->renderoptions->width = widget->allocation.width;
-	viewer->renderoptions->height = widget->allocation.height;
-	viewer->renderoptions->aspect = (gfloat)widget->allocation.width /
+	viewer->gl.options->width = widget->allocation.width;
+	viewer->gl.options->height = widget->allocation.height;
+	viewer->gl.options->aspect = (gfloat)widget->allocation.width /
 		(gfloat)widget->allocation.height;
 #if DEBUG > 3
 		g_printerr("DEBUG: glarea_configure (%f)\n", viewer->aspect);
@@ -125,9 +129,9 @@ gint glarea_scroll(GtkWidget *widget, GdkEventScroll *event)
 
 #define ZOOM_BY 10
 	if(event->direction == GDK_SCROLL_DOWN)
-		viewer->renderoptions->zoom += ZOOM_BY;
+		viewer->gl.options->zoom += ZOOM_BY;
 	else
-		viewer->renderoptions->zoom -= ZOOM_BY;
+		viewer->gl.options->zoom -= ZOOM_BY;
 #undef ZOOM_BY
 
 	area.x = 0;
@@ -135,8 +139,8 @@ gint glarea_scroll(GtkWidget *widget, GdkEventScroll *event)
 	area.width = widget->allocation.width;
 	area.height = widget->allocation.height;
 
-	if(viewer->renderoptions->zoom < 1)   viewer->renderoptions->zoom = 1;
-	if(viewer->renderoptions->zoom > 120) viewer->renderoptions->zoom = 120;
+	if(viewer->gl.options->zoom < 1)   viewer->gl.options->zoom = 1;
+	if(viewer->gl.options->zoom > 120) viewer->gl.options->zoom = 120;
 
 	glarea_update(widget);
 
@@ -154,6 +158,7 @@ gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event)
 	/* left mouse buttom: rotate object */
 	if(event->button == 1)
 	{
+		viewer->gl.show_trackball = TRUE;
 		gtk_widget_grab_focus(widget);
 		viewer->mouse.beginx = event->x;
 		viewer->mouse.beginy = event->y;
@@ -176,6 +181,17 @@ gint glarea_button_pressed(GtkWidget *widget, GdkEventButton *event)
 	return FALSE;
 }
 
+gint glarea_button_released(GtkWidget *widget, GdkEventButton *event)
+{
+	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
+		"viewer");
+
+	viewer->gl.show_trackball = FALSE;
+	glarea_update(widget);
+
+	return TRUE;
+}
+
 static void glarea_trackball(G3DViewer *viewer,
 	G3DFloat x1, G3DFloat y1, G3DFloat x2, G3DFloat y2)
 {
@@ -184,16 +200,16 @@ static void glarea_trackball(G3DViewer *viewer,
 	gchar *text;
 
 	g3d_quat_trackball(spin_quat, x1, y1, x2, y2, 0.8);
-	g3d_quat_add(viewer->renderoptions->quat,
-		spin_quat, viewer->renderoptions->quat);
+	g3d_quat_add(viewer->gl.options->quat,
+		spin_quat, viewer->gl.options->quat);
 	/* normalize quat some times */
-	viewer->renderoptions->norm_count ++;
-	if(viewer->renderoptions->norm_count > 97) {
-		viewer->renderoptions->norm_count = 0;
-		g3d_quat_normalize(viewer->renderoptions->quat);
+	viewer->gl.options->norm_count ++;
+	if(viewer->gl.options->norm_count > 97) {
+		viewer->gl.options->norm_count = 0;
+		g3d_quat_normalize(viewer->gl.options->quat);
 	}
 
-	g3d_quat_to_rotation_xyz(viewer->renderoptions->quat, &rx, &ry, &rz);
+	g3d_quat_to_rotation_xyz(viewer->gl.options->quat, &rx, &ry, &rz);
 	text = g_strdup_printf("%-.2f°, %-.2f°, %-.2f°",
 		rx * 180.0 / G_PI, ry * 180.0 / G_PI, rz * 180.0 / G_PI);
 	gui_glade_status(viewer, text);
@@ -229,12 +245,12 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 	if(state & GDK_BUTTON1_MASK) {
 		if(state & GDK_SHIFT_MASK) {
 			/* shift pressed, translate view */
-			viewer->renderoptions->offx +=
+			viewer->gl.options->offx +=
 				(gdouble)(x - viewer->mouse.beginx) /
-				(gdouble)(viewer->renderoptions->zoom * 10);
-			viewer->renderoptions->offy -=
+				(gdouble)(viewer->gl.options->zoom * 10);
+			viewer->gl.options->offy -=
 				(gdouble)(y - viewer->mouse.beginy) /
-				(gdouble)(viewer->renderoptions->zoom * 10);
+				(gdouble)(viewer->gl.options->zoom * 10);
 		} else {
 			/* rotate view */
 			glarea_trackball(viewer,
@@ -249,12 +265,12 @@ gint glarea_motion_notify(GtkWidget *widget, GdkEventMotion *event)
 
 	/* middle mouse button */
 	if(state & GDK_BUTTON2_MASK) {
-		viewer->renderoptions->zoom +=
+		viewer->gl.options->zoom +=
 			((y - viewer->mouse.beginy) / (gfloat)area.height) * 40;
-		if(viewer->renderoptions->zoom < 1)
-			viewer->renderoptions->zoom = 1;
-		if(viewer->renderoptions->zoom > 120)
-			viewer->renderoptions->zoom = 120;
+		if(viewer->gl.options->zoom < 1)
+			viewer->gl.options->zoom = 1;
+		if(viewer->gl.options->zoom > 120)
+			viewer->gl.options->zoom = 120;
 
 		glarea_update(widget);
 	}
@@ -272,7 +288,13 @@ gboolean glarea_keypress_cb(GtkWidget *widget, GdkEventKey *event,
 {
 	gfloat offx = 0.0, offy = 0.0;
 	gfloat panx = 0.0, pany = 0.0;
-	guint32 action = 0;
+	guint32 zoom = 0;
+	enum {
+		A_NONE,
+		A_TRACK,
+		A_PAN,
+		A_ZOOM
+	} action = A_NONE;
 	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
@@ -280,34 +302,51 @@ gboolean glarea_keypress_cb(GtkWidget *widget, GdkEventKey *event,
 		case GDK_Left:
 			offx = GLAREA_KEYPRESS_ROTATE_STEP;
 			panx = -GLAREA_KEYPRESS_PAN_STEP;
-			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
 			break;
 		case GDK_Right:
 			offx = -GLAREA_KEYPRESS_ROTATE_STEP;
 			panx = GLAREA_KEYPRESS_PAN_STEP;
-			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
 			break;
 		case GDK_Up:
 			offy = -GLAREA_KEYPRESS_ROTATE_STEP;
 			pany = GLAREA_KEYPRESS_PAN_STEP;
-			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
 			break;
 		case GDK_Down:
 			offy = GLAREA_KEYPRESS_ROTATE_STEP;
 			pany = -GLAREA_KEYPRESS_PAN_STEP;
-			action = (event->state & GDK_SHIFT_MASK) ? 2 : 1;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
+			break;
+		case GDK_minus:
+			zoom = 10;
+			action = A_ZOOM;
+			break;
+		case GDK_plus:
+			zoom = -10;
+			action = A_ZOOM;
 			break;
 	}
 
-	if(action == 1) {
-		glarea_trackball(viewer, 0, 0, offx, offy);
-		glarea_update(widget);
-		return TRUE;
-	} else if(action == 2) {
-		viewer->renderoptions->offx += panx;
-		viewer->renderoptions->offy += pany;
-		glarea_update(widget);
-		return TRUE;
+	switch(action) {
+		case A_TRACK:
+			glarea_trackball(viewer, 0, 0, offx, offy);
+			glarea_update(widget);
+			return TRUE;
+		case A_PAN:
+			viewer->gl.options->offx += panx;
+			viewer->gl.options->offy += pany;
+			glarea_update(widget);
+			return TRUE;
+		case A_ZOOM:
+			zoom += viewer->gl.options->zoom;
+			g_print("zoom = %d\n", zoom);
+			viewer->gl.options->zoom = MIN(120, MAX(1, zoom));
+			glarea_update(widget);
+			return TRUE;
+		case A_NONE:
+			return FALSE;
 	}	
 
 	return FALSE;
@@ -319,6 +358,6 @@ gboolean glarea_focus_cb(GtkWidget *widget, GdkEventFocus *event,
 	G3DViewer *viewer = (G3DViewer*)g_object_get_data(G_OBJECT(widget),
 		"viewer");
 
-	viewer->renderoptions->focused = event->in;
+	viewer->gl.options->focused = event->in;
 	return FALSE;
 }

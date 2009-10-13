@@ -45,7 +45,12 @@ typedef struct {
 	guint32 debug_flags;
 
 	/* GL stuff */
-	G3DGLRenderOptions *renderoptions;
+	struct {
+		gboolean show_trackball;
+		G3DModel *model_trackball;
+		G3DGLRenderOptions *options_trackball;
+		G3DGLRenderOptions *options;
+	} gl;
 
 	/* mouse */
 	struct {

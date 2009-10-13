@@ -45,7 +45,7 @@ gboolean model_load(G3DViewer *viewer)
 
 	model = g3d_model_load_full(viewer->g3dcontext, viewer->filename,
 		G3D_MODEL_SCALE | G3D_MODEL_CENTER);
-	viewer->renderoptions->updated = TRUE;
+	viewer->gl.options->updated = TRUE;
 	if(model) {
 		viewer->model = model;
 		texture_load_all_textures(viewer->model);

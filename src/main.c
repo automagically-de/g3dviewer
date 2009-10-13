@@ -34,17 +34,23 @@
 #include <g3d/types.h>
 #include <g3d/quat.h>
 
+#include <g3d/material.h>
+#include <g3d/primitive.h>
+#include <g3d/model.h>
+
 #include "main.h"
 #include "model.h"
 #include "glarea.h"
 #include "gui_glade.h"
 #include "gl.h"
 
+static G3DModel *main_create_trackballmodel(void);
 static void main_cleanup(G3DViewer *viewer);
 
 int main(int argc, char **argv)
 {
 	G3DViewer *viewer;
+	G3DGLRenderOptions *renderoptions;
 	gboolean opt_debug_tree = FALSE;
 	gboolean opt_debug_data = FALSE;
 	gboolean opt_parse_only = FALSE;
@@ -100,21 +106,28 @@ int main(int argc, char **argv)
 	viewer->debug_flags =
 		(opt_debug_tree & G3DV_FLAG_DEBUG_TREE) |
 		(opt_debug_data & G3DV_FLAG_DEBUG_TREE_DATA);
-	viewer->renderoptions = g_new0(G3DGLRenderOptions, 1);
-	viewer->renderoptions->updated = TRUE;
-	viewer->renderoptions->initialized = FALSE;
-	viewer->renderoptions->zoom = 45;
-	viewer->renderoptions->bgcolor[0] = 0.9;
-	viewer->renderoptions->bgcolor[1] = 0.8;
-	viewer->renderoptions->bgcolor[2] = 0.6;
-	viewer->renderoptions->bgcolor[3] = 1.0;
-	viewer->renderoptions->glflags =
+
+	renderoptions = g_new0(G3DGLRenderOptions, 1);
+	renderoptions->updated = TRUE;
+	renderoptions->initialized = FALSE;
+	renderoptions->zoom = 45;
+	renderoptions->bgcolor[0] = 0.9;
+	renderoptions->bgcolor[1] = 0.8;
+	renderoptions->bgcolor[2] = 0.6;
+	renderoptions->bgcolor[3] = 1.0;
+	renderoptions->glflags =
 		G3D_FLAG_GL_SHININESS |
 		G3D_FLAG_GL_TEXTURES |
 		G3D_FLAG_GL_ALLTWOSIDE |
 		G3D_FLAG_GL_COLORS;
 
-	g3d_quat_trackball(viewer->renderoptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
+	g3d_quat_trackball(renderoptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
+
+	viewer->gl.options = renderoptions;
+	viewer->gl.options_trackball = g_new0(G3DGLRenderOptions, 1);
+	memcpy(viewer->gl.options_trackball, renderoptions,
+		sizeof(G3DGLRenderOptions));
+	viewer->gl.model_trackball = main_create_trackballmodel();
 
 	/* initialize libg3d */
 	viewer->g3dcontext = g3d_context_new();
@@ -153,7 +166,7 @@ int main(int argc, char **argv)
 
 			g3d_quat_rotate(q1, a1, - 45.0 * G_PI / 180.0);
 			g3d_quat_rotate(q2, a2, - 45.0 * G_PI / 180.0);
-			g3d_quat_add(viewer->renderoptions->quat, q1, q2);
+			g3d_quat_add(viewer->gl.options->quat, q1, q2);
 
 			glarea_update(viewer->interface.glarea);
 		} else {
@@ -173,9 +186,9 @@ int main(int argc, char **argv)
 
 	/* output timing statistics */
 #if DEBUG > 0
-	if(viewer->renderoptions->avg_msec != 0) {
+	if(viewer->gl.options->avg_msec != 0) {
 		g_printerr("STAT: average time to render frame in µs: %u\n",
-			viewer->renderoptions->avg_msec);
+			viewer->gl.options->avg_msec);
 	}
 #endif
 
@@ -190,4 +203,19 @@ static void main_cleanup(G3DViewer *viewer)
 	g3d_context_free(viewer->g3dcontext);
 	if(viewer->filename != NULL) g_free(viewer->filename);
 	g_free(viewer);
+}
+
+static G3DModel *main_create_trackballmodel(void)
+{
+	G3DModel *model;
+	G3DMaterial *mat;
+	G3DObject *object;
+
+	model = g3d_model_new();
+	mat = g3d_material_new();
+	mat->a = 0.3;
+	object = g3d_primitive_sphere(10.0, 36, 18, mat);
+	model->objects = g_slist_append(model->objects, object);
+
+	return model;
 }
