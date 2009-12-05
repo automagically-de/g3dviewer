@@ -204,15 +204,6 @@ void gl_load_texture(gpointer key, gpointer value, gpointer data)
 	TRAP_GL_ERROR("gl_load_texture - mipmaps");
 }
 
-static inline void matrix_g3d_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4])
-{
-	guint32 i, j;
-
-	for(i = 0; i < 4; i ++)
-		for(j = 0; j < 4; j ++)
-			glm[i][j] = g3dm[i * 4 + j];
-}
-
 static inline void gl_draw_osd(G3DGLRenderOptions *options)
 {
 	glMatrixMode(GL_PROJECTION);
@@ -408,7 +399,7 @@ void gl_draw(G3DGLRenderOptions *options, G3DModel *model)
 		glEnable(GL_LIGHTING);
 		/* shadow */
 		glPushMatrix();
-		gl_setup_shadow_matrix(options->shadow_matrix, light, plane, normal);
+		g3d_matrix_shadow(light, plane, normal, options->shadow_matrix);
 		glBindTexture (GL_TEXTURE_2D, 0);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);

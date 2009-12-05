@@ -22,6 +22,9 @@ struct _G3DGLWidgetPriv {
 	G3DGLRenderOptions *gloptions;
 	G3DModel *model;
 
+	/* from G3DGLRenderOptions, used only internally */
+	G3DFloat model_min_y;
+
 	/* from G3DGLRenderState */
 	gint32 dlists[G3DGLW_N_DLISTS];
 	gboolean dlists_valid;

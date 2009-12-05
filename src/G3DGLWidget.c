@@ -25,6 +25,8 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 	self->priv->bgcolor[2] = 0.4;
 	self->priv->bgcolor[3] = 0.0;
 
+	self->priv->gloptions = g_new0(G3DGLRenderOptions, 1);
+
     if(self->priv->glconfig == NULL) {
         self->priv->glconfig = gdk_gl_config_new_by_mode(
             GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH |
@@ -57,6 +59,13 @@ GtkWidget *g3d_gl_widget_new(void)
 
 	widget = g_object_new(G3D_GL_TYPE_WIDGET, NULL);
 	return widget;
+}
+
+gboolean g3d_gl_widget_set_model(G3DGLWidget *self, G3DModel *model)
+{
+	self->priv->model = model;
+
+	return TRUE;
 }
 
 static gboolean g3d_gl_widget_expose_cb(G3DGLWidget *self, GdkEventExpose *e)

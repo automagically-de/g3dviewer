@@ -295,32 +295,12 @@ static void gl_setup_shadow_stencil(G3DGLRenderOptions *options,
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
-static void gl_setup_shadow_matrix(G3DMatrix *m,
-	G3DVector *l, G3DVector *p, G3DVector *n)
+static inline void matrix_g3d_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4])
 {
-	G3DDouble c, d;
+	guint32 i, j;
 
-	d = n[0] * l[0] + n[1] * l[1] + n[2] * l[2];
-	c = p[0] * n[0] + p[1] * n[1] + p[2] * n[2] - d;
-
-	m[0 * 4 + 0] = l[0] * n[0] + c;
-	m[1 * 4 + 0] = l[0] * n[1];
-	m[2 * 4 + 0] = l[0] * n[2];
-	m[3 * 4 + 0] = - l[0] * c - l[0] * d;
-
-	m[0 * 4 + 1] = l[1] * n[0];
-	m[1 * 4 + 1] = l[1] * n[1] + c;
-	m[2 * 4 + 1] = l[1] * n[2];
-	m[3 * 4 + 1] = - l[1] * c - l[1] * d;
-
-	m[0 * 4 + 2] = l[2] * n[0];
-	m[1 * 4 + 2] = l[2] * n[1];
-	m[2 * 4 + 2] = l[2] * n[2] + c;
-	m[3 * 4 + 2] = - l[2] * c - l[2] * d;
-
-	m[0 * 4 + 3] = n[0];
-	m[1 * 4 + 3] = n[1];
-	m[2 * 4 + 3] = n[2];
-	m[3 * 4 + 3] = -d;
+	for(i = 0; i < 4; i ++)
+		for(j = 0; j < 4; j ++)
+			glm[i][j] = g3dm[i * 4 + j];
 }
 
