@@ -3,6 +3,9 @@
 
 #include "G3DGLWidget.h"
 #include "G3DGLWidgetPriv.h"
+#include "G3DGLWidgetRender.h"
+
+static gboolean g3d_gl_widget_expose_cb(G3DGLWidget *self, GdkEventExpose *e);
 
 static void g3d_gl_widget_class_init(G3DGLWidgetClass *klass)
 {
@@ -17,6 +20,10 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
     self->priv->glconfig = gdk_gl_config_new_by_mode(
         GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH | GDK_GL_MODE_DOUBLE |
         GDK_GL_MODE_STENCIL);
+	self->priv->bgcolor[0] = 1.0;
+	self->priv->bgcolor[1] = 0.4;
+	self->priv->bgcolor[2] = 0.4;
+	self->priv->bgcolor[3] = 0.0;
 
     if(self->priv->glconfig == NULL) {
         self->priv->glconfig = gdk_gl_config_new_by_mode(
@@ -38,6 +45,10 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
         GDK_SCROLL_MASK |
         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
+
+	g_signal_connect(G_OBJECT(self), "expose-event",
+		G_CALLBACK(g3d_gl_widget_expose_cb), NULL);
+
 }
 
 GtkWidget *g3d_gl_widget_new(void)
@@ -46,6 +57,32 @@ GtkWidget *g3d_gl_widget_new(void)
 
 	widget = g_object_new(G3D_GL_TYPE_WIDGET, NULL);
 	return widget;
+}
+
+static gboolean g3d_gl_widget_expose_cb(G3DGLWidget *self, GdkEventExpose *e)
+{
+	GdkGLDrawable *gldrawable;
+	GdkGLContext *glcontext;
+
+	if (e->count > 0)
+		return TRUE;
+
+	gldrawable = gtk_widget_get_gl_drawable(GTK_WIDGET(self));
+	glcontext = gtk_widget_get_gl_context(GTK_WIDGET(self));
+
+	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext))
+		return TRUE;
+
+	if(!self->priv->initialized) {
+		g3d_gl_widget_render_init(self);
+		self->priv->initialized = TRUE;
+	}
+	g3d_gl_widget_render_setup_view(self);
+
+	gdk_gl_drawable_swap_buffers(gldrawable);
+	gdk_gl_drawable_gl_end(gldrawable);
+
+	return TRUE;
 }
 
 G_DEFINE_TYPE(G3DGLWidget, g3d_gl_widget, GTK_TYPE_DRAWING_AREA)

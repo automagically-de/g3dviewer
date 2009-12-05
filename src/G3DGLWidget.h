@@ -2,6 +2,7 @@
 #define _G3DGLWIDGET_H
 
 #include <glib-object.h>
+#include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
 #include <g3d/types.h>
 
