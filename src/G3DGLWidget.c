@@ -20,6 +20,10 @@ static gboolean g3d_gl_widget_scroll_cb(G3DGLWidget *self,
 	GdkEventScroll *event);
 static gboolean g3d_gl_widget_button_pressed_cb(G3DGLWidget *self,
 	GdkEventButton *event);
+static gboolean g3d_gl_widget_button_released_cb(G3DGLWidget *self,
+	GdkEventButton *event);
+static gboolean g3d_gl_widget_motion_notify_cb(G3DGLWidget *self,
+	GdkEventMotion *event);
 
 static void g3d_gl_widget_class_init(G3DGLWidgetClass *klass)
 {
@@ -78,6 +82,10 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 		G_CALLBACK(g3d_gl_widget_scroll_cb), NULL);
 	g_signal_connect(G_OBJECT(self), "button_press_event",
 		G_CALLBACK(g3d_gl_widget_button_pressed_cb), NULL);
+	g_signal_connect(G_OBJECT(self), "button_release_event",
+		G_CALLBACK(g3d_gl_widget_button_released_cb), NULL);
+	g_signal_connect(G_OBJECT(self), "motion_notify_event",
+		G_CALLBACK(g3d_gl_widget_motion_notify_cb), NULL);
 }
 
 GtkWidget *g3d_gl_widget_new(void)
@@ -103,6 +111,33 @@ static inline void g3d_gl_widget_invalidate(G3DGLWidget *self)
 		GTK_WIDGET(self)->allocation.height);
 }
 
+static void g3d_gl_widget_trackball(G3DGLWidget *self,
+	G3DFloat x1, G3DFloat y1, G3DFloat x2, G3DFloat y2)
+{
+	G3DGLRenderOptions *options = self->priv->gloptions;
+	gfloat spin_quat[4];
+	G3DFloat rx, ry, rz;
+#if 0
+	gchar *text;
+#endif
+
+	g3d_quat_trackball(spin_quat, x1, y1, x2, y2, 0.8);
+	g3d_quat_add(options->quat, spin_quat, options->quat);
+	/* normalize quat some times */
+	options->norm_count ++;
+	if(options->norm_count > 97) {
+		options->norm_count = 0;
+		g3d_quat_normalize(options->quat);
+	}
+
+	g3d_quat_to_rotation_xyz(options->quat, &rx, &ry, &rz);
+#if 0
+	text = g_strdup_printf("%-.2f°, %-.2f°, %-.2f°",
+		rx * 180.0 / G_PI, ry * 180.0 / G_PI, rz * 180.0 / G_PI);
+	gui_glade_status(viewer, text);
+	g_free(text);
+#endif
+}
 
 static gboolean g3d_gl_widget_configure_cb(G3DGLWidget *self,
 	GdkEventConfigure *event)
@@ -204,9 +239,7 @@ static gboolean g3d_gl_widget_keypress_cb(G3DGLWidget *self,
 
 	switch(action) {
 		case A_TRACK:
-#if 0
-			glarea_trackball(viewer, 0, 0, offx, offy);
-#endif
+			g3d_gl_widget_trackball(self, 0, 0, offx, offy);
 			g3d_gl_widget_invalidate(self);
 			return TRUE;
 		case A_PAN:
@@ -278,6 +311,75 @@ static gboolean g3d_gl_widget_button_pressed_cb(G3DGLWidget *self,
 	}
 
 	return FALSE;
+}
+
+static gboolean g3d_gl_widget_button_released_cb(G3DGLWidget *self,
+	GdkEventButton *event)
+{
+	self->priv->show_trackball = FALSE;
+	g3d_gl_widget_invalidate(self);
+
+	return TRUE;
+}
+
+static gboolean g3d_gl_widget_motion_notify_cb(G3DGLWidget *self,
+	GdkEventMotion *event)
+{
+	gint x, y;
+	GdkRectangle area;
+	GdkModifierType state;
+	G3DGLRenderOptions *options = self->priv->gloptions;
+
+	if(event->is_hint) {
+		gdk_window_get_pointer(event->window, &x, &y, &state);
+	} else {
+		x = event->x;
+		y = event->y;
+		state = event->state;
+	}
+
+	area.x = 0;
+	area.y = 0;
+	area.width = GTK_WIDGET(self)->allocation.width;
+	area.height = GTK_WIDGET(self)->allocation.height;
+
+	/* left button pressed */
+	if(state & GDK_BUTTON1_MASK) {
+		if(state & GDK_SHIFT_MASK) {
+			/* shift pressed, translate view */
+			options->offx +=
+				(gdouble)(x - self->priv->drag_start_x) /
+				(gdouble)(options->zoom * 10);
+			options->offy -=
+				(gdouble)(y - self->priv->drag_start_y) /
+				(gdouble)(options->zoom * 10);
+		} else {
+			/* rotate view */
+			g3d_gl_widget_trackball(self,
+				(2.0 * self->priv->drag_start_x - area.width) / area.width,
+				(area.height - 2.0 * self->priv->drag_start_y) / area.height,
+				(2.0 * x - area.width) / area.width,
+				(area.height - 2.0 * y) / area.height);
+		}
+
+		g3d_gl_widget_invalidate(self);
+	}
+
+	/* middle mouse button */
+	if(state & GDK_BUTTON2_MASK) {
+		options->zoom +=
+			((y - self->priv->drag_start_y) / (gfloat)area.height) * 40;
+		if(options->zoom < 1)
+			options->zoom = 1;
+		if(options->zoom > 120)
+			options->zoom = 120;
+
+		g3d_gl_widget_invalidate(self);
+	}
+	self->priv->drag_start_x = x;
+	self->priv->drag_start_y = y;
+
+	return TRUE;
 }
 
 G_DEFINE_TYPE(G3DGLWidget, g3d_gl_widget, GTK_TYPE_DRAWING_AREA)
