@@ -22,6 +22,10 @@ struct _G3DGLWidgetPriv {
 	G3DGLRenderOptions *gloptions;
 	G3DModel *model;
 
+	gboolean show_trackball;
+	guint32 drag_start_x;
+	guint32 drag_start_y;
+
 	/* from G3DGLRenderOptions, used only internally */
 	G3DFloat model_min_y;
 

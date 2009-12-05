@@ -1,5 +1,6 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
+#include <gdk/gdkkeysyms.h>
 
 #include <g3d/quat.h>
 #include <GL/gl.h>
@@ -11,6 +12,14 @@
 static gboolean g3d_gl_widget_configure_cb(G3DGLWidget *self,
 	GdkEventConfigure *event);
 static gboolean g3d_gl_widget_expose_cb(G3DGLWidget *self, GdkEventExpose *e);
+static gboolean g3d_gl_widget_keypress_cb(G3DGLWidget *self,
+	GdkEventKey *event, gpointer user_data);
+static gboolean g3d_gl_widget_focus_cb(G3DGLWidget *self, GdkEventFocus *event,
+	gpointer user_data);
+static gboolean g3d_gl_widget_scroll_cb(G3DGLWidget *self,
+	GdkEventScroll *event);
+static gboolean g3d_gl_widget_button_pressed_cb(G3DGLWidget *self,
+	GdkEventButton *event);
 
 static void g3d_gl_widget_class_init(G3DGLWidgetClass *klass)
 {
@@ -59,7 +68,16 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 		G_CALLBACK(g3d_gl_widget_configure_cb), NULL);
 	g_signal_connect(G_OBJECT(self), "expose-event",
 		G_CALLBACK(g3d_gl_widget_expose_cb), NULL);
-
+	g_signal_connect(G_OBJECT(self), "key-press-event",
+		G_CALLBACK(g3d_gl_widget_keypress_cb), NULL);
+	g_signal_connect(G_OBJECT(self), "focus-in-event",
+		G_CALLBACK(g3d_gl_widget_focus_cb), NULL);
+	g_signal_connect(G_OBJECT(self), "focus-out-event",
+		G_CALLBACK(g3d_gl_widget_focus_cb), NULL);
+	g_signal_connect(G_OBJECT(self), "scroll_event",
+		G_CALLBACK(g3d_gl_widget_scroll_cb), NULL);
+	g_signal_connect(G_OBJECT(self), "button_press_event",
+		G_CALLBACK(g3d_gl_widget_button_pressed_cb), NULL);
 }
 
 GtkWidget *g3d_gl_widget_new(void)
@@ -77,6 +95,14 @@ gboolean g3d_gl_widget_set_model(G3DGLWidget *self, G3DModel *model)
 
 	return TRUE;
 }
+
+static inline void g3d_gl_widget_invalidate(G3DGLWidget *self)
+{
+	gtk_widget_queue_draw_area(GTK_WIDGET(self), 0, 0,
+		GTK_WIDGET(self)->allocation.width,
+		GTK_WIDGET(self)->allocation.height);
+}
+
 
 static gboolean g3d_gl_widget_configure_cb(G3DGLWidget *self,
 	GdkEventConfigure *event)
@@ -126,6 +152,132 @@ static gboolean g3d_gl_widget_expose_cb(G3DGLWidget *self, GdkEventExpose *e)
 	gdk_gl_drawable_gl_end(gldrawable);
 
 	return TRUE;
+}
+
+#define GLAREA_KEYPRESS_ROTATE_STEP 0.3
+#define GLAREA_KEYPRESS_PAN_STEP 0.5
+
+static gboolean g3d_gl_widget_keypress_cb(G3DGLWidget *self,
+	GdkEventKey *event, gpointer user_data)
+{
+	G3DGLRenderOptions *options = self->priv->gloptions;
+	gfloat offx = 0.0, offy = 0.0;
+	gfloat panx = 0.0, pany = 0.0;
+	gint32 zoom = 0;
+	enum {
+		A_NONE,
+		A_TRACK,
+		A_PAN,
+		A_ZOOM
+	} action = A_NONE;
+
+	switch(event->keyval) {
+		case GDK_Left:
+			offx = GLAREA_KEYPRESS_ROTATE_STEP;
+			panx = -GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
+			break;
+		case GDK_Right:
+			offx = -GLAREA_KEYPRESS_ROTATE_STEP;
+			panx = GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
+			break;
+		case GDK_Up:
+			offy = -GLAREA_KEYPRESS_ROTATE_STEP;
+			pany = GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
+			break;
+		case GDK_Down:
+			offy = GLAREA_KEYPRESS_ROTATE_STEP;
+			pany = -GLAREA_KEYPRESS_PAN_STEP;
+			action = (event->state & GDK_SHIFT_MASK) ? A_PAN : A_TRACK;
+			break;
+		case GDK_minus:
+			zoom = 10;
+			action = A_ZOOM;
+			break;
+		case GDK_plus:
+			zoom = -10;
+			action = A_ZOOM;
+			break;
+	}
+
+	switch(action) {
+		case A_TRACK:
+#if 0
+			glarea_trackball(viewer, 0, 0, offx, offy);
+#endif
+			g3d_gl_widget_invalidate(self);
+			return TRUE;
+		case A_PAN:
+			options->offx += panx;
+			options->offy += pany;
+			g3d_gl_widget_invalidate(self);
+			return TRUE;
+		case A_ZOOM:
+			zoom += options->zoom;
+			options->zoom = MIN(120, MAX(1, zoom));
+			g3d_gl_widget_invalidate(self);
+			return TRUE;
+		case A_NONE:
+			return FALSE;
+	}	
+
+	return FALSE;
+}
+
+static gboolean g3d_gl_widget_focus_cb(G3DGLWidget *self, GdkEventFocus *event,
+	gpointer user_data)
+{
+	self->priv->focused = event->in;
+	return FALSE;
+}
+
+static gboolean g3d_gl_widget_scroll_cb(G3DGLWidget *self,
+	GdkEventScroll *event)
+{
+	G3DGLRenderOptions *options = self->priv->gloptions;
+
+#define ZOOM_BY 10
+	if(event->direction == GDK_SCROLL_DOWN)
+		options->zoom += ZOOM_BY;
+	else
+		options->zoom -= ZOOM_BY;
+#undef ZOOM_BY
+
+	options->zoom = MIN(120, MAX(1, options->zoom));
+
+	g3d_gl_widget_invalidate(self);
+
+	return FALSE;
+}
+
+static gboolean g3d_gl_widget_button_pressed_cb(G3DGLWidget *self,
+	GdkEventButton *event)
+{
+	/* left mouse buttom: rotate object */
+	if(event->button == 1) {
+		self->priv->show_trackball = TRUE;
+		gtk_widget_grab_focus(GTK_WIDGET(self));
+		self->priv->drag_start_x = event->x;
+		self->priv->drag_start_y = event->y;
+		return TRUE;
+	}
+	/* right mouse button: pop-up menu */
+	else if(event->button == 3)	{
+		if(event->type == GDK_BUTTON_PRESS)	{
+#if 0
+			GtkWidget *menu =
+				(GtkWidget*)g_object_get_data(G_OBJECT(widget),
+					"menu");
+			gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+				event->button, event->time);
+#endif
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 }
 
 G_DEFINE_TYPE(G3DGLWidget, g3d_gl_widget, GTK_TYPE_DRAWING_AREA)
