@@ -1,10 +1,15 @@
 #include <gtk/gtk.h>
 #include <gtk/gtkgl.h>
 
+#include <g3d/quat.h>
+#include <GL/gl.h>
+
 #include "G3DGLWidget.h"
 #include "G3DGLWidgetPriv.h"
 #include "G3DGLWidgetRender.h"
 
+static gboolean g3d_gl_widget_configure_cb(G3DGLWidget *self,
+	GdkEventConfigure *event);
 static gboolean g3d_gl_widget_expose_cb(G3DGLWidget *self, GdkEventExpose *e);
 
 static void g3d_gl_widget_class_init(G3DGLWidgetClass *klass)
@@ -26,6 +31,8 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 	self->priv->bgcolor[3] = 0.0;
 
 	self->priv->gloptions = g_new0(G3DGLRenderOptions, 1);
+	self->priv->gloptions->zoom = 45;
+	g3d_quat_trackball(self->priv->gloptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 
     if(self->priv->glconfig == NULL) {
         self->priv->glconfig = gdk_gl_config_new_by_mode(
@@ -48,6 +55,8 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
         GDK_SCROLL_MASK |
         GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
 
+	g_signal_connect(G_OBJECT(self), "configure_event",
+		G_CALLBACK(g3d_gl_widget_configure_cb), NULL);
 	g_signal_connect(G_OBJECT(self), "expose-event",
 		G_CALLBACK(g3d_gl_widget_expose_cb), NULL);
 
@@ -64,6 +73,30 @@ GtkWidget *g3d_gl_widget_new(void)
 gboolean g3d_gl_widget_set_model(G3DGLWidget *self, G3DModel *model)
 {
 	self->priv->model = model;
+	self->priv->gloptions->updated = TRUE;
+
+	return TRUE;
+}
+
+static gboolean g3d_gl_widget_configure_cb(G3DGLWidget *self,
+	GdkEventConfigure *event)
+{
+	GdkGLDrawable *gldrawable;
+	GdkGLContext *glcontext;
+	G3DGLRenderOptions *options = self->priv->gloptions;
+
+	gldrawable = gtk_widget_get_gl_drawable(GTK_WIDGET(self));
+	glcontext = gtk_widget_get_gl_context(GTK_WIDGET(self));
+
+	if(!gdk_gl_drawable_gl_begin(gldrawable, glcontext))
+		return TRUE;
+
+	options->width = GTK_WIDGET(self)->allocation.width;
+	options->height = GTK_WIDGET(self)->allocation.height;
+	glViewport(0,0, options->width, options->height);
+	options->aspect = (gfloat)options->width / (gfloat)options->height;
+
+	gdk_gl_drawable_gl_end(gldrawable);
 
 	return TRUE;
 }
@@ -87,6 +120,7 @@ static gboolean g3d_gl_widget_expose_cb(G3DGLWidget *self, GdkEventExpose *e)
 		self->priv->initialized = TRUE;
 	}
 	g3d_gl_widget_render_setup_view(self);
+	g3d_gl_widget_render(self);
 
 	gdk_gl_drawable_swap_buffers(gldrawable);
 	gdk_gl_drawable_gl_end(gldrawable);
