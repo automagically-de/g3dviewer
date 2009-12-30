@@ -719,25 +719,10 @@ void g3dgl_draw(G3DGLRenderOptions *options, G3DModel *model)
 
 guint8 *g3dgl_get_pixels(guint32 width, guint32 height)
 {
-	guint8 *pixels, *flipped;
-	guint32 x, yi, yo, oi, oo;
+	guint8 *pixels;
 
 	pixels = g_new(guint8, width * height * 4);
-	flipped = g_new(guint8, width * height * 4);
-
 	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-	for(yi = 0, yo = height - 1; yi < height; yi ++, yo --) {
-		for(x = 0; x < height; x ++) {
-			oi = (yi * height + x) * 4;
-			oo = (yo * height + x) * 4;
-			flipped[oo + 0] = pixels[oi + 0];
-			flipped[oo + 1] = pixels[oi + 1];
-			flipped[oo + 2] = pixels[oi + 2];
-			flipped[oo + 3] = pixels[oi + 3];
-		}
-	}
-	g_free(pixels);
-
-	return flipped;
+	return pixels;
 }
