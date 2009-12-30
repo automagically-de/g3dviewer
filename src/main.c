@@ -40,17 +40,13 @@
 
 #include "main.h"
 #include "model.h"
-#include "glarea.h"
 #include "gui_glade.h"
-#include "gl.h"
 
-static G3DModel *main_create_trackballmodel(void);
 static void main_cleanup(G3DViewer *viewer);
 
 int main(int argc, char **argv)
 {
 	G3DViewer *viewer;
-	G3DGLRenderOptions *renderoptions;
 	gboolean opt_debug_tree = FALSE;
 	gboolean opt_debug_data = FALSE;
 	gboolean opt_parse_only = FALSE;
@@ -96,38 +92,13 @@ int main(int argc, char **argv)
 
 	gtk_gl_init(&argc, &argv);
 
-	/* create viewer and fill with defaults
-	 * TODO: move to separate function */
+	/* create viewer and fill with defaults */
 	viewer = g_new0(G3DViewer, 1);
 
-	viewer->mouse.beginx = 0;
-	viewer->mouse.beginy = 0;
 	viewer->filename = (argc > 1) ? g_strdup(argv[1]) : NULL;
 	viewer->debug_flags =
 		(opt_debug_tree & G3DV_FLAG_DEBUG_TREE) |
 		(opt_debug_data & G3DV_FLAG_DEBUG_TREE_DATA);
-
-	renderoptions = g_new0(G3DGLRenderOptions, 1);
-	renderoptions->updated = TRUE;
-	renderoptions->initialized = FALSE;
-	renderoptions->zoom = 45;
-	renderoptions->bgcolor[0] = 0.9;
-	renderoptions->bgcolor[1] = 0.8;
-	renderoptions->bgcolor[2] = 0.6;
-	renderoptions->bgcolor[3] = 1.0;
-	renderoptions->glflags =
-		G3D_FLAG_GL_SHININESS |
-		G3D_FLAG_GL_TEXTURES |
-		G3D_FLAG_GL_ALLTWOSIDE |
-		G3D_FLAG_GL_COLORS;
-
-	g3d_quat_trackball(renderoptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
-
-	viewer->gl.options = renderoptions;
-	viewer->gl.options_trackball = g_new0(G3DGLRenderOptions, 1);
-	memcpy(viewer->gl.options_trackball, renderoptions,
-		sizeof(G3DGLRenderOptions));
-	viewer->gl.model_trackball = main_create_trackballmodel();
 
 	/* initialize libg3d */
 	viewer->g3dcontext = g3d_context_new();
@@ -151,7 +122,6 @@ int main(int argc, char **argv)
 		gui_glade_set_open_path(viewer, viewer->filename);
 
 		model_load(viewer);
-		glarea_update(viewer->interface.glarea);
 	} else {
 		/* try to show example model */
 #ifdef G_OS_WIN32
@@ -160,6 +130,7 @@ int main(int argc, char **argv)
 		viewer->filename = g_strdup(DATA_DIR "/examples/g3d.ac");
 #endif
 		if(model_load(viewer)) {
+#if 0
 			/* rotate a little bit */
 			gfloat q1[4], q2[4];
 			gfloat a1[3] = { 0.0, 1.0, 0.0 }, a2[3] = {1.0, 0.0, 1.0};
@@ -169,6 +140,7 @@ int main(int argc, char **argv)
 			g3d_quat_add(viewer->gl.options->quat, q1, q2);
 
 			glarea_update(viewer->interface.glarea);
+#endif
 		} else {
 			/* show "open" dialog */
 			gui_glade_open_dialog(viewer);
@@ -185,11 +157,13 @@ int main(int argc, char **argv)
 	gtk_main();
 
 	/* output timing statistics */
+#if 0
 #if DEBUG > 0
 	if(viewer->gl.options->avg_msec != 0) {
 		g_printerr("STAT: average time to render frame in µs: %u\n",
 			viewer->gl.options->avg_msec);
 	}
+#endif
 #endif
 
 	/* cleaning up :-/ */
@@ -205,17 +179,3 @@ static void main_cleanup(G3DViewer *viewer)
 	g_free(viewer);
 }
 
-static G3DModel *main_create_trackballmodel(void)
-{
-	G3DModel *model;
-	G3DMaterial *mat;
-	G3DObject *object;
-
-	model = g3d_model_new();
-	mat = g3d_material_new();
-	mat->a = 0.3;
-	object = g3d_primitive_sphere(10.0, 36, 18, mat);
-	model->objects = g_slist_append(model->objects, object);
-
-	return model;
-}

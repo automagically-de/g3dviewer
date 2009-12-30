@@ -1,45 +1,21 @@
-bin_PROGRAMS = g3dviewer test_g3dw
+bin_PROGRAMS = g3dviewer
 
 datadir = @datadir@
 localedir = $(datadir)/locale
 
-test_g3dw_SOURCES = \
-	test_g3dw.c texture.c texture.h gl.c gl.h \
-	G3DGLWidget.c G3DGLWidget.h G3DGLWidgetPriv.h \
-	G3DGLWidgetRender.c G3DGLWidgetRender.h
-
-test_g3dw_CFLAGS = \
-	-I$(top_srcdir) -I$(top_builddir) \
-	-Wall -ansi \
-	-DLOCALEDIR=\"$(localedir)\" \
-	@DBG_CFLAGS@ \
-	@GLIB_CFLAGS@ @GTK_CFLAGS@ @GTKGLEXT_CFLAGS@ \
-	@LIBGLADE_CFLAGS@ \
-	@X_CFLAGS@ \
-	@LIBG3D_CFLAGS@ \
-	-DDEBUG=@DEBUG@ \
-	-DPACKAGE=\"@PACKAGE@\"
-
-test_g3dw_LDFLAGS = \
-	$(extra_ldflags)
-test_g3dw_LDADD = \
-	@GTK_LIBS@ @LIBGLADE_LIBS@ \
-	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ $(extra_libs)
-
 g3dviewer_SOURCES = \
 	main.c main.h \
-	gl.c gl.h \
-	glarea.h glarea.c \
 	gui_glade.c gui_glade.h \
 	gui_infowin.c gui_infowin.h \
 	gui_log.c gui_log.h \
 	screenshot.c screenshot.h \
 	gui_callbacks.c \
-	texture.c texture.h \
 	model.h model.c
 
 g3dviewer_CFLAGS = \
 	-I$(top_srcdir) -I$(top_builddir) \
+	-I$(top_srcdir)/libs/g3dgl \
+	-I$(top_srcdir)/libs/g3dgl-widget \
 	-Wall -ansi \
 	-DLOCALEDIR=\"$(localedir)\" \
 	@DBG_CFLAGS@ \
@@ -62,5 +38,16 @@ g3dviewer_LDFLAGS = \
 	$(extra_ldflags)
 g3dviewer_LDADD = \
 	@GTK_LIBS@ @LIBGLADE_LIBS@ \
-	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ $(extra_libs)
+	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ $(extra_libs) \
+	../libs/g3dgl/libg3dgl.la \
+	../libs/g3dgl-widget/libg3dgl-widget.la
+g3dviewer_DEPENDENCIES = \
+	../libs/g3dgl/libg3dgl.la \
+	../libs/g3dgl-widget/libg3dgl-widget.la
+
+../libs/g3dgl/libg3dgl.la:
+	$(MAKE) -C ../libs/g3dgl
+
+../libs/g3dgl-widget/libg3dgl-widget.la:
+	$(MAKE) -C ../libs/g3dgl-widget
 

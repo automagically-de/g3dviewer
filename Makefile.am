@@ -1,4 +1,4 @@
-SUBDIRS = m4 man src thumbnailer pixmaps glade examples po
+SUBDIRS = m4 man libs src thumbnailer pixmaps glade examples po
 
 appldir = ${datadir}/applications
 appl_DATA = g3dviewer.desktop

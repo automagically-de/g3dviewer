@@ -29,8 +29,6 @@
 #include <glade/glade-xml.h>
 #include <g3d/g3d.h>
 
-#include "gl.h"
-
 #define G3DV_FLAG_DEBUG_TREE       (1 << 0)
 #define G3DV_FLAG_DEBUG_TREE_DATA  (1 << 1)
 
@@ -45,6 +43,7 @@ typedef struct {
 	guint32 debug_flags;
 
 	/* GL stuff */
+#if 0
 	struct {
 		gboolean show_trackball;
 		G3DModel *model_trackball;
@@ -56,7 +55,7 @@ typedef struct {
 	struct {
 		gint32 beginx, beginy;
 	} mouse;
-
+#endif
 	/* model information */
 	struct {
 		GtkTreeStore *treestore;

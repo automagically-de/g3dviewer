@@ -25,23 +25,13 @@
 #endif
 
 #include <gdk-pixbuf/gdk-pixbuf.h>
-#include <GL/gl.h>
 
-static guint8 *screenshot_get_pixels(guint32 width, guint32 height)
-{
-	guint8 *pixels;
-
-	pixels = g_new(guint8, width * height * 4);
-
-	glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-	return pixels;
-}
+#include <g3dgl.h>
 
 gboolean screenshot_save_from_pixels(guint8 *pixels, const gchar *filename,
 	guint32 width, guint32 height)
 {
-	GdkPixbuf *pixbuf, *flipped;
+	GdkPixbuf *pixbuf;
 
 	g_return_val_if_fail(pixels != NULL, FALSE);
 
@@ -53,16 +43,8 @@ gboolean screenshot_save_from_pixels(guint8 *pixels, const gchar *filename,
 	if(pixbuf == NULL)
 		return FALSE;
 
-	/* GL returns pixels starting from lower left corner */
-	flipped = gdk_pixbuf_flip(pixbuf, FALSE);
-
-	if(flipped == NULL)
-		return FALSE;
-
-	gdk_pixbuf_save(flipped, filename, "png", NULL, NULL);
-
+	gdk_pixbuf_save(pixbuf, filename, "png", NULL, NULL);
 	gdk_pixbuf_unref(pixbuf);
-	gdk_pixbuf_unref(flipped);
 
 	return TRUE;
 }
@@ -72,7 +54,7 @@ gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height)
 	guint8 *pixels;
 	gboolean retval;
 
-	pixels = screenshot_get_pixels(width, height);
+	pixels = g3dgl_get_pixels(width, height);
 	retval = screenshot_save_from_pixels(pixels, filename, width, height);
 	g_free(pixels);
 	return retval;

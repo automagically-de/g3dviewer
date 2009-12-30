@@ -30,7 +30,6 @@
 #include <gtk/gtk.h>
 
 #include "main.h"
-#include "glarea.h"
 
 enum _columns
 {
@@ -150,22 +149,22 @@ static void gui_infowin_object_hide_cb(GtkCellRendererToggle *renderer,
 {
 	GtkTreePath *path;
 	GtkTreeIter iter;
-	GtkTreeModel *model;
+	GtkTreeModel *treemodel;
 	gboolean toggle_item;
 	G3DViewer *viewer;
 	G3DObject *object;
 	gpointer ptr;
 
-	model = g_object_get_data(G_OBJECT(renderer), "model");
+	treemodel = g_object_get_data(G_OBJECT(renderer), "model");
 	viewer = g_object_get_data(G_OBJECT(renderer), "viewer");
 
-	g_assert(model);
+	g_assert(treemodel);
 	g_assert(viewer);
 
 	path = gtk_tree_path_new_from_string(pathstr);
-	gtk_tree_model_get_iter(model, &iter, path);
+	gtk_tree_model_get_iter(treemodel, &iter, path);
 
-	gtk_tree_model_get(model, &iter,
+	gtk_tree_model_get(treemodel, &iter,
 		COL_SHOWHIDE, &toggle_item,
 		COL_POINTER, &ptr,
 		-1);
@@ -183,11 +182,11 @@ static void gui_infowin_object_hide_cb(GtkCellRendererToggle *renderer,
 	toggle_item ^= 1;
 	object->hide = !toggle_item;
 
-	gtk_tree_store_set(GTK_TREE_STORE(model), &iter, COL_SHOWHIDE,
+	gtk_tree_store_set(GTK_TREE_STORE(treemodel), &iter, COL_SHOWHIDE,
 		toggle_item, -1);
 
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea),
+		"model", viewer->model, NULL);
 }
 
 static gboolean gui_infowin_create_columns(GtkWidget *treeview,

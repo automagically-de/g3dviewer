@@ -22,8 +22,9 @@
 
 #include <g3d/g3d.h>
 
+#include <G3DGLWidget.h>
+
 #include "main.h"
-#include "texture.h"
 #include "gui_glade.h"
 #include "gui_infowin.h"
 #include "gui_log.h"
@@ -31,10 +32,12 @@
 gboolean model_load(G3DViewer *viewer)
 {
 	G3DModel *model;
+	G3DGLWidget *glarea = G3D_GL_WIDGET(viewer->interface.glarea);
 	gchar *title;
 	gboolean retval = FALSE;
 
 	/* free old model */
+	g_object_set(G_OBJECT(glarea), "model", NULL, NULL);
 	model = viewer->model;
 	viewer->model = NULL;
 	if(model)
@@ -45,10 +48,14 @@ gboolean model_load(G3DViewer *viewer)
 
 	model = g3d_model_load_full(viewer->g3dcontext, viewer->filename,
 		G3D_MODEL_SCALE | G3D_MODEL_CENTER);
-	viewer->gl.options->updated = TRUE;
+
+	g_object_set(G_OBJECT(glarea), "model", model, NULL);
+
 	if(model) {
 		viewer->model = model;
-		texture_load_all_textures(viewer->model);
+
+		g3d_gl_widget_update_textures(glarea, model->tex_images);
+
 		title = g_strdup_printf(_("%s successfully loaded."),
 			viewer->filename ? viewer->filename : _("unnamed model"));
 		gui_glade_status(viewer, title);

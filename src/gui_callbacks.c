@@ -31,9 +31,9 @@
 
 #include <g3d/quat.h>
 
+#include <G3DGLWidget.h>
+
 #include "main.h"
-#include "gl.h"
-#include "glarea.h"
 #include "gui_glade.h"
 #include "screenshot.h"
 
@@ -147,18 +147,7 @@ void gui_on_zoomfit_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	/* zoom */
-	viewer->gl.options->zoom = 45;
-
-	/* reset offsets */
-	viewer->gl.options->offx = viewer->gl.options->offy = 0;
-
-	/* reset trackball */
-#if 1
-	g3d_quat_trackball(viewer->gl.options->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
-#endif
-
-	glarea_update(viewer->interface.glarea);
+	g3d_gl_widget_zoomfit(G3D_GL_WIDGET(widget));
 }
 
 /*
@@ -172,12 +161,8 @@ void gui_on_isometric_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_ISOMETRIC;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_ISOMETRIC;
-
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-isometric",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
@@ -191,13 +176,8 @@ void gui_on_shininess_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_SHININESS;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_SHININESS;
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-shininess",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 void gui_on_shadow_cb(GtkWidget *widget, gpointer user_data)
@@ -207,13 +187,8 @@ void gui_on_shadow_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_SHADOW;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_SHADOW;
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-shadow",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
@@ -227,11 +202,8 @@ void gui_on_twosided_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	gl_set_twoside(
-		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)));
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-twosided",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
@@ -245,13 +217,8 @@ void gui_on_colors_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_COLORS;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_COLORS;
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-colors",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
@@ -265,13 +232,8 @@ void gui_on_points_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_POINTS;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_POINTS;
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-points",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
@@ -284,19 +246,13 @@ void gui_on_axes_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_COORD_AXES;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_COORD_AXES;
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-coord-axes",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
  * View->Textures
  */
-
 void gui_on_textures_cb(GtkWidget *widget, gpointer user_data)
 {
 	G3DViewer *viewer;
@@ -304,19 +260,13 @@ void gui_on_textures_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_TEXTURES;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_TEXTURES;
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-textures",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
  * View->Specular Lighting
  */
-
 void gui_on_specular_cb(GtkWidget *widget, gpointer user_data)
 {
 	G3DViewer *viewer;
@@ -324,19 +274,13 @@ void gui_on_specular_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-		viewer->gl.options->glflags |= G3D_FLAG_GL_SPECULAR;
-	else
-		viewer->gl.options->glflags &= ~G3D_FLAG_GL_SPECULAR;
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-specular",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
  * View->Wireframe
  */
-
 void gui_on_wireframe_cb(GtkWidget *widget, gpointer user_data)
 {
 	G3DViewer *viewer;
@@ -344,19 +288,8 @@ void gui_on_wireframe_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	if(gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)))
-	{
-		glPolygonMode(GL_FRONT, GL_LINE);
-		glPolygonMode(GL_BACK, GL_LINE);
-	}
-	else
-	{
-		glPolygonMode(GL_FRONT, GL_FILL);
-		glPolygonMode(GL_BACK, GL_FILL);
-	}
-
-	viewer->gl.options->updated = TRUE;
-	glarea_update(viewer->interface.glarea);
+	g_object_set(G_OBJECT(viewer->interface.glarea), "enable-wireframe",
+		gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(widget)), NULL);
 }
 
 /*
@@ -369,6 +302,7 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 	GtkWidget *colorsel, *colordialog;
 	GdkColor color;
 	gint retval;
+	gchar *stmp;
 
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer != NULL);
@@ -377,30 +311,31 @@ void gui_on_bgcolor_cb(GtkWidget *widget, gpointer user_data)
 	colordialog = glade_xml_get_widget(viewer->interface.xml, "color_dialog");
 
 	/* set active background color */
-	color.red   = viewer->gl.options->bgcolor[0] * 0xFFFF;
-	color.green = viewer->gl.options->bgcolor[1] * 0xFFFF;
-	color.blue  = viewer->gl.options->bgcolor[2] * 0xFFFF;
-	gtk_color_selection_set_previous_color(GTK_COLOR_SELECTION(colorsel),
-		&color);
-	gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorsel),
-		&color);
+	g_object_get(G_OBJECT(viewer->interface.glarea),
+		"background-color", &stmp,
+		NULL);
+	if(gdk_color_parse(stmp, &color)) {
+		gtk_color_selection_set_previous_color(GTK_COLOR_SELECTION(colorsel),
+			&color);
+		gtk_color_selection_set_current_color(GTK_COLOR_SELECTION(colorsel),
+			&color);
+	}
 
 	retval = gtk_dialog_run(GTK_DIALOG(colordialog));
 	gtk_widget_hide(colordialog);
-	if(retval == GTK_RESPONSE_CANCEL)
-	{
+	if(retval == GTK_RESPONSE_CANCEL) {
 		gtk_color_selection_get_previous_color(GTK_COLOR_SELECTION(colorsel),
 			&color);
-		viewer->gl.options->bgcolor[0] = (gdouble)color.red   / 65536.0;
-		viewer->gl.options->bgcolor[1] = (gdouble)color.green / 65536.0;
-		viewer->gl.options->bgcolor[2] = (gdouble)color.blue  / 65536.0;
-	}
 
-#if 0
-	/* no need to rebuild list on bg color change */
-	viewer->gl.options->updated = TRUE;
-#endif
-	glarea_update(viewer->interface.glarea);
+		stmp = g_strdup_printf("#%02X%02X%02X",
+			(guint32)(color.red   >> 8),
+			(guint32)(color.green >> 8),
+			(guint32)(color.blue  >> 8));
+		g_object_set(G_OBJECT(viewer->interface.glarea),
+			"background-color", stmp,
+			NULL);
+		g_free(stmp);
+	}
 }
 
 /*
@@ -428,23 +363,20 @@ void gui_color_changed_cb(GtkColorSelection *colorsel,
 {
 	G3DViewer *viewer;
 	GdkColor color;
+	gchar *stmp;
 
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(colorsel), "viewer");
 	g_assert(viewer != NULL);
 
 	gtk_color_selection_get_current_color(colorsel, &color);
-	viewer->gl.options->bgcolor[0] = (gdouble)color.red   / 65536.0;
-	viewer->gl.options->bgcolor[1] = (gdouble)color.green / 65536.0;
-	viewer->gl.options->bgcolor[2] = (gdouble)color.blue  / 65536.0;
-
-#if DEBUG > 4
-	g_printerr("D: gui_color_changed_cb: color %.2f, %.2f, %.2f\n",
-		viewer->bgcolor[0],
-		viewer->bgcolor[1],
-		viewer->bgcolor[2]);
-#endif
-
-	glarea_update(viewer->interface.glarea);
+	stmp = g_strdup_printf("#%02X%02X%02X",
+		(guint32)(color.red   >> 8),
+		(guint32)(color.green >> 8),
+		(guint32)(color.blue  >> 8));
+	g_object_set(G_OBJECT(viewer->interface.glarea),
+		"background-color", stmp,
+		NULL);
+	g_free(stmp);
 }
 
 /*

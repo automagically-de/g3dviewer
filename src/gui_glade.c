@@ -33,9 +33,10 @@
 
 #include <g3d/plugins.h>
 
+#include <G3DGLWidget.h>
+
 #include "main.h"
 #include "model.h"
-#include "glarea.h"
 
 #include "gui_glade.h"
 #include "gui_infowin.h"
@@ -207,8 +208,9 @@ gboolean gui_glade_load(G3DViewer *viewer)
 	/* hide progress bar */
 	gui_glade_update_progress_bar_cb(0.0, FALSE, viewer);
 
+#if 0
 	glarea_update(viewer->interface.glarea);
-
+#endif
 	return TRUE;
 }
 
@@ -311,8 +313,6 @@ gboolean gui_glade_open_dialog(G3DViewer *viewer)
 
 		retval = model_load(viewer);
 
-		glarea_update(viewer->interface.glarea);
-
 		return retval;
 	}
 
@@ -358,7 +358,6 @@ static void drop_file_cb(GtkWidget *widget, GdkDragContext *drag_context,
 		model_load(viewer);
 
 		gui_glade_set_open_path(viewer, viewer->filename);
-		glarea_update(viewer->interface.glarea);
 		gtk_drag_finish(drag_context, TRUE, FALSE, time);
 	}
 	else
@@ -372,59 +371,12 @@ static void drop_file_cb(GtkWidget *widget, GdkDragContext *drag_context,
 /*
  * create GL widget (called from libglade)
  */
+
 GtkWidget *gui_glade_create_glwidget(void)
 {
 	GtkWidget *glarea;
-	GdkGLConfig *glconfig;
 
-	glconfig = gdk_gl_config_new_by_mode(
-		GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH | GDK_GL_MODE_DOUBLE |
-		GDK_GL_MODE_STENCIL);
-
-	if(glconfig == NULL)
-	{
-		glconfig = gdk_gl_config_new_by_mode(
-			GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH |
-			GDK_GL_MODE_ALPHA | GDK_GL_MODE_DOUBLE | GDK_GL_MODE_STENCIL);
-	}
-
-	if(glconfig == NULL) return NULL;
-
-	glarea = gtk_drawing_area_new();
-	gtk_widget_set_gl_capability(glarea, glconfig, NULL, TRUE,
-		GDK_GL_RGBA_TYPE);
-
-	GTK_WIDGET_SET_FLAGS(glarea, GTK_CAN_FOCUS);
-
-	if(glarea == NULL) return NULL;
-	
-	gtk_widget_set_events(glarea,
-		GDK_EXPOSURE_MASK |
-		GDK_KEY_PRESS_MASK | GDK_KEY_RELEASE_MASK |
-		GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-		GDK_SCROLL_MASK |
-		GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK);
-
-	g_signal_connect(G_OBJECT(glarea), "scroll_event",
-		G_CALLBACK(glarea_scroll), NULL);
-	g_signal_connect(G_OBJECT(glarea), "expose_event",
-		G_CALLBACK(glarea_expose), NULL);
-	g_signal_connect(G_OBJECT(glarea), "motion_notify_event",
-		G_CALLBACK(glarea_motion_notify), NULL);
-	g_signal_connect(G_OBJECT(glarea), "button_press_event",
-		G_CALLBACK(glarea_button_pressed), NULL);
-	g_signal_connect(G_OBJECT(glarea), "button_release_event",
-		G_CALLBACK(glarea_button_released), NULL);
-	g_signal_connect(G_OBJECT(glarea), "configure_event",
-		G_CALLBACK(glarea_configure), NULL);
-	g_signal_connect(G_OBJECT(glarea), "destroy_event",
-		G_CALLBACK(glarea_destroy), NULL);
-	g_signal_connect(G_OBJECT(glarea), "key-press-event",
-		G_CALLBACK(glarea_keypress_cb), NULL);
-	g_signal_connect(G_OBJECT(glarea), "focus-in-event",
-		G_CALLBACK(glarea_focus_cb), NULL);
-	g_signal_connect(G_OBJECT(glarea), "focus-out-event",
-		G_CALLBACK(glarea_focus_cb), NULL);
+	glarea = g3d_gl_widget_new();
 
 	/* drag and drop stuff */
 	gtk_drag_dest_set(glarea,

@@ -6,12 +6,12 @@ localedir = $(datadir)/locale
 
 g3d_thumbnailer_SOURCES = \
 	g3d-thumbnailer.c \
-	../src/gl.c \
-	../src/screenshot.c \
-	../src/texture.c
+	../src/screenshot.c
 
 g3d_thumbnailer_CFLAGS = \
-	-I$(top_srcdir) -I$(top_builddir) -I$(top_srcdir)/src \
+	-I$(top_srcdir) -I$(top_builddir) \
+	-I$(top_srcdir)/libs/g3dgl \
+	-I$(top_srcdir)/libs/g3dgl-widget \
 	-Wall -ansi \
 	-DLOCALEDIR=\"$(localedir)\" \
 	@X_CFLAGS@ @LIBG3D_CFLAGS@ \
@@ -20,7 +20,14 @@ g3d_thumbnailer_CFLAGS = \
 	-DPACKAGE=\"@PACKAGE@\"
 
 g3d_thumbnailer_LDFLAGS = \
-	@X_LIBS@ @GTK_LIBS@ @LIBG3D_LIBS@ @OSMESA_LIBS@ @GL_LIBS@
+	@X_LIBS@ @GTK_LIBS@ @LIBG3D_LIBS@ @OSMESA_LIBS@ @GL_LIBS@ \
+	../libs/g3dgl/libg3dgl.la
+
+g3d_thumbnailer_DEPENDENCIES = \
+	../libs/g3dgl/libg3dgl.la
+
+../libs/g3dgl/libg3dgl.la:
+	$(MAKE) -C ../libs/g3dgl
 
 mimelocaldir = ${HOME}/.local/share/mime
 mimefiles = g3dviewer.xml

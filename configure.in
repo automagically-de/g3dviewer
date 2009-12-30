@@ -117,6 +117,9 @@ AC_DEFINE_DIR(DATA_DIR,   datadir/$PACKAGE, [Data directory])
 AC_OUTPUT(Makefile
 	m4/Makefile
 	man/Makefile
+	libs/Makefile
+	libs/g3dgl/Makefile
+	libs/g3dgl-widget/Makefile
 	src/Makefile
 	thumbnailer/Makefile
 	pixmaps/Makefile

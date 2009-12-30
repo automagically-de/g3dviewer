@@ -30,12 +30,15 @@
 #include <glib.h>
 #include <glib/gi18n.h>
 #include <glib-object.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include <g3d/g3d.h>
 #include <g3d/quat.h>
 
-#include "gl.h"
-#include "screenshot.h"
-#include "texture.h"
+#include <g3dgl.h>
+
+static gboolean screenshot_save_from_pixels(guint8 *pixels,
+	const gchar *filename,
+	guint32 width, guint32 height);
 
 static void log_handler(const gchar *log_domain, GLogLevelFlags log_level,
 	const gchar *message, gpointer user_data)
@@ -114,7 +117,7 @@ int main(int argc, char *argv[])
 	options->updated = TRUE;
 	options->initialized = FALSE;
 	options->glflags =
-		G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_ALLTWOSIDE |
+		G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_TWOSIDED |
 		G3D_FLAG_GL_TEXTURES | G3D_FLAG_GL_COLORS;
 	options->zoom = 40;
 	options->aspect = (gfloat)width / (gfloat)height;
@@ -152,9 +155,10 @@ int main(int argc, char *argv[])
 		G3D_MODEL_SCALE | G3D_MODEL_CENTER);
 
 	if(model) {
-		texture_load_all_textures(model);
-		gl_setup_view(options);
-		gl_draw(options, model);
+		if(model->tex_images)
+			g_hash_table_foreach(model->tex_images, g3dgl_load_texture, NULL);
+		g3dgl_setup_view(options);
+		g3dgl_draw(options, model);
 		glFinish();
 		if(screenshot_save_from_pixels(imgbuf, argv[2], width, height))
 			retval = EXIT_SUCCESS;
@@ -167,3 +171,31 @@ int main(int argc, char *argv[])
 	g_free(options);
 	return retval;
 }
+
+static gboolean screenshot_save_from_pixels(guint8 *pixels,
+	const gchar *filename,
+	guint32 width, guint32 height)
+{
+	GdkPixbuf *pixbuf, *flipped;
+
+	g_return_val_if_fail(pixels != NULL, FALSE);
+
+	pixbuf = gdk_pixbuf_new_from_data(pixels,
+		GDK_COLORSPACE_RGB, TRUE,
+		8, width, height, width * 4,
+		NULL, NULL);
+
+	if(pixbuf == NULL)
+		return FALSE;
+
+	flipped = gdk_pixbuf_flip(pixbuf, FALSE);
+	if(flipped == NULL)
+		return FALSE;
+	gdk_pixbuf_save(flipped, filename, "png", NULL, NULL);
+
+	gdk_pixbuf_unref(flipped);
+	gdk_pixbuf_unref(pixbuf);
+
+	return TRUE;
+}
+

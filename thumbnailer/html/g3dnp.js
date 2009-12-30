@@ -14,6 +14,7 @@ g3d.NP = function (basename, suffix,
 	this.maxy = maxy;
 	this.stepy = Math.max(stepy, 1);
 	this.basey = basey;
+	this.numImages = 0;
 
 	var ix = 0;
 	var iy = 0;
@@ -26,9 +27,8 @@ g3d.NP = function (basename, suffix,
 
 		for(var x = minx; x <= maxx; x += this.stepx) {
 			this.steps[iy][ix] = new Image();
-			this.steps[iy][ix].src = basename +
-				'_' + x + '_' + y + '.' + suffix;
 			ix ++;
+			this.numImages ++;
 		}
 
 		iy ++;
@@ -44,13 +44,55 @@ g3d.NP = function (basename, suffix,
 	this.animTimeout = 200;
 };
 
+g3d.NP.prototype.load = function (progressDivId) {
+	var ix = 0;
+	var iy = 0;
+
+	this.progress = 0;
+
+	var updateProgress = function (pDivId, self, idxx, idxy) {
+		if(self.steps[idxy][idxx].complete)
+			self.progress ++;
+		var pDiv = document.getElementById(pDivId);
+		if(pDiv) {
+			var progress = (self.progress / self.numImages) | 0;
+			pdiv.style.width = progress.toString() + '%';
+		}
+	};
+
+	for(var y = this.miny; y <= this.maxy; y += this.stepy) {
+		ix = 0;
+		for(var x = this.minx; x <= this.maxx; x += this.stepx) {
+			this.steps[iy][ix].src = this.basename +
+				'_' + x + '_' + y + '.' + this.suffix;
+			setTimeout(updateProgress, 2,
+				progressDivId, this, ix, iy);
+			ix ++;
+		}
+		iy ++;
+	}
+};
+
 g3d.NP.prototype.insert = function (divId) {
 	this.divId = divId;
 	div = document.getElementById(divId);
 	if (div) {
 		var src = this.steps[this.cury_i][this.curx_i].src;
-		div.innerHTML = '<img src="' + src + '" id="' + divId + '0"/>';
+
+		var img = document.createElement("img");
+		img.setAttribute("id", divId + '0');
+		div.appendChild(img);
+
+		var pDivId = divId + 'Progress';
+		var pDiv = document.createElement("div");
+		pDiv.setAttribute("style",
+			"width: 100%; height: 10px; background-color: red;");
+		div.appendChild(pDiv);
+
+		this.load(pDivId);
+		img.setAttribute("src", src);
 	}
+
 };
 
 g3d.NP.prototype.animationSetTimeout = function (timeout) {
@@ -103,6 +145,7 @@ g3d.NP.prototype.mouseUpHandler = function (event) {
 	self = this.g3dnp;
 	// this: div
 	// self: G3DNP object
+	//alert(event.keycode);
 };
 
 g3d.NP.prototype.addTools = function () {
