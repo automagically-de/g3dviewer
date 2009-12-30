@@ -188,9 +188,8 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		GTK_CONTAINER(glade_xml_get_widget(xml, "menu_main")),
 		gui_glade_clone_menuitem,
 		popupmenu);
-	g_object_set_data(G_OBJECT(viewer->interface.glarea), "menu",
-		popupmenu);
 	gtk_widget_show_all(popupmenu);
+	g_object_set(G_OBJECT(glarea), "popup-menu", popupmenu, NULL);
 
 	/* get statusbar context id */
 	statusbar = glade_xml_get_widget(viewer->interface.xml, "statusbar");

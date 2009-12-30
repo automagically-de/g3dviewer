@@ -314,14 +314,10 @@ static gboolean g3d_gl_widget_button_pressed_cb(G3DGLWidget *self,
 	}
 	/* right mouse button: pop-up menu */
 	else if(event->button == 3)	{
-		if(event->type == GDK_BUTTON_PRESS)	{
-#if 0
-			GtkWidget *menu =
-				(GtkWidget*)g_object_get_data(G_OBJECT(widget),
-					"menu");
-			gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL,
+		if(self->priv->popup_menu) {
+			gtk_menu_popup(GTK_MENU(self->priv->popup_menu),
+				NULL, NULL, NULL, NULL,
 				event->button, event->time);
-#endif
 			return TRUE;
 		}
 	}

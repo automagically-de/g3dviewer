@@ -9,6 +9,7 @@ enum {
 	G3DGL_PROP_COLORS,
 	G3DGL_PROP_ISOMETRIC,
 	G3DGL_PROP_MODEL,
+	G3DGL_PROP_POPUP_MENU,
 	G3DGL_PROP_SHADOW,
 	G3DGL_PROP_SHININESS,
 	G3DGL_PROP_SPECULAR,
@@ -59,6 +60,9 @@ static void g3d_gl_widget_get_property(GObject *object,
 		case G3DGL_PROP_MODEL:
 			g_value_set_pointer(value, self->priv->model);
 			break;
+		case G3DGL_PROP_POPUP_MENU:
+			g_value_set_pointer(value, self->priv->popup_menu);
+			break;
 		case G3DGL_PROP_SHADOW:
 			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_SHADOW);
 			break;
@@ -108,6 +112,9 @@ static void g3d_gl_widget_set_property(GObject *object,
 		case G3DGL_PROP_MODEL:
 			self->priv->model = g_value_get_pointer(value);
 			self->priv->gloptions->updated = TRUE;
+			break;
+		case G3DGL_PROP_POPUP_MENU:
+			self->priv->popup_menu = g_value_get_pointer(value);
 			break;
 		case G3DGL_PROP_SHADOW:
 			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_SHADOW);
@@ -185,5 +192,9 @@ void g3d_widget_properties_init(G3DGLWidgetClass *klass)
 	pspec = g_param_spec_pointer("model", "model",
 		"set model", G_PARAM_READWRITE);
 	g_object_class_install_property(oc, G3DGL_PROP_MODEL, pspec);
+
+	pspec = g_param_spec_pointer("popup-menu", "popup-menu",
+		"set popup menu", G_PARAM_READWRITE);
+	g_object_class_install_property(oc, G3DGL_PROP_POPUP_MENU, pspec);
 }
 

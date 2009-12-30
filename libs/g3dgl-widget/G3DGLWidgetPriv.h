@@ -25,6 +25,7 @@ struct _G3DGLWidgetPriv {
 	GHashTable *texture_hash;
 	gboolean texture_hash_updated;
 	G3DModel *model;
+	GtkWidget *popup_menu;
 
 	gboolean show_trackball;
 	gint32 drag_start_x;
