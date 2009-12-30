@@ -109,6 +109,7 @@ void g3d_gl_widget_render_decorations(G3DGLWidget *self)
 	glLoadIdentity();
 
 	if (self->priv->focused) {
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glColor3f(0.0, 0.0, 0.0);
 		glLineStipple(1, 0xAAAA); /* dotted line */
 		glEnable(GL_LINE_STIPPLE);
@@ -118,7 +119,7 @@ void g3d_gl_widget_render_decorations(G3DGLWidget *self)
 		glVertex3f(width - 2, height - 2, 0);
 		glVertex3f(1, height - 2, 0);
 		glEnd();
-		glDisable(GL_LINE_STIPPLE);
+		glPopAttrib();
 	}
 }
 
@@ -175,30 +176,33 @@ gboolean g3d_gl_widget_render_setup_view(G3DGLWidget *self)
 static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 {
 	G3DGLRenderOptions *options = self->priv->gloptions;
-	G3DVector plane[3] = { 0.0, -20.0, 0.0 };
+	G3DVector plane[3] = { 0.0, 0.0, 0.0 };
 	G3DVector light[3] = { 100.0, 500.0, 20.0 };
 	G3DVector normal[3] = { 0.0, -1.0, 0.0 };
 	G3DMatrix shadow_matrix[16];
 
 	if(options->glflags & G3D_FLAG_GL_SHADOW) {
-		plane[1] = self->priv->model_min_y;
+		glPushMatrix();
+		glTranslatef(0.0, self->priv->model_min_y, 0.0);
 
 		/* reflection */
 		glPushMatrix();
 		g3dgl_setup_floor_stencil(options);
-		glTranslatef(0.0, (self->priv->model_min_y * 2), 0.0);
+		glTranslatef(0.0, self->priv->model_min_y, 0.0);
 		glScalef(1.0, -1.0, 1.0);
-		glCallList(self->priv->dlists[G3DGLW_DLIST_SHADOW]);
+		glCallList(self->priv->dlists[G3DGLW_DLIST_MODEL]);
 		glPopMatrix();
 
 		/* plane */
-		glDisable(GL_LIGHTING);
-		glBindTexture (GL_TEXTURE_2D, 0);
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		glBindTexture(GL_TEXTURE_2D, 0);
 		glColor4f(0.5, 0.5, 0.5, 0.7);
 		g3dgl_draw_plane(options);
-		glEnable(GL_LIGHTING);
+		glPopAttrib();
+
 		/* shadow */
 		glPushMatrix();
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		g3d_matrix_shadow(light, plane, normal, shadow_matrix);
 		glBindTexture (GL_TEXTURE_2D, 0);
 		glDisable(GL_LIGHTING);
@@ -211,8 +215,9 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 		glTranslatef(0.0, 0.001, 0.0);
 		glColor4f(0.3, 0.3, 0.3, 0.7);
 		g3dgl_draw_plane(options);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
+		glPopMatrix();
+		glPopAttrib();
+
 		glPopMatrix();
 
 		glDisable(GL_STENCIL_TEST);
@@ -260,6 +265,8 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 {
 	G3DGLRenderOptions *options = self->priv->gloptions;
 	G3DModel *model = self->priv->model;
+	G3DMaterial *prev_material = NULL;
+	guint32 prev_texid = -1;
 	G3DFloat f;
 	gint32 i;
 
@@ -276,6 +283,9 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 	}
 
 	if(options->updated) {
+		prev_material = NULL;
+		prev_texid = 0;
+
 		/* set options */
 		if(options->glflags & G3D_FLAG_GL_WIREFRAME) {
 			glPolygonMode(GL_FRONT, GL_LINE);
@@ -302,15 +312,18 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 		glNewList(self->priv->dlists[G3DGLW_DLIST_MODEL], GL_COMPILE);
 		for(f = 1.0; f >= 0.0; f -= 0.2)
 			g3dgl_draw_objects(options,
-				&(self->priv->prev_material),
-				&(self->priv->prev_texid),
+				&prev_material,
+				&prev_texid,
 				model->objects, f, f + 0.2, FALSE);
 		glEndList();
 
+		prev_material = NULL;
+		prev_texid = 0;
+
 		glNewList(self->priv->dlists[G3DGLW_DLIST_SHADOW], GL_COMPILE);
 		g3dgl_draw_objects(options,
-			&(self->priv->prev_material),
-			&(self->priv->prev_texid),
+			&prev_material,
+			&prev_texid,
 			model->objects, 0.0, 1.0, TRUE);
 		glEndList();
 

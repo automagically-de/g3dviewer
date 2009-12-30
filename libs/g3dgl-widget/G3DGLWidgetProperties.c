@@ -9,6 +9,7 @@ enum {
 	G3DGL_PROP_COLORS,
 	G3DGL_PROP_ISOMETRIC,
 	G3DGL_PROP_MODEL,
+	G3DGL_PROP_SHADOW,
 	G3DGL_PROP_SHININESS,
 	G3DGL_PROP_SPECULAR,
 	G3DGL_PROP_TEXTURES,
@@ -58,6 +59,9 @@ static void g3d_gl_widget_get_property(GObject *object,
 		case G3DGL_PROP_MODEL:
 			g_value_set_pointer(value, self->priv->model);
 			break;
+		case G3DGL_PROP_SHADOW:
+			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_SHADOW);
+			break;
 		case G3DGL_PROP_SHININESS:
 			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_SHININESS);
 			break;
@@ -105,6 +109,9 @@ static void g3d_gl_widget_set_property(GObject *object,
 			self->priv->model = g_value_get_pointer(value);
 			self->priv->gloptions->updated = TRUE;
 			break;
+		case G3DGL_PROP_SHADOW:
+			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_SHADOW);
+			break;
 		case G3DGL_PROP_SHININESS:
 			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_SHININESS);
 			break;
@@ -151,7 +158,11 @@ void g3d_widget_properties_init(G3DGLWidgetClass *klass)
 		"enable isometric mode", FALSE, G_PARAM_READWRITE);
 	g_object_class_install_property(oc, G3DGL_PROP_ISOMETRIC, pspec);
 
-	pspec = g_param_spec_boolean("enable-shininess", "enable-shinines",
+	pspec = g_param_spec_boolean("enable-shadow", "enable-shadow",
+		"enable ground plane & shadow", FALSE, G_PARAM_READWRITE);
+	g_object_class_install_property(oc, G3DGL_PROP_SHADOW, pspec);
+
+	pspec = g_param_spec_boolean("enable-shininess", "enable-shininess",
 		"enable shininess", TRUE, G_PARAM_READWRITE);
 	g_object_class_install_property(oc, G3DGL_PROP_SHININESS, pspec);
 

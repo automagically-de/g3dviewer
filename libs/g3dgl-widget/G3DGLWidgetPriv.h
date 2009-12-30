@@ -36,8 +36,6 @@ struct _G3DGLWidgetPriv {
 	/* from G3DGLRenderState */
 	gint32 dlists[G3DGLW_N_DLISTS];
 	gboolean dlists_valid;
-	guint32 prev_texid;
-	G3DMaterial *prev_material;
 };
 
 #endif /* _G3DGLWIDGETPRIV_H */
