@@ -96,11 +96,11 @@ static inline void gl_draw_face_list(G3DGLRenderOptions *options,
 					*prev_texid_p = face->tex_image->tex_id;
 
 					gl_may_end(prev_ftype);
+#if DEBUG > 5
+					g_debug("binding texture %d", *prev_texid_p);
+#endif
 					glBindTexture(GL_TEXTURE_2D, *prev_texid_p);
 					gl_may_begin(prev_ftype);
-#if DEBUG > 5
-					g_print("gl: binding to texture id %d\n", prev_texid);
-#endif
 				}
 			}
 		} /* texture stuff */

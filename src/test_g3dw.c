@@ -2,6 +2,7 @@
 
 #include <g3d/g3d.h>
 
+#include "texture.h"
 #include "G3DGLWidget.h"
 
 int main(int argc, char *argv[])
@@ -29,8 +30,14 @@ int main(int argc, char *argv[])
 	ctx = g3d_context_new();
 	if(argc > 1) {
 		model = g3d_model_load(ctx, argv[1]);
+
 		g3d_gl_widget_set_model(G3D_GL_WIDGET(g3dw1), model);
+		g3d_gl_widget_update_textures(G3D_GL_WIDGET(g3dw1),
+			model->tex_images);
+
 		g3d_gl_widget_set_model(G3D_GL_WIDGET(g3dw2), model);
+		g3d_gl_widget_update_textures(G3D_GL_WIDGET(g3dw2),
+			model->tex_images);
 	}
 	
 	gtk_widget_show_all(window);

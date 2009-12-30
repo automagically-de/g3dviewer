@@ -45,6 +45,9 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 
 	self->priv->gloptions = g_new0(G3DGLRenderOptions, 1);
 	self->priv->gloptions->zoom = 45;
+	self->priv->gloptions->glflags =
+		G3D_FLAG_GL_COLORS |
+		G3D_FLAG_GL_TEXTURES;
 	g3d_quat_trackball(self->priv->gloptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 
     if(self->priv->glconfig == NULL) {
@@ -100,6 +103,14 @@ gboolean g3d_gl_widget_set_model(G3DGLWidget *self, G3DModel *model)
 {
 	self->priv->model = model;
 	self->priv->gloptions->updated = TRUE;
+
+	return TRUE;
+}
+
+gboolean g3d_gl_widget_update_textures(G3DGLWidget *self, GHashTable *hash)
+{
+	self->priv->texture_hash = hash;
+	self->priv->texture_hash_updated = TRUE;
 
 	return TRUE;
 }

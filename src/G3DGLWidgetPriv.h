@@ -8,6 +8,8 @@
 
 #include "gl.h"
 
+#include "G3DGLWidget.h"
+
 enum {
 	G3DGLW_DLIST_MODEL,
 	G3DGLW_DLIST_SHADOW,
@@ -20,6 +22,8 @@ struct _G3DGLWidgetPriv {
 	GdkGLConfig *glconfig;
 	gfloat bgcolor[4];
 	G3DGLRenderOptions *gloptions;
+	GHashTable *texture_hash;
+	gboolean texture_hash_updated;
 	G3DModel *model;
 
 	gboolean show_trackball;

@@ -219,6 +219,43 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 	}
 }
 
+static void g3d_gl_widget_render_load_texture(gpointer key, gpointer value,
+	gpointer data)
+{
+	G3DImage *image = (G3DImage *)value;
+	gint32 env;
+
+#if DEBUG > 2
+	g_debug("loading texture %s (id %d)", image->name, image->tex_id);
+#endif
+
+	glBindTexture(GL_TEXTURE_2D, image->tex_id);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		GL_LINEAR_MIPMAP_NEAREST);
+
+	switch(image->tex_env) {
+		case G3D_TEXENV_BLEND: env = GL_BLEND; break;
+		case G3D_TEXENV_MODULATE: env = GL_MODULATE; break;
+		case G3D_TEXENV_DECAL: env = GL_DECAL; break;
+		case G3D_TEXENV_REPLACE: env = GL_REPLACE; break;
+		default: env = GL_MODULATE; break;
+	}
+	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, env);
+
+	gluBuild2DMipmaps(
+		GL_TEXTURE_2D,
+		GL_RGBA,
+		image->width,
+		image->height,
+		GL_RGBA,
+		GL_UNSIGNED_BYTE,
+		image->pixeldata);
+}
+
 void g3d_gl_widget_render(G3DGLWidget *self)
 {
 	G3DGLRenderOptions *options = self->priv->gloptions;
@@ -230,6 +267,13 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 
 	if(!model || !options)
 		return;
+
+	if(self->priv->texture_hash_updated) {
+		if(self->priv->texture_hash)
+			g_hash_table_foreach(self->priv->texture_hash,
+				g3d_gl_widget_render_load_texture, NULL);
+		self->priv->texture_hash_updated = FALSE;
+	}
 
 	if(options->updated) {
 		if(self->priv->dlists_valid) {

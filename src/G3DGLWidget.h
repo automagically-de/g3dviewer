@@ -37,6 +37,7 @@ GType g3d_gl_widget_get_type(void) G_GNUC_CONST;
 GtkWidget *g3d_gl_widget_new(void);
 
 gboolean g3d_gl_widget_set_model(G3DGLWidget *self, G3DModel *model);
+gboolean g3d_gl_widget_update_textures(G3DGLWidget *self, GHashTable *hash);
 
 G_END_DECLS
 

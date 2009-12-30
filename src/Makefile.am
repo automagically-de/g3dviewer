@@ -4,7 +4,7 @@ datadir = @datadir@
 localedir = $(datadir)/locale
 
 test_g3dw_SOURCES = \
-	test_g3dw.c \
+	test_g3dw.c texture.c texture.h gl.c gl.h \
 	G3DGLWidget.c G3DGLWidget.h G3DGLWidgetPriv.h \
 	G3DGLWidgetRender.c G3DGLWidgetRender.h
 
