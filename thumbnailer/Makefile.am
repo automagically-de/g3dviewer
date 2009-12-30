@@ -5,8 +5,7 @@ endif
 localedir = $(datadir)/locale
 
 g3d_thumbnailer_SOURCES = \
-	g3d-thumbnailer.c \
-	../src/screenshot.c
+	g3d-thumbnailer.c
 
 g3d_thumbnailer_CFLAGS = \
 	-I$(top_srcdir) -I$(top_builddir) \
