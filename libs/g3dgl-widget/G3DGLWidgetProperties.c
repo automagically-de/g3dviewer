@@ -1,7 +1,8 @@
 #include "G3DGLWidget.h"
 #include "G3DGLWidgetPriv.h"
 
-#include "../g3dgl/g3dgl.h"
+#include <g3d/quat.h>
+#include <g3dgl.h>
 
 enum {
 	ID_0,
@@ -10,6 +11,9 @@ enum {
 	G3DGL_PROP_ISOMETRIC,
 	G3DGL_PROP_MODEL,
 	G3DGL_PROP_POPUP_MENU,
+	G3DGL_PROP_ROTATION_X,
+	G3DGL_PROP_ROTATION_Y,
+	G3DGL_PROP_ROTATION_Z,
 	G3DGL_PROP_SHADOW,
 	G3DGL_PROP_SHININESS,
 	G3DGL_PROP_SPECULAR,
@@ -63,6 +67,15 @@ static void g3d_gl_widget_get_property(GObject *object,
 		case G3DGL_PROP_POPUP_MENU:
 			g_value_set_pointer(value, self->priv->popup_menu);
 			break;
+		case G3DGL_PROP_ROTATION_X:
+			g_value_set_float(value, self->priv->rotation[0]);
+			break;
+		case G3DGL_PROP_ROTATION_Y:
+			g_value_set_float(value, self->priv->rotation[1]);
+			break;
+		case G3DGL_PROP_ROTATION_Z:
+			g_value_set_float(value, self->priv->rotation[2]);
+			break;
 		case G3DGL_PROP_SHADOW:
 			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_SHADOW);
 			break;
@@ -85,6 +98,24 @@ static void g3d_gl_widget_get_property(GObject *object,
 		default:
 			G_OBJECT_WARN_INVALID_PROPERTY_ID(object, property_id, pspec);
 			break;
+	}
+}
+
+static void g3d_gl_widget_set_rotation(G3DGLWidget *self)
+{
+	G3DQuat *tquat, *quat = self->priv->gloptions->quat;
+	gint32 i;
+	G3DVector a[3][3] = {
+		{ 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 }, { 0.0, 0.0, 1.0 } };
+
+	for(i = 0; i < 4; i ++)
+		quat[i] = 0.0;
+
+	for(i = 0; i < 3; i ++) {
+		tquat = g_new0(G3DQuat, 4);
+		g3d_quat_rotate(tquat, a[i], self->priv->rotation[i] * G_PI / 180.0);
+		g3d_quat_add(quat, quat, tquat);
+		g_free(tquat);
 	}
 }
 
@@ -115,6 +146,18 @@ static void g3d_gl_widget_set_property(GObject *object,
 			break;
 		case G3DGL_PROP_POPUP_MENU:
 			self->priv->popup_menu = g_value_get_pointer(value);
+			break;
+		case G3DGL_PROP_ROTATION_X:
+			self->priv->rotation[0] = g_value_get_float(value);
+			g3d_gl_widget_set_rotation(self);
+			break;
+		case G3DGL_PROP_ROTATION_Y:
+			self->priv->rotation[1] = g_value_get_float(value);
+			g3d_gl_widget_set_rotation(self);
+			break;
+		case G3DGL_PROP_ROTATION_Z:
+			self->priv->rotation[2] = g_value_get_float(value);
+			g3d_gl_widget_set_rotation(self);
 			break;
 		case G3DGL_PROP_SHADOW:
 			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_SHADOW);
@@ -196,5 +239,17 @@ void g3d_widget_properties_init(G3DGLWidgetClass *klass)
 	pspec = g_param_spec_pointer("popup-menu", "popup-menu",
 		"set popup menu", G_PARAM_READWRITE);
 	g_object_class_install_property(oc, G3DGL_PROP_POPUP_MENU, pspec);
+
+	pspec = g_param_spec_float("rotation-x", "rotation-x",
+		"set rotation around x axis", 0.0, 360.0, 0.0, G_PARAM_READWRITE);
+	g_object_class_install_property(oc, G3DGL_PROP_ROTATION_X, pspec);
+
+	pspec = g_param_spec_float("rotation-y", "rotation-y",
+		"set rotation around y axis", 0.0, 360.0, 0.0, G_PARAM_READWRITE);
+	g_object_class_install_property(oc, G3DGL_PROP_ROTATION_Y, pspec);
+
+	pspec = g_param_spec_float("rotation-z", "rotation-z",
+		"set rotation around z axis", 0.0, 360.0, 0.0, G_PARAM_READWRITE);
+	g_object_class_install_property(oc, G3DGL_PROP_ROTATION_Z, pspec);
 }
 

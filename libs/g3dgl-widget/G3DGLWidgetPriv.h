@@ -31,6 +31,8 @@ struct _G3DGLWidgetPriv {
 	gint32 drag_start_x;
 	gint32 drag_start_y;
 
+	G3DFloat rotation[3];
+
 	/* from G3DGLRenderOptions, used only internally */
 	G3DFloat model_min_y;
 

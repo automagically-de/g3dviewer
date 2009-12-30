@@ -9,6 +9,7 @@ libg3dgl_widget_la_SOURCES = \
 
 libg3dgl_widget_la_CFLAGS = \
 	-I$(top_srcdir) -I$(top_builddir) \
+	-I$(top_srcdir)/libs/g3dgl \
 	-Wall -ansi \
 	@DBG_CFLAGS@ \
 	@GLIB_CFLAGS@ @GTK_CFLAGS@ @GTKGLEXT_CFLAGS@ \
