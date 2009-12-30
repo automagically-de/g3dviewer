@@ -147,7 +147,7 @@ void gui_on_zoomfit_cb(GtkWidget *widget, gpointer user_data)
 	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
 	g_assert(viewer);
 
-	g3d_gl_widget_zoomfit(G3D_GL_WIDGET(widget));
+	g3d_gl_widget_zoomfit(G3D_GL_WIDGET(viewer->interface.glarea));
 }
 
 /*
