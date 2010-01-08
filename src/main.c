@@ -130,17 +130,10 @@ int main(int argc, char **argv)
 		viewer->filename = g_strdup(DATA_DIR "/examples/g3d.ac");
 #endif
 		if(model_load(viewer)) {
-#if 0
-			/* rotate a little bit */
-			gfloat q1[4], q2[4];
-			gfloat a1[3] = { 0.0, 1.0, 0.0 }, a2[3] = {1.0, 0.0, 1.0};
-
-			g3d_quat_rotate(q1, a1, - 45.0 * G_PI / 180.0);
-			g3d_quat_rotate(q2, a2, - 45.0 * G_PI / 180.0);
-			g3d_quat_add(viewer->gl.options->quat, q1, q2);
-
-			glarea_update(viewer->interface.glarea);
-#endif
+			g_object_set(G_OBJECT(viewer->interface.glarea),
+				"rotation-x", 45.0,
+				"rotation-y", 45.0,
+				NULL);
 		} else {
 			/* show "open" dialog */
 			gui_glade_open_dialog(viewer);

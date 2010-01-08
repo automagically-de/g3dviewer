@@ -131,7 +131,7 @@ gboolean g3d_gl_widget_update_textures(G3DGLWidget *self, GHashTable *hash)
 	return TRUE;
 }
 
-static inline void g3d_gl_widget_invalidate(G3DGLWidget *self)
+void g3d_gl_widget_invalidate(G3DGLWidget *self)
 {
 	gtk_widget_queue_draw_area(GTK_WIDGET(self), 0, 0,
 		GTK_WIDGET(self)->allocation.width,

@@ -47,7 +47,9 @@ int main(int argc, char *argv[])
 			model->tex_images);
 
 		g_object_set(G_OBJECT(g3dw1),
-			"rotation-x", 45, NULL);
+			"rotation-x", 45.0,
+			"rotation-y", 45.0,
+			NULL);
 
 		g_object_set(G_OBJECT(g3dw2), "model", model, NULL);
 		g3d_gl_widget_update_textures(G3D_GL_WIDGET(g3dw2),

@@ -108,17 +108,27 @@ static void g3d_gl_widget_set_rotation(G3DGLWidget *self)
 	G3DVector a[3][3] = {
 		{ 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 }, { 0.0, 0.0, 1.0 } };
 
-	return;
-
-	for(i = 0; i < 4; i ++)
-		quat[i] = 0.0;
-
+#if 0
+	g_debug("quat: [0] = {%.2f, %.2f, %.2f, %.2f}",
+		quat[0], quat[1], quat[2], quat[3]);
+#endif
+	g3d_quat_trackball(quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 	for(i = 0; i < 3; i ++) {
 		tquat = g_new0(G3DQuat, 4);
-		g3d_quat_rotate(tquat, a[i], self->priv->rotation[i] * G_PI / 180.0);
+		g3d_quat_rotate(tquat, a[i], - self->priv->rotation[i] * G_PI / 180.0);
+#if 0
+		g_debug("tquat: [%d] = {%.2f, %.2f, %.2f, %.2f} (%.2f)",
+			i, tquat[0], tquat[1], tquat[2], tquat[3],
+			self->priv->rotation[i]);
+#endif
 		g3d_quat_add(quat, quat, tquat);
 		g_free(tquat);
 	}
+#if 0
+	g_debug("quat: [1] = {%.2f, %.2f, %.2f, %.2f}",
+		quat[0], quat[1], quat[2], quat[3]);
+#endif
+	g3d_gl_widget_invalidate(self);
 }
 
 static void g3d_gl_widget_set_property(GObject *object,

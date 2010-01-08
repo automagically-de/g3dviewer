@@ -31,4 +31,6 @@ struct _G3DGLWidgetPriv {
 	G3DFloat rotation[3];
 };
 
+void g3d_gl_widget_invalidate(G3DGLWidget *self);
+
 #endif /* _G3DGLWIDGETPRIV_H */
