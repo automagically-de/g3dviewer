@@ -60,7 +60,7 @@ gboolean screenshot_save(const gchar *filename, guint32 width, guint32 height)
 	guint8 *pixels;
 	gboolean retval;
 
-	pixels = g3dgl_get_pixels(width, height);
+	pixels = g3d_gl_get_pixels(width, height);
 	retval = screenshot_save_from_pixels(pixels, filename, width, height);
 	g_free(pixels);
 	return retval;
