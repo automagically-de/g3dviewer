@@ -8,6 +8,7 @@ enum {
 	ID_0,
 	G3DGL_PROP_BACKGROUND_COLOR,
 	G3DGL_PROP_COLORS,
+	G3DGL_PROP_COORD_AXES,
 	G3DGL_PROP_ISOMETRIC,
 	G3DGL_PROP_MODEL,
 	G3DGL_PROP_POPUP_MENU,
@@ -57,6 +58,9 @@ static void g3d_gl_widget_get_property(GObject *object,
 			break;
 		case G3DGL_PROP_COLORS:
 			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_COLORS);
+			break;
+		case G3DGL_PROP_COORD_AXES:
+			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_COORD_AXES);
 			break;
 		case G3DGL_PROP_ISOMETRIC:
 			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_ISOMETRIC);
@@ -149,6 +153,9 @@ static void g3d_gl_widget_set_property(GObject *object,
 		case G3DGL_PROP_COLORS:
 			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_COLORS);
 			break;
+		case G3DGL_PROP_COORD_AXES:
+			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_COORD_AXES);
+			break;
 		case G3DGL_PROP_ISOMETRIC:
 			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_ISOMETRIC);
 			break;
@@ -215,6 +222,10 @@ void g3d_widget_properties_init(G3DGLWidgetClass *klass)
 	pspec = g_param_spec_boolean("enable-colors", "enable-colors",
 		"enable colors", TRUE, G_PARAM_READWRITE);
 	g_object_class_install_property(oc, G3DGL_PROP_COLORS, pspec);
+
+	pspec = g_param_spec_boolean("enable-coord-axes", "enable-coord-axes",
+		"enable coordinate system axes", TRUE, G_PARAM_READWRITE);
+	g_object_class_install_property(oc, G3DGL_PROP_COORD_AXES, pspec);
 
 	pspec = g_param_spec_boolean("enable-isometric", "enable-isometric",
 		"enable isometric mode", FALSE, G_PARAM_READWRITE);
