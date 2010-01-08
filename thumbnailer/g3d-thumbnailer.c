@@ -157,7 +157,7 @@ int main(int argc, char *argv[])
 
 	if(model) {
 		if(model->tex_images)
-			g_hash_table_foreach(model->tex_images, g3dgl_load_texture, NULL);
+			g_hash_table_foreach(model->tex_images, g3d_gl_load_texture, NULL);
 
 		renderer = g3d_gl_simple_renderer_new(options);
 		g3d_gl_init();
