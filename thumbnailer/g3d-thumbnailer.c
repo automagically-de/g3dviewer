@@ -34,7 +34,7 @@
 #include <g3d/g3d.h>
 #include <g3d/quat.h>
 
-#include <g3dgl.h>
+#include <G3DGLSimpleRenderer.h>
 
 static gboolean screenshot_save_from_pixels(guint8 *pixels,
 	const gchar *filename,
@@ -50,6 +50,7 @@ int main(int argc, char *argv[])
 	OSMesaContext omctxt;
 	G3DContext *context;
 	G3DModel *model;
+	G3DGLRenderer *renderer;
 	G3DGLRenderOptions *options;
 	G3DQuat q1[4], q2[4];
 	G3DVector a1[3] = { 0.0, 1.0, 0.0 }, a2[3] = {1.0, 0.0, 1.0};
@@ -157,8 +158,12 @@ int main(int argc, char *argv[])
 	if(model) {
 		if(model->tex_images)
 			g_hash_table_foreach(model->tex_images, g3dgl_load_texture, NULL);
+
+		renderer = g3d_gl_simple_renderer_new(options);
+		g3d_gl_renderer_prepare(renderer, model);
 		g3dgl_setup_view(options);
-		g3dgl_draw(options, model);
+		g3d_gl_renderer_draw(renderer);
+
 		glFinish();
 		if(screenshot_save_from_pixels(imgbuf, argv[2], width, height))
 			retval = EXIT_SUCCESS;
