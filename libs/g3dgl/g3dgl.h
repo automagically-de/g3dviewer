@@ -36,8 +36,10 @@ typedef struct {
 	guint32 avg_msec;
 } G3DGLRenderOptions;
 
+void g3d_gl_init(void);
+
 void g3dgl_matrix_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4]);
-void g3dgl_init(void);
+
 
 /* <to widget> */
 G3DFloat g3dgl_min_y(GSList *objects);
@@ -47,10 +49,6 @@ void g3dgl_draw_plane(G3DGLRenderOptions *options);
 void g3dgl_setup_floor_stencil(G3DGLRenderOptions *options);
 void g3dgl_setup_shadow_stencil(G3DGLRenderOptions *options,
 	gint32 dlist_shadow);
-void g3dgl_draw_objects(G3DGLRenderOptions *options,
-	G3DMaterial **prev_material_p, guint32 *prev_texid_p,
-	GSList *objects, gfloat min_a, gfloat max_a, gboolean is_shadow);
-
 void g3dgl_set_twoside(gboolean twoside);
 void g3dgl_set_textures(gboolean textures);
 

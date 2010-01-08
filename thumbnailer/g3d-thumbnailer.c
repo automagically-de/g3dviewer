@@ -160,6 +160,7 @@ int main(int argc, char *argv[])
 			g_hash_table_foreach(model->tex_images, g3dgl_load_texture, NULL);
 
 		renderer = g3d_gl_simple_renderer_new(options);
+		g3d_gl_init();
 		g3d_gl_renderer_prepare(renderer, model);
 		g3d_gl_renderer_clear(renderer);
 		g3d_gl_renderer_setup_view(renderer);

@@ -35,62 +35,7 @@
 
 gboolean g3d_gl_widget_render_init(G3DGLWidget *self)
 {
-	GLfloat light0_pos[4] = { -50.0, 50.0, 0.0, 0.0 };
-	GLfloat light0_col[4] = { 0.6, 0.6, 0.6, 1.0 };
-	GLfloat light1_pos[4] = {  50.0, 50.0, 0.0, 0.0 };
-	GLfloat light1_col[4] = { 0.4, 0.4, 0.4, 1.0 };
-	GLfloat ambient_lc[4] = { 0.35, 0.35, 0.35, 1.0 };
-
-	/* transparency and blending */
-#if 0
-	glAlphaFunc(GL_GREATER, 0.1);
-#endif
-	glEnable(GL_ALPHA_TEST);
-
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glEnable(GL_BLEND);
-
-	glDepthFunc(GL_LEQUAL);
-	glDepthMask(GL_TRUE);
-	glEnable(GL_DEPTH_TEST);
-
-#if 0
-	glEnable(GL_LINE_SMOOTH);
-	glEnable(GL_POLYGON_SMOOTH);
-#endif
-
-#if 0
-	glDisable(GL_DITHER);
-#endif
-	glShadeModel(GL_SMOOTH);
-
-	glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-	glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
-
-	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_lc);
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 0);
-#ifdef GL_LIGHT_MODEL_COLOR_CONTROL
-	glLightModeli(GL_LIGHT_MODEL_COLOR_CONTROL, GL_SEPARATE_SPECULAR_COLOR);
-#endif
-	glLightModeli(GL_LIGHT_MODEL_LOCAL_VIEWER, 1);
-
-	glLightfv(GL_LIGHT0, GL_POSITION, light0_pos);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE,  light0_col);
-	glLightfv(GL_LIGHT1, GL_POSITION, light1_pos);
-	glLightfv(GL_LIGHT1, GL_DIFFUSE,  light1_col);
-	glLightfv(GL_LIGHT1, GL_SPECULAR,  light1_col);
-	glEnable(GL_LIGHT0);
-	glEnable(GL_LIGHT1);
-	glEnable(GL_LIGHTING);
-
-	/* colors and materials */
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-	glEnable(GL_COLOR_MATERIAL);
-
-	/* texture stuff */
-	glEnable(GL_TEXTURE_2D);
-
+	g3d_gl_init();
 	return TRUE;
 }
 
