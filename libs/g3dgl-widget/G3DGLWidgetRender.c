@@ -125,51 +125,9 @@ void g3d_gl_widget_render_decorations(G3DGLWidget *self)
 
 gboolean g3d_gl_widget_render_setup_view(G3DGLWidget *self)
 {
-	G3DFloat w, h;
-	GLfloat m[4][4];
-	G3DMatrix *g3dm;
-	G3DGLRenderOptions *options = self->priv->gloptions;
-
-	glClearColor(
-		self->priv->bgcolor[0],
-		self->priv->bgcolor[1],
-		self->priv->bgcolor[2],
-		self->priv->bgcolor[3]);
-	glClearDepth(1.0);
-	glClearIndex(0.3);
-	glClear(
-		GL_COLOR_BUFFER_BIT |
-		GL_DEPTH_BUFFER_BIT |
-		GL_ACCUM_BUFFER_BIT |
-		GL_STENCIL_BUFFER_BIT);
-
+	g3d_gl_renderer_clear(self->priv->renderer);
 	g3d_gl_widget_render_decorations(self);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	if(options->glflags & G3D_FLAG_GL_ISOMETRIC) {
-		w = 0.5 * options->zoom;
-		h = w / options->aspect;
-		glOrtho(-w / 2.0, w / 2.0, -h / 2.0, h / 2.0, 1, 100);
-	} else {
-		gluPerspective(options->zoom, options->aspect, 1, 100);
-	}
-
-	/* translation of view */
-	glTranslatef(options->offx, options->offy, 0.0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glTranslatef(0, 0, -30);
-	g3dm = g3d_matrix_new();
-	g3d_quat_to_matrix(options->quat, g3dm);
-	g3dgl_matrix_to_gl(g3dm, m);
-
-	g3d_matrix_free(g3dm);
-	glMultMatrixf(&m[0][0]);
-
+	g3d_gl_renderer_setup_view(self->priv->renderer);
 	return TRUE;
 }
 
@@ -191,9 +149,6 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 		glTranslatef(0.0, self->priv->model_min_y, 0.0);
 		glScalef(1.0, -1.0, 1.0);
 		g3d_gl_renderer_draw(self->priv->renderer);
-		/*
-		glCallList(self->priv->dlists[G3DGLW_DLIST_MODEL]);
-		*/
 		glPopMatrix();
 
 		/* plane */

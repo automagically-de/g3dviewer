@@ -4,6 +4,8 @@
 #include <glib-object.h>
 #include <g3d/types.h>
 
+#include "g3dgl.h"
+
 G_BEGIN_DECLS
 
 #define G3D_GL_TYPE_RENDERER            (g3d_gl_renderer_get_type())
@@ -30,15 +32,23 @@ struct _G3DGLRenderer {
 struct _G3DGLRendererClass {
 	GObjectClass parent_class;
 
+	gboolean (* clear)(G3DGLRenderer *);
+	gboolean (* setup_view)(G3DGLRenderer *);
 	gboolean (* prepare)(G3DGLRenderer *, G3DModel *);
 	gboolean (* draw)(G3DGLRenderer *);
 	gboolean (* draw_shadow)(G3DGLRenderer *);
+};
+
+struct _G3DGLRendererPriv {
+	G3DGLRenderOptions *options;
 };
 
 GType g3d_gl_renderer_get_type(void) G_GNUC_CONST;
 
 /* GtkRenderer *g3d_gl_renderer_new(void); */
 
+gboolean g3d_gl_renderer_clear(G3DGLRenderer *r);
+gboolean g3d_gl_renderer_setup_view(G3DGLRenderer *r);
 gboolean g3d_gl_renderer_prepare(G3DGLRenderer *r, G3DModel *model);
 gboolean g3d_gl_renderer_draw(G3DGLRenderer *r);
 gboolean g3d_gl_renderer_draw_shadow(G3DGLRenderer *r);

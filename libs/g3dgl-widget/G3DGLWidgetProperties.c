@@ -49,9 +49,9 @@ static void g3d_gl_widget_get_property(GObject *object,
 	switch(property_id) {
 		case G3DGL_PROP_BACKGROUND_COLOR:
 			stmp = g_strdup_printf("#%02X%02X%02X",
-				(guint32)(self->priv->bgcolor[0] * 0xFF),
-				(guint32)(self->priv->bgcolor[1] * 0xFF),
-				(guint32)(self->priv->bgcolor[2] * 0xFF));
+				(guint32)(options->bgcolor[0] * 0xFF),
+				(guint32)(options->bgcolor[1] * 0xFF),
+				(guint32)(options->bgcolor[2] * 0xFF));
 			g_value_set_string(value, stmp);
 			g_free(stmp);
 			break;
@@ -131,9 +131,9 @@ static void g3d_gl_widget_set_property(GObject *object,
 	switch(property_id) {
 		case G3DGL_PROP_BACKGROUND_COLOR:
 			if(gdk_color_parse(g_value_get_string(value), &color)) {
-				self->priv->bgcolor[0] = (gdouble)color.red   / 65536.0;
-				self->priv->bgcolor[1] = (gdouble)color.green / 65536.0;
-				self->priv->bgcolor[2] = (gdouble)color.blue  / 65536.0;
+				options->bgcolor[0] = (gdouble)color.red   / 65536.0;
+				options->bgcolor[1] = (gdouble)color.green / 65536.0;
+				options->bgcolor[2] = (gdouble)color.blue  / 65536.0;
 			}
 			break;
 		case G3DGL_PROP_COLORS:

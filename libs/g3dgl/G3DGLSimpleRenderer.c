@@ -7,7 +7,6 @@ enum {
 };
 
 struct _G3DGLSimpleRendererPriv {
-	G3DGLRenderOptions *options;
 	gboolean dlists_valid;
 	int dlists[G3DGL_N_DLISTS];
 
@@ -20,6 +19,7 @@ struct _G3DGLSimpleRendererPriv {
 static gboolean g3d_gl_simple_renderer_prepare(G3DGLRenderer *renderer,
 	G3DModel *model)
 {
+	G3DGLRendererPriv *rpriv;
 	G3DGLSimpleRendererPriv *priv;
 	gint32 i;
 	gfloat f;
@@ -27,6 +27,10 @@ static gboolean g3d_gl_simple_renderer_prepare(G3DGLRenderer *renderer,
 	g_return_val_if_fail(G3D_GL_IS_SIMPLE_RENDERER(renderer), FALSE);
 
 	priv = G3D_GL_SIMPLE_RENDERER(renderer)->priv;
+	rpriv = G3D_GL_RENDERER(renderer)->priv;
+
+	g_return_val_if_fail(priv != NULL, FALSE);
+	g_return_val_if_fail(rpriv != NULL, FALSE);
 
 	priv->prev_material = NULL;
 	priv->prev_texid = 0;
@@ -44,7 +48,7 @@ static gboolean g3d_gl_simple_renderer_prepare(G3DGLRenderer *renderer,
 		/* fill lists */
 		glNewList(priv->dlists[G3DGL_DLIST_MODEL], GL_COMPILE);
 		for(f = 1.0; f >= 0.0; f -= 0.2)
-			g3dgl_draw_objects(priv->options,
+			g3dgl_draw_objects(rpriv->options,
 				&priv->prev_material,
 				&priv->prev_texid,
 				model->objects, f, f + 0.2, FALSE);
@@ -54,7 +58,7 @@ static gboolean g3d_gl_simple_renderer_prepare(G3DGLRenderer *renderer,
 		priv->prev_texid = 0;
 
 		glNewList(priv->dlists[G3DGL_DLIST_SHADOW], GL_COMPILE);
-		g3dgl_draw_objects(priv->options,
+		g3dgl_draw_objects(rpriv->options,
 			&priv->prev_material,
 			&priv->prev_texid,
 			model->objects, 0.0, 1.0, TRUE);
@@ -132,7 +136,8 @@ G3DGLRenderer *g3d_gl_simple_renderer_new(G3DGLRenderOptions *options)
 	G3DGLSimpleRenderer *renderer;
 
 	renderer = g_object_new(G3D_GL_TYPE_SIMPLE_RENDERER, NULL);
-	renderer->priv->options = options;
+	g_return_val_if_fail(renderer != NULL, NULL);
+	G3D_GL_RENDERER(renderer)->priv->options = options;
 	return G3D_GL_RENDERER(renderer);
 }
 

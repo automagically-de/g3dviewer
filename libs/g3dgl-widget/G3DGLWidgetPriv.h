@@ -18,7 +18,6 @@ struct _G3DGLWidgetPriv {
 	gboolean initialized;
 	gboolean focused;
 	GdkGLConfig *glconfig;
-	gfloat bgcolor[4];
 	G3DGLRenderOptions *gloptions;
 	GHashTable *texture_hash;
 	gboolean texture_hash_updated;

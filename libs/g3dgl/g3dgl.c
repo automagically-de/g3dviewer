@@ -18,12 +18,6 @@
 #define TIMING
 #endif
 
-struct _G3DGLRenderState {
-	int gl_dlist, gl_dlist_shadow;
-	G3DMaterial *prev_material;
-	guint32 prev_texid;
-};
-
 #ifdef TIMING
 static GTimer *timer = NULL;
 #endif
@@ -116,30 +110,6 @@ void g3dgl_init(void)
 #endif
 }
 
-static inline void g3dgl_draw_osd(G3DGLRenderOptions *options)
-{
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, options->width - 1, options->height - 1, 0, 0, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	if (options->focused) {
-		glColor3f(0.0, 0.0, 0.0);
-		glLineStipple(1, 0xAAAA); /* dotted line */
-		glEnable(GL_LINE_STIPPLE);
-		glBegin(GL_LINE_LOOP);
-		glVertex3f(1, 1, 0);
-		glVertex3f(options->width - 2, 1, 0);
-		glVertex3f(options->width - 2, options->height - 2, 0);
-		glVertex3f(1, options->height - 2, 0);
-		glEnd();
-		glDisable(GL_LINE_STIPPLE);
-	}
-}
-
-
 void g3dgl_set_twoside(gboolean twoside)
 {
 	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, twoside ? 1 : 0);
@@ -158,56 +128,6 @@ void g3dgl_set_textures(gboolean textures)
 		glDisable(GL_TEXTURE_2D);
 	}
 }
-
-void g3dgl_setup_view(G3DGLRenderOptions *options)
-{
-	GLfloat m[4][4];
-	G3DMatrix *g3dm;
-	G3DFloat w, h;
-
-	glClearColor(
-		options->bgcolor[0],
-		options->bgcolor[1],
-		options->bgcolor[2],
-		options->bgcolor[3]);
-	glClearDepth(1.0);
-	glClearIndex(0.3);
-	glClear(
-		GL_COLOR_BUFFER_BIT |
-		GL_DEPTH_BUFFER_BIT |
-		GL_ACCUM_BUFFER_BIT |
-		GL_STENCIL_BUFFER_BIT);
-
-	g3dgl_draw_osd(options);
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	if(options->glflags & G3D_FLAG_GL_ISOMETRIC) {
-		w = 0.5 * options->zoom;
-		h = w / options->aspect;
-		glOrtho(-w / 2.0, w / 2.0, -h / 2.0, h / 2.0, 1, 100);
-	} else {
-		gluPerspective(options->zoom, options->aspect, 1, 100);
-	}
-
-	g3dgl_set_twoside(options->glflags & G3D_FLAG_GL_TWOSIDED);
-
-	/* translation of view */
-	glTranslatef(options->offx, options->offy, 0.0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	glTranslatef(0, 0, -30);
-	g3dm = g3d_matrix_new();
-	g3d_quat_to_matrix(options->quat, g3dm);
-	g3dgl_matrix_to_gl(g3dm, m);
-
-	g3d_matrix_free(g3dm);
-	glMultMatrixf(&m[0][0]);
-}
-
 
 static inline void g3dgl_update_material(G3DGLRenderOptions *options,
 	G3DMaterial *material)
@@ -552,149 +472,6 @@ void g3dgl_draw_coord_system(G3DGLRenderOptions *options)
 		glVertex3f(0.0, 0.0, 10.0);
 		glEnd();
 	}
-}
-
-void g3dgl_draw(G3DGLRenderOptions *options, G3DModel *model)
-{
-	GLenum error;
-	gfloat f;
-#ifdef TIMING
-	gboolean ignore_timing = FALSE;
-	gulong msec, add;
-	gdouble sec;
-#endif
-	G3DVector light[3] = { 100.0, 500.0, 20.0 };
-	G3DVector plane[3] = { 0.0, -20.0, 0.0 };
-	G3DVector normal[3] = { 0.0, -1.0, 0.0 };
-
-	TRAP_GL_ERROR("gl_draw - start");
-
-	if(!options->initialized) {
-		g3dgl_init();
-		options->initialized = TRUE;
-#ifdef TIMING
-		ignore_timing = TRUE;
-#endif
-	}
-
-	/* reset texture */
-	glBindTexture (GL_TEXTURE_2D, 0);
-	TRAP_GL_ERROR("gl_draw - bind texture 0");
-
-	if(model == NULL)
-		return;
-
-#ifdef TIMING
-	g_timer_start(timer);
-#endif
-
-	if(options->updated) {
-		options->updated = FALSE;
-#ifdef TIMING
-		ignore_timing = TRUE;
-#endif
-#if DEBUG > 2
-		g_printerr("[gl] creating new display list\n");
-#endif
-		options->min_y = g3dgl_min_y(model->objects);
-
-		/* update render state */
-		if(options->state) {
-			glDeleteLists(options->state->gl_dlist, 1);
-			glDeleteLists(options->state->gl_dlist_shadow, 1);
-			g_free(options->state);
-		}
-		options->state = g_new0(G3DGLRenderState, 1);
-
-		/* create and execute display list */
-		options->state->gl_dlist = glGenLists(1);
-		options->state->gl_dlist_shadow = glGenLists(1);
-
-		glNewList(options->state->gl_dlist, GL_COMPILE);
-		/* draw all objects */
-		for(f = 1.0; f >= 0.0; f -= 0.2)
-			g3dgl_draw_objects(options,
-				&(options->state->prev_material),
-				&(options->state->prev_texid),
-				model->objects, f, f + 0.2, FALSE);
-		glEndList();
-
-		if(options->glflags & G3D_FLAG_GL_SHADOW) {
-			glNewList(options->state->gl_dlist_shadow, GL_COMPILE);
-			g3dgl_draw_objects(options,
-				&(options->state->prev_material),
-				&(options->state->prev_texid),
-				model->objects, 0.0, 1.0, TRUE);
-			glEndList();
-		}
-
-		TRAP_GL_ERROR("gl_draw - building list");
-	}
-
-	g_return_if_fail(options->state != NULL);
-
-	g3dgl_draw_coord_system(options);
-
-	if(options->glflags & G3D_FLAG_GL_SHADOW) {
-		plane[1] = options->min_y;
-
-		/* reflection */
-		glPushMatrix();
-		g3dgl_setup_floor_stencil(options);
-		glTranslatef(0.0, (options->min_y * 2), 0.0);
-		glScalef(1.0, -1.0, 1.0);
-		glCallList(options->state->gl_dlist);
-		glPopMatrix();
-
-		/* plane */
-		glDisable(GL_LIGHTING);
-		glBindTexture (GL_TEXTURE_2D, 0);
-		glColor4f(0.5, 0.5, 0.5, 0.7);
-		g3dgl_draw_plane(options);
-		glEnable(GL_LIGHTING);
-		/* shadow */
-		glPushMatrix();
-		g3d_matrix_shadow(light, plane, normal, options->shadow_matrix);
-		glBindTexture (GL_TEXTURE_2D, 0);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-		glMultMatrixf(options->shadow_matrix);
-		g3dgl_setup_shadow_stencil(options, options->state->gl_dlist_shadow);
-		glPopMatrix();
-		glPushMatrix();
-		glTranslatef(0.0, 0.001, 0.0);
-		glColor4f(0.3, 0.3, 0.3, 0.7);
-		g3dgl_draw_plane(options);
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
-		glPopMatrix();
-
-		glDisable(GL_STENCIL_TEST);
-	}
-
-	/* execute display list */
-	glCallList(options->state->gl_dlist);
-
-	TRAP_GL_ERROR("gl_draw - call list");
-
-#ifdef TIMING /* get time to draw one frame to compare algorithms */
-	g_timer_stop(timer);
-
-	if(!ignore_timing) {
-		if(options->avg_msec == 0) {
-			sec = g_timer_elapsed(timer, &msec);
-			options->avg_msec = (gulong)sec * 1000000 + msec;
-		} else {
-			sec = g_timer_elapsed(timer, &msec);
-			add = (gulong)sec * 1000000 + msec;
-			options->avg_msec = (options->avg_msec + add) / 2;
-		}
-	}
-#endif
-
-#if DEBUG > 3
-	g_printerr("gl.c: drawn...\n");
-#endif
 }
 
 guint8 *g3dgl_get_pixels(guint32 width, guint32 height)

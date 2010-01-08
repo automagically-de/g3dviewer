@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
 	options->updated = TRUE;
 	options->initialized = FALSE;
 	options->glflags =
-		G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_TWOSIDED |
+		/* G3D_FLAG_GL_SHININESS | G3D_FLAG_GL_TWOSIDED | */
 		G3D_FLAG_GL_TEXTURES | G3D_FLAG_GL_COLORS;
 	options->zoom = 40;
 	options->aspect = (gfloat)width / (gfloat)height;
@@ -161,10 +161,12 @@ int main(int argc, char *argv[])
 
 		renderer = g3d_gl_simple_renderer_new(options);
 		g3d_gl_renderer_prepare(renderer, model);
-		g3dgl_setup_view(options);
+		g3d_gl_renderer_clear(renderer);
+		g3d_gl_renderer_setup_view(renderer);
 		g3d_gl_renderer_draw(renderer);
 
 		glFinish();
+
 		if(screenshot_save_from_pixels(imgbuf, argv[2], width, height))
 			retval = EXIT_SUCCESS;
 		g3d_model_free(model);

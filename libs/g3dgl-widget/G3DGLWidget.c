@@ -37,6 +37,7 @@ static void g3d_gl_widget_class_init(G3DGLWidgetClass *klass)
 static void g3d_gl_widget_init(G3DGLWidget *self)
 {
 	GtkStyle *style = NULL;
+	G3DGLRenderOptions *options;
 
 	self->priv = G3D_GL_WIDGET_GET_PRIVATE(self);
 
@@ -45,25 +46,27 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
         GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH | GDK_GL_MODE_DOUBLE |
         GDK_GL_MODE_STENCIL);
 
+	self->priv->gloptions = g_new0(G3DGLRenderOptions, 1);
+	options = self->priv->gloptions;
+
+	options->zoom = 45;
+	options->glflags =
+		G3D_FLAG_GL_COLORS |
+		G3D_FLAG_GL_TEXTURES;
+	g3d_quat_trackball(options->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
+
 	/* ugly "default", overwritten by style */
-	self->priv->bgcolor[0] = 1.0;
-	self->priv->bgcolor[1] = 0.5;
-	self->priv->bgcolor[2] = 0.5;
-	self->priv->bgcolor[3] = 0.0;
+	options->bgcolor[0] = 1.0;
+	options->bgcolor[1] = 0.5;
+	options->bgcolor[2] = 0.5;
+	options->bgcolor[3] = 0.0;
 
 	g_object_get(G_OBJECT(self), "style", &style, NULL);
 	if(style) {
-		self->priv->bgcolor[0] = (gdouble)style->bg[0].red   / 65536.0;
-		self->priv->bgcolor[1] = (gdouble)style->bg[0].green / 65536.0;
-		self->priv->bgcolor[2] = (gdouble)style->bg[0].blue  / 65536.0;
+		options->bgcolor[0] = (gdouble)style->bg[0].red   / 65536.0;
+		options->bgcolor[1] = (gdouble)style->bg[0].green / 65536.0;
+		options->bgcolor[2] = (gdouble)style->bg[0].blue  / 65536.0;
 	}
-
-	self->priv->gloptions = g_new0(G3DGLRenderOptions, 1);
-	self->priv->gloptions->zoom = 45;
-	self->priv->gloptions->glflags =
-		G3D_FLAG_GL_COLORS |
-		G3D_FLAG_GL_TEXTURES;
-	g3d_quat_trackball(self->priv->gloptions->quat, 0.0, 0.0, 0.0, 0.0, 0.8);
 
     if(self->priv->glconfig == NULL) {
         self->priv->glconfig = gdk_gl_config_new_by_mode(
@@ -108,7 +111,8 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 	g_signal_connect(G_OBJECT(self), "motion_notify_event",
 		G_CALLBACK(g3d_gl_widget_motion_notify_cb), NULL);
 
-	self->priv->renderer = g3d_gl_simple_renderer_new(self->priv->gloptions);
+	self->priv->renderer = g3d_gl_simple_renderer_new(options);
+	g_return_if_fail(self->priv->renderer);
 }
 
 GtkWidget *g3d_gl_widget_new(void)
