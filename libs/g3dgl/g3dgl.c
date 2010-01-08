@@ -477,26 +477,6 @@ void g3dgl_setup_floor_stencil(G3DGLRenderOptions *options)
 	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 }
 
-void g3dgl_setup_shadow_stencil(G3DGLRenderOptions *options,
-	gint32 dlist_shadow)
-{
-	glClear(GL_STENCIL_BUFFER_BIT);
-	glDepthMask(GL_FALSE);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-	glEnable(GL_STENCIL_TEST);
-	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-	glStencilFunc(GL_ALWAYS, 1, 0xffffffff);
-
-	glCallList(dlist_shadow);
-
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glDepthMask(GL_TRUE);
-
-	glStencilFunc(GL_EQUAL, 1, 0xffffffff);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-}
-
 /* GHFunc */
 void g3dgl_load_texture(gpointer key, gpointer value, gpointer data)
 {
