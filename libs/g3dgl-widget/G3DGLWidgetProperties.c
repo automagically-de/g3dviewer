@@ -108,6 +108,8 @@ static void g3d_gl_widget_set_rotation(G3DGLWidget *self)
 	G3DVector a[3][3] = {
 		{ 1.0, 0.0, 0.0 }, { 0.0, 1.0, 0.0 }, { 0.0, 0.0, 1.0 } };
 
+	return;
+
 	for(i = 0; i < 4; i ++)
 		quat[i] = 0.0;
 

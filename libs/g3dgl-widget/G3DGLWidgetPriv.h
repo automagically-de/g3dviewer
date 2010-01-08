@@ -6,17 +6,15 @@
 
 #include <g3d/types.h>
 
-#include "libs/g3dgl/g3dgl.h"
+#include "g3dgl.h"
+#include "G3DGLRenderer.h"
 
 #include "G3DGLWidget.h"
 
-enum {
-	G3DGLW_DLIST_MODEL,
-	G3DGLW_DLIST_SHADOW,
-	G3DGLW_N_DLISTS
-};
-
 struct _G3DGLWidgetPriv {
+	G3DGLRenderer *renderer;
+	G3DModel *model;
+
 	gboolean initialized;
 	gboolean focused;
 	GdkGLConfig *glconfig;
@@ -24,21 +22,14 @@ struct _G3DGLWidgetPriv {
 	G3DGLRenderOptions *gloptions;
 	GHashTable *texture_hash;
 	gboolean texture_hash_updated;
-	G3DModel *model;
 	GtkWidget *popup_menu;
 
 	gboolean show_trackball;
 	gint32 drag_start_x;
 	gint32 drag_start_y;
 
-	G3DFloat rotation[3];
-
-	/* from G3DGLRenderOptions, used only internally */
 	G3DFloat model_min_y;
-
-	/* from G3DGLRenderState */
-	gint32 dlists[G3DGLW_N_DLISTS];
-	gboolean dlists_valid;
+	G3DFloat rotation[3];
 };
 
 #endif /* _G3DGLWIDGETPRIV_H */

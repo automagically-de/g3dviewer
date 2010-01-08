@@ -31,7 +31,7 @@
 #include "G3DGLWidget.h"
 #include "G3DGLWidgetPriv.h"
 
-#include "libs/g3dgl/g3dgl.h"
+#include "G3DGLRenderer.h"
 
 gboolean g3d_gl_widget_render_init(G3DGLWidget *self)
 {
@@ -190,7 +190,10 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 		g3dgl_setup_floor_stencil(options);
 		glTranslatef(0.0, self->priv->model_min_y, 0.0);
 		glScalef(1.0, -1.0, 1.0);
+		g3d_gl_renderer_draw(self->priv->renderer);
+		/*
 		glCallList(self->priv->dlists[G3DGLW_DLIST_MODEL]);
+		*/
 		glPopMatrix();
 
 		/* plane */
@@ -208,8 +211,7 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 		glMultMatrixf(shadow_matrix);
-		g3dgl_setup_shadow_stencil(options,
-			self->priv->dlists[G3DGLW_DLIST_SHADOW]);
+		g3d_gl_renderer_draw_shadow(self->priv->renderer);
 		glPopMatrix();
 		glPushMatrix();
 		glTranslatef(0.0, 0.001, 0.0);
@@ -265,10 +267,6 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 {
 	G3DGLRenderOptions *options = self->priv->gloptions;
 	G3DModel *model = self->priv->model;
-	G3DMaterial *prev_material = NULL;
-	guint32 prev_texid = -1;
-	G3DFloat f;
-	gint32 i;
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -283,9 +281,6 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 	}
 
 	if(options->updated) {
-		prev_material = NULL;
-		prev_texid = 0;
-
 		/* set options */
 		if(options->glflags & G3D_FLAG_GL_WIREFRAME) {
 			glPolygonMode(GL_FRONT, GL_LINE);
@@ -295,40 +290,10 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 			glPolygonMode(GL_BACK, GL_FILL);
 		}
 
-		if(self->priv->dlists_valid) {
-			for(i = 0; i < G3DGLW_N_DLISTS; i ++)
-				glDeleteLists(self->priv->dlists[i], 1);
-			self->priv->dlists_valid = FALSE;
-		}
-
-		/* create display lists */
-		for(i = 0; i < G3DGLW_N_DLISTS; i ++)
-			self->priv->dlists[i] = glGenLists(1);
-
 		/* for position of ground plane */
 		self->priv->model_min_y = g3dgl_min_y(model->objects);
-		
-		/* fill lists */
-		glNewList(self->priv->dlists[G3DGLW_DLIST_MODEL], GL_COMPILE);
-		for(f = 1.0; f >= 0.0; f -= 0.2)
-			g3dgl_draw_objects(options,
-				&prev_material,
-				&prev_texid,
-				model->objects, f, f + 0.2, FALSE);
-		glEndList();
-
-		prev_material = NULL;
-		prev_texid = 0;
-
-		glNewList(self->priv->dlists[G3DGLW_DLIST_SHADOW], GL_COMPILE);
-		g3dgl_draw_objects(options,
-			&prev_material,
-			&prev_texid,
-			model->objects, 0.0, 1.0, TRUE);
-		glEndList();
-
-		/* list are valid now */
-		self->priv->dlists_valid = TRUE;
+	
+		g3d_gl_renderer_prepare(self->priv->renderer, model);
 		options->updated = TRUE;
 	}
 
@@ -336,6 +301,6 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 	g3d_gl_widget_render_shadow_plane(self);
 
 	/* draw model */
-	glCallList(self->priv->dlists[G3DGLW_DLIST_MODEL]);
+	g3d_gl_renderer_draw(self->priv->renderer);
 }
 

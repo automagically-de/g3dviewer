@@ -5,6 +5,8 @@
 #include <g3d/quat.h>
 #include <GL/gl.h>
 
+#include "G3DGLSimpleRenderer.h"
+
 #include "G3DGLWidget.h"
 #include "G3DGLWidgetPriv.h"
 #include "G3DGLWidgetProperties.h"
@@ -68,6 +70,9 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
             GDK_GL_MODE_RGBA | GDK_GL_MODE_DEPTH |
             GDK_GL_MODE_ALPHA | GDK_GL_MODE_DOUBLE | GDK_GL_MODE_STENCIL);
     }
+    if(self->priv->glconfig == NULL) {
+		g_error("could not get GL mode");
+	}
 
 	gtk_widget_set_gl_capability(GTK_WIDGET(self),
 		self->priv->glconfig, NULL, TRUE,
@@ -102,6 +107,8 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 		G_CALLBACK(g3d_gl_widget_button_released_cb), NULL);
 	g_signal_connect(G_OBJECT(self), "motion_notify_event",
 		G_CALLBACK(g3d_gl_widget_motion_notify_cb), NULL);
+
+	self->priv->renderer = g3d_gl_simple_renderer_new(self->priv->gloptions);
 }
 
 GtkWidget *g3d_gl_widget_new(void)
