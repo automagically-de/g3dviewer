@@ -37,22 +37,10 @@ typedef struct {
 } G3DGLRenderOptions;
 
 void g3d_gl_init(void);
-
-void g3dgl_matrix_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4]);
-
-
-/* <to widget> */
-G3DFloat g3dgl_min_y(GSList *objects);
-void g3dgl_draw_plane(G3DGLRenderOptions *options);
-/* </to widget> */
-
-void g3dgl_setup_floor_stencil(G3DGLRenderOptions *options);
-void g3dgl_setup_shadow_stencil(G3DGLRenderOptions *options,
-	gint32 dlist_shadow);
-void g3dgl_set_twoside(gboolean twoside);
-void g3dgl_set_textures(gboolean textures);
-
-void g3dgl_load_texture(gpointer key, gpointer value, gpointer data);
-guint8 *g3dgl_get_pixels(guint32 width, guint32 height);
+void g3d_gl_matrix_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4]);
+void g3d_gl_set_twoside(gboolean twoside);
+void g3d_gl_set_textures(gboolean textures);
+void g3d_gl_load_texture(gpointer key, gpointer value, gpointer data);
+guint8 *g3di_gl_get_pixels(guint32 width, guint32 height);
 
 #endif /* _G3DGL_H */

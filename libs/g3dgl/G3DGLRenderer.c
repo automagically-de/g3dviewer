@@ -77,7 +77,7 @@ static gboolean g3d_gl_renderer_setup_view_impl(G3DGLRenderer *self)
 	glTranslatef(0, 0, -30);
 	g3dm = g3d_matrix_new();
 	g3d_quat_to_matrix(options->quat, g3dm);
-	g3dgl_matrix_to_gl(g3dm, m);
+	g3d_gl_matrix_to_gl(g3dm, m);
 
 	g3d_matrix_free(g3dm);
 	glMultMatrixf(&m[0][0]);

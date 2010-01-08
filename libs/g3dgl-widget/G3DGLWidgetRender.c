@@ -33,6 +33,11 @@
 
 #include "G3DGLRenderer.h"
 
+static G3DFloat g3d_gl_widget_min_y(GSList *objects);
+static void g3d_gl_widget_draw_plane(G3DGLRenderOptions *options);
+static void g3d_gl_widget_setup_floor_stencil(G3DGLRenderOptions *options);
+static void g3d_gl_widget_draw_coord_system(G3DGLRenderOptions *options);
+
 gboolean g3d_gl_widget_render_init(G3DGLWidget *self)
 {
 	g3d_gl_init();
@@ -90,7 +95,7 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 
 		/* reflection */
 		glPushMatrix();
-		g3dgl_setup_floor_stencil(options);
+		g3d_gl_widget_setup_floor_stencil(options);
 		glTranslatef(0.0, self->priv->model_min_y, 0.0);
 		glScalef(1.0, -1.0, 1.0);
 		g3d_gl_renderer_draw(self->priv->renderer);
@@ -100,7 +105,7 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glColor4f(0.5, 0.5, 0.5, 0.7);
-		g3dgl_draw_plane(options);
+		g3d_gl_widget_draw_plane(options);
 		glPopAttrib();
 
 		/* shadow */
@@ -116,7 +121,7 @@ static void g3d_gl_widget_render_shadow_plane(G3DGLWidget *self)
 		glPushMatrix();
 		glTranslatef(0.0, 0.001, 0.0);
 		glColor4f(0.3, 0.3, 0.3, 0.7);
-		g3dgl_draw_plane(options);
+		g3d_gl_widget_draw_plane(options);
 		glPopMatrix();
 		glPopAttrib();
 
@@ -191,7 +196,7 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 		}
 
 		/* for position of ground plane */
-		self->priv->model_min_y = g3dgl_min_y(model->objects);
+		self->priv->model_min_y = g3d_gl_widget_min_y(model->objects);
 	
 		g3d_gl_renderer_prepare(self->priv->renderer, model);
 		options->updated = TRUE;
@@ -202,5 +207,83 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 
 	/* draw model */
 	g3d_gl_renderer_draw(self->priv->renderer);
+
+	g3d_gl_widget_draw_coord_system(options);
 }
+
+static G3DFloat g3d_gl_widget_min_y(GSList *objects)
+{
+	G3DFloat min_y = 10.0, tmp_y;
+	GSList *oitem;
+	G3DObject *object;
+	gint32 i;
+
+	for(oitem = objects; oitem != NULL; oitem = oitem->next) {
+		object = oitem->data;
+		for(i = 0; i < object->vertex_count; i ++)
+			if(object->vertex_data[i * 3 + 1] < min_y)
+				min_y = object->vertex_data[i * 3 + 1];
+		tmp_y = g3d_gl_widget_min_y(object->objects);
+		if(tmp_y < min_y)
+			min_y = tmp_y;
+	}
+	return min_y;
+}
+
+static void g3d_gl_widget_draw_plane(G3DGLRenderOptions *options)
+{
+	glBegin(GL_QUADS);
+	glNormal3f(0.0, -1.0, 0.0);
+#define PLANE_MAX 12
+	glVertex3f(-PLANE_MAX, options->min_y - 0.001,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, options->min_y - 0.001,  PLANE_MAX);
+	glVertex3f( PLANE_MAX, options->min_y - 0.001, -PLANE_MAX);
+	glVertex3f(-PLANE_MAX, options->min_y - 0.001, -PLANE_MAX);
+#undef PLANE_MAX
+	glEnd();
+}
+
+static void g3d_gl_widget_setup_floor_stencil(G3DGLRenderOptions *options)
+{
+	glClear(GL_STENCIL_BUFFER_BIT);
+	glDepthMask(GL_FALSE);
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+	glStencilFunc(GL_ALWAYS, 1, 0xffffffff);
+
+	g3d_gl_widget_draw_plane(options);
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDepthMask(GL_TRUE);
+
+	glStencilFunc(GL_EQUAL, 1, 0xffffffff);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+}
+
+static void g3d_gl_widget_draw_coord_system(G3DGLRenderOptions *options)
+{
+	if(options->glflags & G3D_FLAG_GL_COORD_AXES) {
+		/* x: red */
+		glColor3f(1.0, 0.0, 0.0);
+		glBegin(GL_LINES);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(10.0, 0.0, 0.0);
+		glEnd();
+		/* y: green */
+		glColor3f(0.0, 1.0, 0.0);
+		glBegin(GL_LINES);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 10.0, 0.0);
+		glEnd();
+		/* z: blue */
+		glColor3f(0.0, 0.0, 1.0);
+		glBegin(GL_LINES);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 10.0);
+		glEnd();
+	}
+}
+
 

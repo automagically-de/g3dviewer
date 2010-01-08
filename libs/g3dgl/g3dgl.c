@@ -2,10 +2,7 @@
 #include <GL/glu.h>
 
 #include <g3d/types.h>
-#include <g3d/face.h>
-#include <g3d/vector.h>
 #include <g3d/matrix.h>
-#include <g3d/quat.h>
 
 #include "g3dgl.h"
 
@@ -22,7 +19,7 @@
 static GTimer *timer = NULL;
 #endif
 
-void g3dgl_matrix_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4])
+void g3d_gl_matrix_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4])
 {
 	guint32 i, j;
 
@@ -97,76 +94,22 @@ void g3dgl_set_twoside(gboolean twoside)
 		GL_AMBIENT_AND_DIFFUSE);
 }
 
-void g3dgl_set_textures(gboolean textures)
+void g3d_gl_set_textures(gboolean textures)
 {
-	if(textures)
+	if(textures) {
 		glEnable(GL_TEXTURE_2D);
-	else
-	{
+	} else {
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glDisable(GL_TEXTURE_2D);
 	}
 }
 
-G3DFloat g3dgl_min_y(GSList *objects)
-{
-	G3DFloat min_y = 10.0, tmp_y;
-	GSList *oitem;
-	G3DObject *object;
-	gint32 i;
-
-	for(oitem = objects; oitem != NULL; oitem = oitem->next) {
-		object = oitem->data;
-		for(i = 0; i < object->vertex_count; i ++)
-			if(object->vertex_data[i * 3 + 1] < min_y)
-				min_y = object->vertex_data[i * 3 + 1];
-		tmp_y = g3dgl_min_y(object->objects);
-		if(tmp_y < min_y)
-			min_y = tmp_y;
-	}
-	return min_y;
-}
-
-void g3dgl_draw_plane(G3DGLRenderOptions *options)
-{
-	glBegin(GL_QUADS);
-	glNormal3f(0.0, -1.0, 0.0);
-#define PLANE_MAX 12
-	glVertex3f(-PLANE_MAX, options->min_y - 0.001,  PLANE_MAX);
-	glVertex3f( PLANE_MAX, options->min_y - 0.001,  PLANE_MAX);
-	glVertex3f( PLANE_MAX, options->min_y - 0.001, -PLANE_MAX);
-	glVertex3f(-PLANE_MAX, options->min_y - 0.001, -PLANE_MAX);
-#undef PLANE_MAX
-	glEnd();
-}
-
-void g3dgl_setup_floor_stencil(G3DGLRenderOptions *options)
-{
-	glClear(GL_STENCIL_BUFFER_BIT);
-	glDepthMask(GL_FALSE);
-	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-
-	glEnable(GL_STENCIL_TEST);
-	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
-	glStencilFunc(GL_ALWAYS, 1, 0xffffffff);
-
-	g3dgl_draw_plane(options);
-
-	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-	glDepthMask(GL_TRUE);
-
-	glStencilFunc(GL_EQUAL, 1, 0xffffffff);
-	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-}
-
 /* GHFunc */
-void g3dgl_load_texture(gpointer key, gpointer value, gpointer data)
+void g3d_gl_load_texture(gpointer key, gpointer value, gpointer data)
 {
 	G3DImage *image = (G3DImage *)value;
 	gint32 env;
 	GLenum error;
-
-	TRAP_GL_ERROR("gl_load_texture - start");
 
 #if 0
 	/* predefined - update object->_tex_images else... */
@@ -190,8 +133,7 @@ void g3dgl_load_texture(gpointer key, gpointer value, gpointer data)
 
 	TRAP_GL_ERROR("gl_load_texture - bind, param");
 
-	switch(image->tex_env)
-	{
+	switch(image->tex_env) {
 		case G3D_TEXENV_BLEND: env = GL_BLEND; break;
 		case G3D_TEXENV_MODULATE: env = GL_MODULATE; break;
 		case G3D_TEXENV_DECAL: env = GL_DECAL; break;
@@ -212,31 +154,7 @@ void g3dgl_load_texture(gpointer key, gpointer value, gpointer data)
 	TRAP_GL_ERROR("gl_load_texture - mipmaps");
 }
 
-void g3dgl_draw_coord_system(G3DGLRenderOptions *options)
-{
-	if(options->glflags & G3D_FLAG_GL_COORD_AXES) {
-		/* x: red */
-		glColor3f(1.0, 0.0, 0.0);
-		glBegin(GL_LINES);
-		glVertex3f(0.0, 0.0, 0.0);
-		glVertex3f(10.0, 0.0, 0.0);
-		glEnd();
-		/* y: green */
-		glColor3f(0.0, 1.0, 0.0);
-		glBegin(GL_LINES);
-		glVertex3f(0.0, 0.0, 0.0);
-		glVertex3f(0.0, 10.0, 0.0);
-		glEnd();
-		/* z: blue */
-		glColor3f(0.0, 0.0, 1.0);
-		glBegin(GL_LINES);
-		glVertex3f(0.0, 0.0, 0.0);
-		glVertex3f(0.0, 0.0, 10.0);
-		glEnd();
-	}
-}
-
-guint8 *g3dgl_get_pixels(guint32 width, guint32 height)
+guint8 *g3d_gl_get_pixels(guint32 width, guint32 height)
 {
 	guint8 *pixels;
 
