@@ -11,6 +11,7 @@ enum {
 	G3DGL_PROP_COORD_AXES,
 	G3DGL_PROP_ISOMETRIC,
 	G3DGL_PROP_MODEL,
+	G3DGL_PROP_POINTS,
 	G3DGL_PROP_POPUP_MENU,
 	G3DGL_PROP_ROTATION_X,
 	G3DGL_PROP_ROTATION_Y,
@@ -67,6 +68,9 @@ static void g3d_gl_widget_get_property(GObject *object,
 			break;
 		case G3DGL_PROP_MODEL:
 			g_value_set_pointer(value, self->priv->model);
+			break;
+		case G3DGL_PROP_POINTS:
+			g3d_gl_flag_to_value(options, value, G3D_FLAG_GL_POINTS);
 			break;
 		case G3DGL_PROP_POPUP_MENU:
 			g_value_set_pointer(value, self->priv->popup_menu);
@@ -163,6 +167,9 @@ static void g3d_gl_widget_set_property(GObject *object,
 			self->priv->model = g_value_get_pointer(value);
 			self->priv->gloptions->updated = TRUE;
 			break;
+		case G3DGL_PROP_POINTS:
+			g3d_gl_value_to_flag(options, value, G3D_FLAG_GL_POINTS);
+			break;
 		case G3DGL_PROP_POPUP_MENU:
 			self->priv->popup_menu = g_value_get_pointer(value);
 			break;
@@ -230,6 +237,10 @@ void g3d_widget_properties_init(G3DGLWidgetClass *klass)
 	pspec = g_param_spec_boolean("enable-isometric", "enable-isometric",
 		"enable isometric mode", FALSE, G_PARAM_READWRITE);
 	g_object_class_install_property(oc, G3DGL_PROP_ISOMETRIC, pspec);
+
+	pspec = g_param_spec_boolean("enable-points", "enable-points",
+		"enable points", FALSE, G_PARAM_READWRITE);
+	g_object_class_install_property(oc, G3DGL_PROP_POINTS, pspec);
 
 	pspec = g_param_spec_boolean("enable-shadow", "enable-shadow",
 		"enable ground plane & shadow", FALSE, G_PARAM_READWRITE);
