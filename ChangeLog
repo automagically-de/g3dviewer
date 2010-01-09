@@ -1,3 +1,9 @@
+changes since version 0.2.99.5:
+	* general: split off g3dgl & g3dgl-widget libraries
+	* viewer: focusable, keyboard support
+	* viewer: default background color from GTK+ style
+	* general: great bunch of cleanups
+
 changes since version 0.2.99.4:
 	* general: trackball stuff moved to libg3d
 	* general: show G3D logo if no file was given in argument list
