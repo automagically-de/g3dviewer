@@ -379,8 +379,8 @@
   </widget>
   <widget class="GtkWindow" id="properties_window">
     <property name="title" translatable="yes">Model Properties</property>
-    <property name="default_width">400</property>
-    <property name="default_height">300</property>
+    <property name="default_width">500</property>
+    <property name="default_height">400</property>
     <property name="icon_name">gtk-properties</property>
     <signal name="delete_event" handler="gtk_widget_hide" object="properties_window"/>
     <child>
@@ -438,9 +438,10 @@
               <widget class="GtkVBox" id="vbox3">
                 <property name="visible">True</property>
                 <property name="border_width">5</property>
+				<!--
                 <child>
                   <widget class="GtkToolbar" id="toolbar1">
-                    <property name="visible">True</property>
+                    <property name="visible">False</property>
                     <property name="toolbar_style">GTK_TOOLBAR_ICONS</property>
                     <child>
                       <widget class="GtkToolButton" id="tb_log_clear">
@@ -466,6 +467,7 @@
                     <property name="fill">False</property>
                   </packing>
                 </child>
+				//-->
                 <child>
                   <widget class="GtkScrolledWindow" id="scrolledwindow2">
                     <property name="visible">True</property>
@@ -588,7 +590,7 @@
             <property name="ypad">5</property>
             <property name="label" translatable="yes">&lt;span foreground="blue"&gt;http://automagically.de/g3dviewer/&lt;/span&gt;
 
-(C) 2005 - 2008 Markus Dahms
+(C) 2005 - 2010 Markus Dahms
 &amp;lt;mad@automagically.de&amp;gt;</property>
             <property name="use_markup">True</property>
             <property name="justify">GTK_JUSTIFY_CENTER</property>
