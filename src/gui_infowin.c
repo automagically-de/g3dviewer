@@ -370,7 +370,10 @@ static gboolean add_objects(G3DViewer *viewer, GtkTreeIter *parentiter,
 		object = (G3DObject *)item->data;
 
 		g_return_val_if_fail(object != NULL, FALSE);
-		g_return_val_if_fail(object->name != NULL, FALSE);
+		if(object->name == NULL) {
+			g_warning("object name is NULL");
+			object->name = g_strdup("unnamed object");
+		}
 
 		/* object node */
 		gtk_tree_store_append(viewer->info.treestore, &iter, parentiter);
