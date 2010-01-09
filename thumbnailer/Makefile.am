@@ -13,13 +13,13 @@ g3d_thumbnailer_CFLAGS = \
 	-I$(top_srcdir)/libs/g3dgl-widget \
 	-Wall -ansi \
 	-DLOCALEDIR=\"$(localedir)\" \
-	@X_CFLAGS@ @LIBG3D_CFLAGS@ \
+	@GL_CFLAGS@ @LIBG3D_CFLAGS@ \
 	@GTK_CFLAGS@ @OSMESA_CFLAGS@ \
 	-DDEBUG=@DEBUG@ \
 	-DPACKAGE=\"@PACKAGE@\"
 
 g3d_thumbnailer_LDFLAGS = \
-	@X_LIBS@ @GTK_LIBS@ @LIBG3D_LIBS@ @OSMESA_LIBS@ @GL_LIBS@ \
+	@GTK_LIBS@ @LIBG3D_LIBS@ @OSMESA_LIBS@ @GL_LIBS@ \
 	../libs/g3dgl/libg3dgl.la
 
 g3d_thumbnailer_DEPENDENCIES = \

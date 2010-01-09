@@ -61,8 +61,8 @@ void g3d_gl_widget_render_decorations(G3DGLWidget *self)
 	if (self->priv->focused) {
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 		glColor3f(0.0, 0.0, 0.0);
-		glLineStipple(1, 0xAAAA); /* dotted line */
 		glEnable(GL_LINE_STIPPLE);
+		glLineStipple(1, 0xAAAA); /* dotted line */
 		glBegin(GL_LINE_LOOP);
 		glVertex3f(1, 1, 0);
 		glVertex3f(width - 2, 1, 0);

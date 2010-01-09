@@ -2,8 +2,8 @@
 # Owen Taylor     1997-2001
 
 dnl AM_PATH_GLIB_2_0([MINIMUM-VERSION, [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND [, MODULES]]]])
-dnl Test for GLIB, and define GLIB_CFLAGS and GLIB_LIBS, if gmodule, gobject or 
-dnl gthread is specified in MODULES, pass to pkg-config
+dnl Test for GLIB, and define GLIB_CFLAGS and GLIB_LIBS, if gmodule, gobject,
+dnl gthread, or gio is specified in MODULES, pass to pkg-config
 dnl
 AC_DEFUN([AM_PATH_GLIB_2_0],
 [dnl 
@@ -28,23 +28,19 @@ AC_ARG_ENABLE(glibtest, [  --disable-glibtest      do not try to compile and run
          gthread) 
              pkg_config_args="$pkg_config_args gthread-2.0"
          ;;
+         gio*) 
+             pkg_config_args="$pkg_config_args $module-2.0"
+         ;;
       esac
   done
 
-  AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+  PKG_PROG_PKG_CONFIG([0.16])
 
   no_glib=""
 
-  if test x$PKG_CONFIG != xno ; then
-    if $PKG_CONFIG --atleast-pkgconfig-version 0.7 ; then
-      :
-    else
-      echo *** pkg-config too old; version 0.7 or better required.
-      no_glib=yes
-      PKG_CONFIG=no
-    fi
-  else
+  if test "x$PKG_CONFIG" = x ; then
     no_glib=yes
+    PKG_CONFIG=no
   fi
 
   min_glib_version=ifelse([$1], ,2.0.0,$1)
@@ -97,8 +93,9 @@ main ()
 {
   int major, minor, micro;
   char *tmp_version;
+  int ignored;
 
-  system ("touch conf.glibtest");
+  ignored = system ("touch conf.glibtest");
 
   /* HP/UX 9 (%@#!) writes to sscanf strings */
   tmp_version = g_strdup("$min_glib_version");

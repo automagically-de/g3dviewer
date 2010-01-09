@@ -11,14 +11,6 @@
 	if(error != GL_NO_ERROR) \
 		g_printerr("[gl] %s: E: %d\n", text, error);
 
-#if DEBUG > 0
-#define TIMING
-#endif
-
-#ifdef TIMING
-static GTimer *timer = NULL;
-#endif
-
 void g3d_gl_matrix_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4])
 {
 	guint32 i, j;

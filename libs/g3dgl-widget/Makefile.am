@@ -13,7 +13,7 @@ libg3dgl_widget_la_CFLAGS = \
 	-Wall -ansi \
 	@DBG_CFLAGS@ \
 	@GLIB_CFLAGS@ @GTK_CFLAGS@ @GTKGLEXT_CFLAGS@ \
-	@X_CFLAGS@ \
+	@GL_CFLAGS@ @GLU_CFLAGS@ \
 	@LIBG3D_CFLAGS@ \
 	-DDEBUG=@DEBUG@ \
 	-DPACKAGE=\"@PACKAGE@\"
@@ -23,7 +23,8 @@ libg3dgl_widget_la_LDFLAGS = \
 
 libg3dgl_widget_la_LIBADD = \
 	@GTK_LIBS@ \
-	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ $(extra_libs)
+	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ $(extra_libs) \
+	../g3dgl/libg3dgl.la
 
 libg3dgl_widget_la_DEPENDENCIES = ../g3dgl/libg3dgl.la
 
@@ -34,7 +35,7 @@ test_g3dw_CFLAGS = \
 	-Wall -ansi \
 	@DBG_CFLAGS@ \
 	@GLIB_CFLAGS@ @GTK_CFLAGS@ @GTKGLEXT_CFLAGS@ \
-	@X_CFLAGS@ \
+	@GL_CFLAGS@ @GLU_CFLAGS@ \
 	@LIBG3D_CFLAGS@ \
 	-DDEBUG=@DEBUG@ \
 	-DPACKAGE=\"@PACKAGE@\"
