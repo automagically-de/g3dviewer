@@ -41,6 +41,6 @@ void g3d_gl_matrix_to_gl(G3DMatrix *g3dm, GLfloat glm[4][4]);
 void g3d_gl_set_twoside(gboolean twoside);
 void g3d_gl_set_textures(gboolean textures);
 void g3d_gl_load_texture(gpointer key, gpointer value, gpointer data);
-guint8 *g3di_gl_get_pixels(guint32 width, guint32 height);
+guint8 *g3d_gl_get_pixels(guint32 width, guint32 height);
 
 #endif /* _G3DGL_H */
