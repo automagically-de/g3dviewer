@@ -199,7 +199,7 @@ void g3d_gl_widget_render(G3DGLWidget *self)
 		self->priv->model_min_y = g3d_gl_widget_min_y(model->objects);
 	
 		g3d_gl_renderer_prepare(self->priv->renderer, model);
-		options->updated = TRUE;
+		options->updated = FALSE;
 	}
 
 	/* shadow */
