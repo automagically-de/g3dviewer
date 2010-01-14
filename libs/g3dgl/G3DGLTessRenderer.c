@@ -8,7 +8,9 @@
 struct _G3DGLTessRendererPriv {
 	GArray *vertex_array;
 	GArray *normal_array;
+	GArray *color_array;
 	GArray *index_array;
+	GArray *texco_array;
 
 	const gchar *last_stype;
 	GLenum last_type;
@@ -18,6 +20,7 @@ struct _G3DGLTessRendererPriv {
 typedef struct {
 	G3DFloat v[3];
 	G3DFloat n[3];
+	G3DFloat uv[2];
 	guint32 i;
 	G3DFace *face;
 	G3DGLTessRendererPriv *priv;
@@ -49,6 +52,8 @@ static gboolean g3d_gl_tess_renderer_prepare(G3DGLRenderer *renderer,
 
 	priv->vertex_array = g_array_new(FALSE, FALSE, sizeof(GLfloat));
 	priv->normal_array = g_array_new(FALSE, FALSE, sizeof(GLfloat));
+	priv->color_array = g_array_new(FALSE, FALSE, sizeof(GLfloat));
+	priv->texco_array = g_array_new(FALSE, FALSE, sizeof(GLfloat));
 	priv->index_array = g_array_new(FALSE, FALSE, sizeof(GLuint));
 
 	tess = gluNewTess();
@@ -72,22 +77,23 @@ static gboolean g3d_gl_tess_renderer_draw(G3DGLRenderer *renderer)
 
 	priv = G3D_GL_TESS_RENDERER(renderer)->priv;
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
-
 	glVertexPointer(3, GL_FLOAT, 0,
 		&g_array_index(priv->vertex_array, GLfloat, 0));
 	glNormalPointer(GL_FLOAT, 0,
 		&g_array_index(priv->normal_array, GLfloat, 0));
+	glColorPointer(4, GL_FLOAT, 0,
+		&g_array_index(priv->color_array, GLfloat, 0));
+	glTexCoordPointer(2, GL_FLOAT, 0,
+		&g_array_index(priv->texco_array, GLfloat, 0));
 
-
-	glColor4f(0.7, 0.7, 0.7, 1.0);
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glEnableClientState(GL_COLOR_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 #if DEBUG > 3
 	g_debug("drawing %d triangles", priv->index_array->len / 3);
 #endif
-
-	glEnableClientState(GL_VERTEX_ARRAY);
 
 	glDrawElements(GL_TRIANGLES, priv->index_array->len, GL_UNSIGNED_INT,
 		&g_array_index(priv->index_array, GLuint, 0));
@@ -169,7 +175,9 @@ static void g3d_gl_tess_renderer_tess_objects(G3DGLTessRenderer *self,
 		if(object->hide)
 			continue;
 
+#if DEBUG > 1
 		g_debug("object: %s", (object->name ? object->name : "unnamed"));
+#endif
 
 		for(fitem = object->faces; fitem != NULL; fitem = fitem->next) {
 			face = fitem->data;
@@ -207,6 +215,10 @@ static void g3d_gl_tess_renderer_tess_objects(G3DGLTessRenderer *self,
 					tessverts[i].n[0] = normal[0];
 					tessverts[i].n[1] = normal[1];
 					tessverts[i].n[2] = normal[2];
+				}
+				if(face->flags & G3D_FLAG_FAC_TEXMAP) {
+					tessverts[i].uv[0] = face->tex_vertex_data[i * 2 + 0];
+					tessverts[i].uv[1] = face->tex_vertex_data[i * 2 + 1];
 				}
 
 				gluTessVertex(tess, &(verts[i * 3]), &(tessverts[i]));
@@ -300,12 +312,20 @@ static void g3d_gl_tess_end_data(G3DGLTessRenderer *self)
 
 static void g3d_gl_tess_vertex_data(G3DGLTessRendererVertex *v, G3DFace *face)
 {
+	GLfloat col[4];
+
 #if DEBUG > 2
 	g_debug("VERTEX_DATA (%0.2f, %0.2f, %0.2f), %p",
 		v->v[0], v->v[1], v->v[2], v->face);
 #endif
+	col[0] = v->face->material->r;
+	col[1] = v->face->material->g;
+	col[2] = v->face->material->b;
+	col[3] = v->face->material->a;
 	g_array_append_vals(v->priv->vertex_array, v->v, 3);
 	g_array_append_vals(v->priv->normal_array, v->n, 3);
+	g_array_append_vals(v->priv->color_array, col, 4);
+	g_array_append_vals(v->priv->texco_array, v->uv, 2);
 	v->priv->last_count ++;
 }
 
