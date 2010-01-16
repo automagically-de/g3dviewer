@@ -5,12 +5,22 @@
 
 #include "G3DGLTessRenderer.h"
 
+typedef struct {
+	guint32 start;
+	guint32 count;
+	gboolean textured;
+	gint32 texid;
+} G3DGLTessRendererTexChunk;
+
 struct _G3DGLTessRendererPriv {
 	GArray *vertex_array;
 	GArray *normal_array;
 	GArray *color_array;
 	GArray *index_array;
 	GArray *texco_array;
+
+	G3DGLTessRendererTexChunk *current_chunk;
+	GSList *chunks;
 
 	const gchar *last_stype;
 	GLenum last_type;
@@ -23,14 +33,17 @@ typedef struct {
 	G3DFloat uv[2];
 	guint32 i;
 	G3DFace *face;
+	gboolean textured;
+	gint32 texid;
 	G3DGLTessRendererPriv *priv;
 } G3DGLTessRendererVertex;
 
 static void g3d_gl_tess_renderer_tess_objects(G3DGLTessRenderer *self,
 	GSList *objects, GLUtesselator *tess);
+static void g3d_gl_tess_renderer_cleanup(G3DGLTessRenderer *self);
 static void g3d_gl_tess_begin_data(GLenum type, G3DGLTessRenderer *self);
 static void g3d_gl_tess_end_data(G3DGLTessRenderer *self);
-static void g3d_gl_tess_vertex_data(G3DGLTessRendererVertex *v, G3DFace *face);
+static void g3d_gl_tess_vertex(G3DGLTessRendererVertex *v);
 static void g3d_gl_tess_error_data(GLenum errno, G3DGLTessRenderer *self);
 
 /* G3DGLRenderer method implementions */
@@ -50,6 +63,8 @@ static gboolean g3d_gl_tess_renderer_prepare(G3DGLRenderer *renderer,
 	g_return_val_if_fail(priv != NULL, FALSE);
 	g_return_val_if_fail(rpriv != NULL, FALSE);
 
+	g3d_gl_tess_renderer_cleanup(G3D_GL_TESS_RENDERER(renderer));
+
 	priv->vertex_array = g_array_new(FALSE, FALSE, sizeof(GLfloat));
 	priv->normal_array = g_array_new(FALSE, FALSE, sizeof(GLfloat));
 	priv->color_array = g_array_new(FALSE, FALSE, sizeof(GLfloat));
@@ -60,7 +75,7 @@ static gboolean g3d_gl_tess_renderer_prepare(G3DGLRenderer *renderer,
 
 	gluTessCallback(tess, GLU_TESS_BEGIN_DATA, g3d_gl_tess_begin_data);
 	gluTessCallback(tess, GLU_TESS_END_DATA, g3d_gl_tess_end_data);
-	gluTessCallback(tess, GLU_TESS_VERTEX_DATA, g3d_gl_tess_vertex_data);
+	gluTessCallback(tess, GLU_TESS_VERTEX, g3d_gl_tess_vertex);
 	gluTessCallback(tess, GLU_TESS_ERROR_DATA, g3d_gl_tess_error_data);
 
 	g3d_gl_tess_renderer_tess_objects(G3D_GL_TESS_RENDERER(renderer),
@@ -71,11 +86,16 @@ static gboolean g3d_gl_tess_renderer_prepare(G3DGLRenderer *renderer,
 
 static gboolean g3d_gl_tess_renderer_draw(G3DGLRenderer *renderer)
 {
+	G3DGLRendererPriv *rpriv;
 	G3DGLTessRendererPriv *priv;
+	G3DGLTessRendererTexChunk *chunk;
+	GSList *citem;
+	guint32 n;
 
 	g_return_val_if_fail(G3D_GL_IS_TESS_RENDERER(renderer), FALSE);
 
 	priv = G3D_GL_TESS_RENDERER(renderer)->priv;
+	rpriv = renderer->priv;
 
 	glVertexPointer(3, GL_FLOAT, 0,
 		&g_array_index(priv->vertex_array, GLfloat, 0));
@@ -88,16 +108,38 @@ static gboolean g3d_gl_tess_renderer_draw(G3DGLRenderer *renderer)
 
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_NORMAL_ARRAY);
-	glEnableClientState(GL_COLOR_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	if(rpriv->options->glflags & G3D_FLAG_GL_COLORS)
+		glEnableClientState(GL_COLOR_ARRAY);
+
+	if(rpriv->options->glflags & G3D_FLAG_GL_TEXTURES)
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 #if DEBUG > 3
 	g_debug("drawing %d triangles", priv->index_array->len / 3);
 #endif
 
-	glDrawElements(GL_TRIANGLES, priv->index_array->len, GL_UNSIGNED_INT,
-		&g_array_index(priv->index_array, GLuint, 0));
+	for(n = 0, citem = priv->chunks; citem != NULL; n ++, citem = citem->next) {
+		chunk = citem->data;
+#if DEBUG > 2
+		g_debug("chunk #%d: %d - %d (%d)", n,
+			chunk->start, chunk->count, chunk->texid);
+#endif
 
+		if(chunk->textured &&
+			(rpriv->options->glflags & G3D_FLAG_GL_TEXTURES)) {
+			glEnable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, chunk->texid);
+		} else {
+			glDisable(GL_TEXTURE_2D);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
+		glDrawElements(GL_TRIANGLES,
+			chunk->count * 3,
+			GL_UNSIGNED_INT,
+			&g_array_index(priv->index_array, GLuint, chunk->start * 3));
+	}
 	return TRUE;
 }
 
@@ -205,6 +247,9 @@ static void g3d_gl_tess_renderer_tess_objects(G3DGLTessRenderer *self,
 				tessverts[i].v[2] = verts[i * 3 + 2];
 				tessverts[i].i = i;
 				tessverts[i].face = face;
+				tessverts[i].textured = (face->flags & G3D_FLAG_FAC_TEXMAP);
+				if(tessverts[i].textured)
+					tessverts[i].texid = face->tex_image->tex_id;
 				tessverts[i].priv = self->priv;
 
 				if(face->flags & G3D_FLAG_FAC_NORMALS) {
@@ -233,6 +278,41 @@ static void g3d_gl_tess_renderer_tess_objects(G3DGLTessRenderer *self,
 
 		g3d_gl_tess_renderer_tess_objects(self, object->objects, tess);
 	}
+}
+
+static void g3d_gl_tess_renderer_cleanup(G3DGLTessRenderer *self)
+{
+	G3DGLTessRendererTexChunk *chunk;
+	GSList *citem, *next;
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_COLOR_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	if(self->priv->vertex_array) {
+		g_array_free(self->priv->vertex_array, TRUE);	
+		g_array_free(self->priv->normal_array, TRUE);	
+		g_array_free(self->priv->index_array, TRUE);	
+		g_array_free(self->priv->color_array, TRUE);	
+		g_array_free(self->priv->texco_array, TRUE);	
+		self->priv->vertex_array = NULL;
+		self->priv->normal_array = NULL;
+		self->priv->index_array = NULL;
+		self->priv->color_array = NULL;
+		self->priv->texco_array = NULL;
+	}
+
+	citem = self->priv->chunks;
+	while(citem != NULL) {
+		chunk = citem->data;
+		g_free(chunk);
+		next = citem->next;
+		g_slist_free_1(citem);
+		citem = next;
+	}
+	self->priv->chunks = NULL;
+	self->priv->current_chunk = NULL;
 }
 
 static void g3d_gl_tess_begin_data(GLenum type, G3DGLTessRenderer *self)
@@ -274,6 +354,7 @@ static void g3d_gl_tess_end_data(G3DGLTessRenderer *self)
 				g_debug("[0] tri = (%d, %d, %d)", tri[0], tri[1], tri[2]);
 #endif
 				g_array_append_vals(self->priv->index_array, tri, 3);
+				self->priv->current_chunk->count ++;
 			}
 			break;
 		case GL_TRIANGLE_STRIP:
@@ -291,6 +372,7 @@ static void g3d_gl_tess_end_data(G3DGLTessRenderer *self)
 				g_debug("[1] tri = (%d, %d, %d)", tri[0], tri[1], tri[2]);
 #endif
 				g_array_append_vals(self->priv->index_array, tri, 3);
+				self->priv->current_chunk->count ++;
 			}
 			break;
 		case GL_TRIANGLE_FAN:
@@ -302,6 +384,7 @@ static void g3d_gl_tess_end_data(G3DGLTessRenderer *self)
 				g_debug("[2] tri = (%d, %d, %d)", tri[0], tri[1], tri[2]);
 #endif
 				g_array_append_vals(self->priv->index_array, tri, 3);
+				self->priv->current_chunk->count ++;
 			}
 			break;
 		default:
@@ -310,9 +393,31 @@ static void g3d_gl_tess_end_data(G3DGLTessRenderer *self)
 	}
 }
 
-static void g3d_gl_tess_vertex_data(G3DGLTessRendererVertex *v, G3DFace *face)
+static void g3d_gl_tess_update_material(G3DGLTessRendererPriv *priv,
+	gboolean textured, gint32 texid)
+{
+	G3DGLTessRendererTexChunk *chunk;
+
+	g_return_if_fail(priv != NULL);
+
+	if((priv->current_chunk == NULL) ||
+		(priv->current_chunk->textured != textured) ||
+		(priv->current_chunk->texid != texid))
+	{
+		chunk = g_new0(G3DGLTessRendererTexChunk, 1);
+		chunk->textured = textured;
+		chunk->texid = texid;
+		chunk->start = priv->index_array->len / 3;
+		priv->current_chunk = chunk;
+		priv->chunks = g_slist_append(priv->chunks, chunk);
+	}
+}
+
+static void g3d_gl_tess_vertex(G3DGLTessRendererVertex *v)
 {
 	GLfloat col[4];
+
+	g3d_gl_tess_update_material(v->priv, v->textured, v->texid);
 
 #if DEBUG > 2
 	g_debug("VERTEX_DATA (%0.2f, %0.2f, %0.2f), %p",
