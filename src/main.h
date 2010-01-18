@@ -28,6 +28,11 @@
 #include <gtk/gtk.h>
 #include <glade/glade-xml.h>
 #include <g3d/g3d.h>
+#if HAVE_CWIID
+#	include <math.h>
+#	include <bluetooth/bluetooth.h>
+#	include <cwiid.h>
+#endif
 
 #define G3DV_FLAG_DEBUG_TREE       (1 << 0)
 #define G3DV_FLAG_DEBUG_TREE_DATA  (1 << 1)
@@ -74,6 +79,14 @@ typedef struct {
 
 		guint status_context_id;
 	} interface;
+
+#if HAVE_CWIID
+	struct {
+		bdaddr_t bdaddr;
+		cwiid_wiimote_t *wiimote;
+		struct acc_cal cal;
+	} cwiid;
+#endif
 
 } G3DViewer;
 

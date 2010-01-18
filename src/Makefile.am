@@ -23,6 +23,7 @@ g3dviewer_CFLAGS = \
 	@LIBGLADE_CFLAGS@ \
 	@GL_CFLAGS@ \
 	@LIBG3D_CFLAGS@ \
+	@CWIID_CFLAGS@ \
 	-DDEBUG=@DEBUG@ \
 	-DPACKAGE=\"@PACKAGE@\"
 
@@ -38,7 +39,9 @@ g3dviewer_LDFLAGS = \
 	$(extra_ldflags)
 g3dviewer_LDADD = \
 	@GTK_LIBS@ @LIBGLADE_LIBS@ \
-	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ $(extra_libs) \
+	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ \
+	@CWIID_LIBS@ \
+	$(extra_libs) \
 	../libs/g3dgl/libg3dgl.la \
 	../libs/g3dgl-widget/libg3dgl-widget.la
 g3dviewer_DEPENDENCIES = \

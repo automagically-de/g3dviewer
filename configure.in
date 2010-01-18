@@ -57,6 +57,11 @@ OSMESA_LIBS=-lOSMesa
 AC_SUBST(OSMESA_CFLAGS)
 AC_SUBST(OSMESA_LIBS)
 
+# cwiid, optional
+PKG_CHECK_MODULES(CWIID, cwiid, [AC_DEFINE(HAVE_CWIID,1,[have cwiid lib])])
+AC_SUBST(CWIID_CFLAGS)
+AC_SUBST(CWIID_LIBS)
+
 # Check some UNIX headers
 AC_CHECK_HEADERS(dirent.h sys/stat.h unistd.h,,
 	AC_MSG_ERROR([missing header file]),

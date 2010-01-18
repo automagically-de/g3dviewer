@@ -42,6 +42,7 @@
 #include "model.h"
 #include "gui_glade.h"
 
+static gboolean main_cwiid_cb(G3DViewer *viewer);
 static void main_cleanup(G3DViewer *viewer);
 
 int main(int argc, char **argv)
@@ -103,6 +104,19 @@ int main(int argc, char **argv)
 	/* initialize libg3d */
 	viewer->g3dcontext = g3d_context_new();
 
+#if HAVE_CWIID
+	viewer->cwiid.bdaddr = *BDADDR_ANY;
+	viewer->cwiid.wiimote = cwiid_open(&(viewer->cwiid.bdaddr), 0);
+	if(!viewer->cwiid.wiimote) {
+		g_warning("failed to connect to wiimote");
+	} else {
+		cwiid_command(viewer->cwiid.wiimote, CWIID_CMD_LED, CWIID_LED1_ON);
+		cwiid_set_rpt_mode(viewer->cwiid.wiimote, CWIID_RPT_ACC);
+		cwiid_get_acc_cal(viewer->cwiid.wiimote, CWIID_EXT_NONE,
+			&(viewer->cwiid.cal));
+	}
+#endif
+
 	/* the gui related stuff */
 	gui_glade_init(viewer);
 	gui_glade_load(viewer);
@@ -146,8 +160,17 @@ int main(int argc, char **argv)
 		return EXIT_SUCCESS;
 	}
 
+#if HAVE_CWIID
+	g_idle_add((GSourceFunc)main_cwiid_cb, viewer);
+#endif
+
 	/* ... aaaand go! */
 	gtk_main();
+
+#if HAVE_CWIID
+	if(viewer->cwiid.wiimote)
+		cwiid_close(viewer->cwiid.wiimote);
+#endif
 
 	/* output timing statistics */
 #if 0
@@ -164,6 +187,55 @@ int main(int argc, char **argv)
 
 	return EXIT_SUCCESS;
 }
+
+#if HAVE_CWIID
+static gboolean main_cwiid_cb(G3DViewer *viewer)
+{
+	struct cwiid_state state;
+	gdouble a_x, a_y, a_z, roll, pitch;
+
+	if(!viewer->cwiid.wiimote || !viewer->model) {
+		return TRUE;
+	}
+
+	if(cwiid_get_state(viewer->cwiid.wiimote, &state) == 0) {
+		a_x = ((gdouble)(state.acc[CWIID_X] - viewer->cwiid.cal.zero[CWIID_X]) /
+			(viewer->cwiid.cal.one[CWIID_X] - viewer->cwiid.cal.zero[CWIID_X]));
+		a_y = ((gdouble)(state.acc[CWIID_Y] - viewer->cwiid.cal.zero[CWIID_Y]) /
+			(viewer->cwiid.cal.one[CWIID_Y] - viewer->cwiid.cal.zero[CWIID_Y]));
+		a_z = ((gdouble)(state.acc[CWIID_Z] - viewer->cwiid.cal.zero[CWIID_Z]) /
+			(viewer->cwiid.cal.one[CWIID_Z] - viewer->cwiid.cal.zero[CWIID_Z]));
+		roll = atan(a_x / a_z);
+		if(a_z <= 0.0) {
+			roll += G_PI * ((a_x > 0.0) ? 1 : -1);
+		}
+		roll *= -1;
+
+		pitch = atan(a_y / a_z * cos(roll));
+
+#if DEBUG > 2
+		g_print("x: %0.2f, y: %0.2f, z: %0.2f, pitch: %0.2f, roll: %0.2f\n",
+			a_x, a_y, a_z, pitch, roll);
+#endif
+		if(pitch == pitch) {
+			pitch *= -1;
+			g_object_set(G_OBJECT(viewer->interface.glarea),
+				"rotation-x", (pitch < 0) ? 360.0 + pitch * 45 : pitch * 45,
+				NULL);
+		}
+		if(roll == roll) {
+			g_object_set(G_OBJECT(viewer->interface.glarea),
+				"rotation-z", (roll < 0) ? 360.0 + roll * 45 : roll * 45,
+				NULL);
+		}
+
+	}
+
+	g_usleep(10000);
+
+	return TRUE;
+}
+#endif
 
 static void main_cleanup(G3DViewer *viewer)
 {
