@@ -61,6 +61,22 @@
                         </child>
                       </widget>
                     </child>
+
+					<child>
+                      <widget class="GtkSeparatorMenuItem" id="ms_connect_wiimote">
+                        <property name="visible">True</property>
+                      </widget>
+                    </child>
+
+                    <child>
+                      <widget class="GtkImageMenuItem" id="mi_connect_wiimote">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Connect to _Wiimote</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="gui_on_connect_wiimote_cb"/>
+                      </widget>
+                    </child>
+
                     <child>
                       <widget class="GtkSeparatorMenuItem" id="trennlinie5">
                         <property name="visible">True</property>

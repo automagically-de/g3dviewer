@@ -68,6 +68,31 @@ void gui_on_properties_cb(GtkWidget *widget, gpointer user_data)
 }
 
 /*
+ * File->Connect to Wiimote
+ */
+
+void gui_on_connect_wiimote_cb(GtkWidget *widget, gpointer user_data)
+{
+	GtkWidget *dialog;
+
+	dialog = gtk_message_dialog_new(NULL,
+		0, /* DialogFlags */
+		GTK_MESSAGE_INFO,
+		GTK_BUTTONS_OK_CANCEL,
+		_("press 1 + 2 on Wiimote to enter discovery mode"));
+	
+	switch(gtk_dialog_run(GTK_DIALOG(dialog))) {
+		case GTK_RESPONSE_OK:
+			break;
+		case GTK_RESPONSE_CANCEL:
+			break;
+		default:
+			g_warning("unexpected response value");
+	}
+	gtk_widget_destroy(dialog);
+}
+
+/*
  * View->Show Menubar
  */
 
