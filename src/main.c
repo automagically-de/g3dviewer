@@ -148,7 +148,7 @@ int main(int argc, char **argv)
 	}
 
 #if HAVE_CWIID
-	g_idle_add((GSourceFunc)main_cwiid_cb, viewer);
+	g_timeout_add(100, (GSourceFunc)main_cwiid_cb, viewer);
 #endif
 
 	/* ... aaaand go! */
@@ -182,7 +182,6 @@ static gboolean main_cwiid_cb(G3DViewer *viewer)
 	gdouble a_x, a_y, a_z, roll, pitch;
 
 	if(!viewer->cwiid.wiimote || !viewer->model) {
-		g_usleep(10000);
 		return TRUE;
 	}
 
@@ -218,8 +217,6 @@ static gboolean main_cwiid_cb(G3DViewer *viewer)
 		}
 
 	}
-
-	g_usleep(10000);
 
 	return TRUE;
 }

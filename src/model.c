@@ -49,11 +49,9 @@ gboolean model_load(G3DViewer *viewer)
 	model = g3d_model_load_full(viewer->g3dcontext, viewer->filename,
 		G3D_MODEL_SCALE | G3D_MODEL_CENTER);
 
-	g_object_set(G_OBJECT(glarea), "model", model, NULL);
-
 	if(model) {
 		viewer->model = model;
-
+		g_object_set(G_OBJECT(glarea), "model", model, NULL);
 		g3d_gl_widget_update_textures(glarea, model->tex_images);
 
 		title = g_strdup_printf(_("%s successfully loaded."),
