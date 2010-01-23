@@ -104,19 +104,6 @@ int main(int argc, char **argv)
 	/* initialize libg3d */
 	viewer->g3dcontext = g3d_context_new();
 
-#if HAVE_CWIID
-	viewer->cwiid.bdaddr = *BDADDR_ANY;
-	viewer->cwiid.wiimote = cwiid_open(&(viewer->cwiid.bdaddr), 0);
-	if(!viewer->cwiid.wiimote) {
-		g_warning("failed to connect to wiimote");
-	} else {
-		cwiid_command(viewer->cwiid.wiimote, CWIID_CMD_LED, CWIID_LED1_ON);
-		cwiid_set_rpt_mode(viewer->cwiid.wiimote, CWIID_RPT_ACC);
-		cwiid_get_acc_cal(viewer->cwiid.wiimote, CWIID_EXT_NONE,
-			&(viewer->cwiid.cal));
-	}
-#endif
-
 	/* the gui related stuff */
 	gui_glade_init(viewer);
 	gui_glade_load(viewer);
@@ -195,6 +182,7 @@ static gboolean main_cwiid_cb(G3DViewer *viewer)
 	gdouble a_x, a_y, a_z, roll, pitch;
 
 	if(!viewer->cwiid.wiimote || !viewer->model) {
+		g_usleep(10000);
 		return TRUE;
 	}
 

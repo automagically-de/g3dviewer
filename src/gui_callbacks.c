@@ -73,7 +73,12 @@ void gui_on_properties_cb(GtkWidget *widget, gpointer user_data)
 
 void gui_on_connect_wiimote_cb(GtkWidget *widget, gpointer user_data)
 {
+#if HAVE_CWIID
 	GtkWidget *dialog;
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
 
 	dialog = gtk_message_dialog_new(NULL,
 		0, /* DialogFlags */
@@ -83,6 +88,26 @@ void gui_on_connect_wiimote_cb(GtkWidget *widget, gpointer user_data)
 	
 	switch(gtk_dialog_run(GTK_DIALOG(dialog))) {
 		case GTK_RESPONSE_OK:
+			viewer->cwiid.bdaddr = *BDADDR_ANY;
+			viewer->cwiid.wiimote = cwiid_open(&(viewer->cwiid.bdaddr), 0);
+			if(!viewer->cwiid.wiimote) {
+				g_warning("failed to connect to wiimote");
+			} else {
+				cwiid_command(viewer->cwiid.wiimote, CWIID_CMD_LED,
+					CWIID_LED1_ON);
+				cwiid_set_rpt_mode(viewer->cwiid.wiimote, CWIID_RPT_ACC);
+				cwiid_get_acc_cal(viewer->cwiid.wiimote, CWIID_EXT_NONE,
+					&(viewer->cwiid.cal));
+
+				gtk_widget_set_sensitive(
+					glade_xml_get_widget(viewer->interface.xml,
+						"mi_connect_wiimote"),
+					FALSE);
+				gtk_widget_set_sensitive(
+					glade_xml_get_widget(viewer->interface.xml,
+						"mi_disconnect_wiimote"),
+					FALSE);
+			}
 			break;
 		case GTK_RESPONSE_CANCEL:
 			break;
@@ -90,8 +115,30 @@ void gui_on_connect_wiimote_cb(GtkWidget *widget, gpointer user_data)
 			g_warning("unexpected response value");
 	}
 	gtk_widget_destroy(dialog);
+#endif
 }
 
+void gui_on_disconnect_wiimote_cb(GtkWidget *widget, gpointer user_data)
+{
+#if HAVE_CWIID
+	G3DViewer *viewer;
+
+	viewer = (G3DViewer *)g_object_get_data(G_OBJECT(widget), "viewer");
+	g_assert(viewer);
+
+	gtk_widget_set_sensitive(
+		glade_xml_get_widget(viewer->interface.xml, "mi_connect_wiimote"),
+		TRUE);
+	gtk_widget_set_sensitive(
+		glade_xml_get_widget(viewer->interface.xml, "mi_disconnect_wiimote"),
+		FALSE);
+	
+	if(viewer->cwiid.wiimote) {
+		cwiid_close(viewer->cwiid.wiimote);
+		viewer->cwiid.wiimote = NULL;
+	}
+#endif
+}
 /*
  * View->Show Menubar
  */

@@ -78,6 +78,15 @@
                     </child>
 
                     <child>
+                      <widget class="GtkImageMenuItem" id="mi_disconnect_wiimote">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Disconnect from Wiimote</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="gui_on_disconnect_wiimote_cb"/>
+                      </widget>
+                    </child>
+
+                    <child>
                       <widget class="GtkSeparatorMenuItem" id="trennlinie5">
                         <property name="visible">True</property>
                       </widget>

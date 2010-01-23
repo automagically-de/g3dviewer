@@ -121,6 +121,7 @@ gboolean gui_glade_load(G3DViewer *viewer)
 		"main_window",
 		"mi_file_open",
 		"mi_connect_wiimote",
+		"mi_disconnect_wiimote",
 		"mi_properties",
 		"mi_screenshot",
 		"mi_show_menubar",
@@ -209,8 +210,13 @@ gboolean gui_glade_load(G3DViewer *viewer)
 #if !HAVE_CWIID
 	widget = glade_xml_get_widget(xml, "mi_connect_wiimote");
 	gtk_widget_hide(widget);
+	widget = glade_xml_get_widget(xml, "mi_disconnect_wiimote");
+	gtk_widget_hide(widget);
 	widget = glade_xml_get_widget(xml, "ms_connect_wiimote");
 	gtk_widget_hide(widget);
+#else
+	widget = glade_xml_get_widget(xml, "mi_disconnect_wiimote");
+	gtk_widget_set_sensitive(widget, FALSE);
 #endif
 
 	/* hide progress bar */
