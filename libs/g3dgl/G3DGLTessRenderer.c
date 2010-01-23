@@ -81,6 +81,8 @@ static gboolean g3d_gl_tess_renderer_prepare(G3DGLRenderer *renderer,
 	g3d_gl_tess_renderer_tess_objects(G3D_GL_TESS_RENDERER(renderer),
 		model->objects, tess);
 
+	gluDeleteTess(tess);
+
 	return TRUE;
 }
 
