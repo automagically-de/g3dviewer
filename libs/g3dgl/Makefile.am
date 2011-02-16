@@ -37,6 +37,7 @@ test_tess_LDFLAGS = \
 	$(extra_ldflags)
 test_tess_LDADD = \
 	@LIBG3D_LIBS@ \
+	@GLIB_LIBS@ \
 	libg3dgl.la \
 	-lGL -lGLU \
 	$(extra_libs)
