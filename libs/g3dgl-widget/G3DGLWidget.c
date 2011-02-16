@@ -5,7 +5,8 @@
 #include <g3d/quat.h>
 #include <GL/gl.h>
 
-#include "G3DGLSimpleRenderer.h"
+#include <G3DGLSimpleRenderer.h>
+#include <G3DGLTessRenderer.h>
 
 #include "G3DGLWidget.h"
 #include "G3DGLWidgetPriv.h"
@@ -111,7 +112,7 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
 	g_signal_connect(G_OBJECT(self), "motion_notify_event",
 		G_CALLBACK(g3d_gl_widget_motion_notify_cb), NULL);
 
-	self->priv->renderer = g3d_gl_simple_renderer_new(options);
+	self->priv->renderer = g3d_gl_tess_renderer_new(options);
 	g_return_if_fail(self->priv->renderer);
 }
 
