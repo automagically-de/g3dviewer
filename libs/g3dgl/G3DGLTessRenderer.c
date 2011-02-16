@@ -148,10 +148,21 @@ static gboolean g3d_gl_tess_renderer_draw(G3DGLRenderer *renderer)
 static gboolean g3d_gl_tess_renderer_draw_shadow(G3DGLRenderer *renderer)
 {
 	G3DGLTessRendererPriv *priv;
+	G3DGLTessRendererTexChunk *chunk;
+	GSList *citem;
+	guint32 n;
 
 	g_return_val_if_fail(G3D_GL_IS_TESS_RENDERER(renderer), FALSE);
 
 	priv = G3D_GL_TESS_RENDERER(renderer)->priv;
+
+	glVertexPointer(3, GL_FLOAT, 0,
+		&g_array_index(priv->vertex_array, GLfloat, 0));
+	glNormalPointer(GL_FLOAT, 0,
+		&g_array_index(priv->normal_array, GLfloat, 0));
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_NORMAL_ARRAY);
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
@@ -163,6 +174,17 @@ static gboolean g3d_gl_tess_renderer_draw_shadow(G3DGLRenderer *renderer)
 	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
 	glStencilFunc(GL_ALWAYS, 1, 0xffffffff);
 
+	for(n = 0, citem = priv->chunks; citem != NULL; n ++, citem = citem->next) {
+		chunk = citem->data;
+#if DEBUG > 2
+		g_debug("chunk #%d: %d - %d (%d)", n,
+			chunk->start, chunk->count, chunk->texid);
+#endif
+		glDrawElements(GL_TRIANGLES,
+			chunk->count * 3,
+			GL_UNSIGNED_INT,
+			&g_array_index(priv->index_array, GLuint, chunk->start * 3));
+	}
 
 	glPopAttrib();
 
