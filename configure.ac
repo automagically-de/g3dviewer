@@ -1,4 +1,4 @@
-AC_INIT(configure.in)
+AC_INIT(configure.ac)
 
 VERSION=0.2.99.6
 PACKAGE=g3dviewer
