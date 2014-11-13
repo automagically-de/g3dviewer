@@ -41,6 +41,11 @@ AM_PATH_GTKGLEXT_1_0(1.0.0,,AC_MSG_ERROR([GtkGlExt >= 1.0.0 is required]))
 PKG_CHECK_MODULES(LIBG3D, libg3d >= 0.1.0,,
 	AC_MSG_ERROR([libg3d >= 0.1.0 is required]))
 
+# libm
+AC_CHECK_LIB(m, cos,, [AC_MSG_ERROR([requires math library])])
+MATH_LIBS=-lm
+AC_SUBST(MATH_LIBS)
+
 # OpenGL stuff
 AC_PROG_CXX
 AX_CHECK_GL

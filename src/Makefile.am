@@ -40,7 +40,7 @@ g3dviewer_LDFLAGS = \
 g3dviewer_LDADD = \
 	@GTK_LIBS@ @LIBGLADE_LIBS@ \
 	@GTKGLEXT_LIBS@ @LIBG3D_LIBS@ \
-	@CWIID_LIBS@ \
+	@CWIID_LIBS@ @MATH_LIBS@ \
 	$(extra_libs) \
 	../libs/g3dgl/libg3dgl.la \
 	../libs/g3dgl-widget/libg3dgl-widget.la
