@@ -83,7 +83,13 @@ static void g3d_gl_widget_init(G3DGLWidget *self)
         GDK_GL_RGBA_TYPE);
 
 	/* can focus */
+#if 0
+	/* deprecated in 2.22 */
     GTK_WIDGET_SET_FLAGS(self, GTK_CAN_FOCUS);
+#else
+	/* since 2.18 */
+	gtk_widget_set_can_focus(self, TRUE);
+#endif
 
 	/* event filter */
     gtk_widget_set_events(GTK_WIDGET(self),
