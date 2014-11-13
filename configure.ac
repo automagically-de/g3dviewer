@@ -1,4 +1,5 @@
 AC_INIT(configure.ac)
+AC_CONFIG_MACRO_DIR([m4])
 
 VERSION=0.2.99.6
 PACKAGE=g3dviewer

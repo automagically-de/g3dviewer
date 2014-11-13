@@ -1,3 +1,4 @@
+ACLOCAL_AMFLAGS = -I m4
 SUBDIRS = m4 man libs src thumbnailer pixmaps glade examples po
 
 appldir = ${datadir}/applications
