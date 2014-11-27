@@ -31,6 +31,7 @@ typedef struct {
 	G3DFloat v[3];
 	G3DFloat n[3];
 	G3DFloat uv[2];
+	G3DVector color[4];
 	guint32 i;
 	G3DFace *face;
 	gboolean textured;
@@ -230,7 +231,7 @@ static void g3d_gl_tess_renderer_tess_objects(G3DGLTessRenderer *self,
 	G3DObject *object;
 	G3DFace *face;
 	G3DVector normal[3];
-	gint32 i;
+	gint32 i, j;
 	guint32 index;
 	GLdouble *verts;
 	G3DGLTessRendererVertex *tessverts;
@@ -265,7 +266,19 @@ static void g3d_gl_tess_renderer_tess_objects(G3DGLTessRenderer *self,
 				verts[i * 3 + 0] = object->vertex_data[index * 3 + 0];
 				verts[i * 3 + 1] = object->vertex_data[index * 3 + 1];
 				verts[i * 3 + 2] = object->vertex_data[index * 3 + 2];
-				
+
+				if (object->vertex_color_data) {
+					for (j = 0; j < 4; j ++)
+						tessverts[i].color[j] =
+							object->vertex_color_data[index * 4 + j];
+				}
+				else {
+					tessverts[i].color[0] = face->material->r;
+					tessverts[i].color[1] = face->material->g;
+					tessverts[i].color[2] = face->material->b;
+					tessverts[i].color[3] = face->material->a;
+				}
+
 				tessverts[i].v[0] = verts[i * 3 + 0];
 				tessverts[i].v[1] = verts[i * 3 + 1];
 				tessverts[i].v[2] = verts[i * 3 + 2];
@@ -439,21 +452,15 @@ static void g3d_gl_tess_update_material(G3DGLTessRendererPriv *priv,
 
 static void g3d_gl_tess_vertex(G3DGLTessRendererVertex *v)
 {
-	GLfloat col[4];
-
 	g3d_gl_tess_update_material(v->priv, v->textured, v->texid);
 
 #if DEBUG > 2
 	g_debug("VERTEX_DATA (%0.2f, %0.2f, %0.2f), %p",
 		v->v[0], v->v[1], v->v[2], v->face);
 #endif
-	col[0] = v->face->material->r;
-	col[1] = v->face->material->g;
-	col[2] = v->face->material->b;
-	col[3] = v->face->material->a;
 	g_array_append_vals(v->priv->vertex_array, v->v, 3);
 	g_array_append_vals(v->priv->normal_array, v->n, 3);
-	g_array_append_vals(v->priv->color_array, col, 4);
+	g_array_append_vals(v->priv->color_array, v->color, 4);
 	g_array_append_vals(v->priv->texco_array, v->uv, 2);
 	v->priv->last_count ++;
 }
