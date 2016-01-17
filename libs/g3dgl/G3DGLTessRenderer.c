@@ -5,6 +5,14 @@
 
 #include "G3DGLTessRenderer.h"
 
+#define TRAP_GL_ERROR(text) \
+{ \
+	GLenum error; \
+	error = glGetError(); \
+	if(error != GL_NO_ERROR) \
+		g_printerr("[gl] %s: E: %d\n", text, error); \
+}
+
 typedef struct {
 	guint32 start;
 	guint32 count;
@@ -25,6 +33,8 @@ struct _G3DGLTessRendererPriv {
 	const gchar *last_stype;
 	GLenum last_type;
 	guint32 last_count;
+
+	GSList *combined_vertices;
 };
 
 typedef struct {
@@ -45,6 +55,12 @@ static void g3d_gl_tess_renderer_cleanup(G3DGLTessRenderer *self);
 static void g3d_gl_tess_begin_data(GLenum type, G3DGLTessRenderer *self);
 static void g3d_gl_tess_end_data(G3DGLTessRenderer *self);
 static void g3d_gl_tess_vertex(G3DGLTessRendererVertex *v);
+static void g3d_gl_tess_combine_data(
+	GLdouble coords[3],
+	G3DGLTessRendererVertex *vertex_data[4],
+	GLfloat w[4],
+	G3DGLTessRendererVertex **vertex_out,
+	G3DGLTessRenderer *self);
 static void g3d_gl_tess_error_data(GLenum errno, G3DGLTessRenderer *self);
 
 /* G3DGLRenderer method implementions */
@@ -77,6 +93,7 @@ static gboolean g3d_gl_tess_renderer_prepare(G3DGLRenderer *renderer,
 	gluTessCallback(tess, GLU_TESS_BEGIN_DATA, g3d_gl_tess_begin_data);
 	gluTessCallback(tess, GLU_TESS_END_DATA, g3d_gl_tess_end_data);
 	gluTessCallback(tess, GLU_TESS_VERTEX, g3d_gl_tess_vertex);
+	gluTessCallback(tess, GLU_TESS_COMBINE_DATA, g3d_gl_tess_combine_data);
 	gluTessCallback(tess, GLU_TESS_ERROR_DATA, g3d_gl_tess_error_data);
 
 	g3d_gl_tess_renderer_tess_objects(G3D_GL_TESS_RENDERER(renderer),
@@ -142,6 +159,7 @@ static gboolean g3d_gl_tess_renderer_draw(G3DGLRenderer *renderer)
 			chunk->count * 3,
 			GL_UNSIGNED_INT,
 			&g_array_index(priv->index_array, GLuint, chunk->start * 3));
+		TRAP_GL_ERROR("glDrawElement");
 	}
 	return TRUE;
 }
@@ -350,6 +368,16 @@ static void g3d_gl_tess_renderer_cleanup(G3DGLTessRenderer *self)
 	}
 	self->priv->chunks = NULL;
 	self->priv->current_chunk = NULL;
+
+	citem = self->priv->combined_vertices;
+	while(citem != NULL) {
+		chunk = citem->data;
+		g_free(chunk);
+		next = citem->next;
+		g_slist_free_1(citem);
+		citem = next;
+	}
+	self->priv->combined_vertices = NULL;
 }
 
 static void g3d_gl_tess_begin_data(GLenum type, G3DGLTessRenderer *self)
@@ -398,12 +426,12 @@ static void g3d_gl_tess_end_data(G3DGLTessRenderer *self)
 			for(i = 0; (i + 2) < self->priv->last_count; i ++) {
 				if(i % 2) { /* "even" in OpenGL language (2, 4, 6...) */
 					tri[0] = baseindex + i + 1;
-					tri[0] = baseindex + i + 0;
-					tri[0] = baseindex + i + 2;
+					tri[1] = baseindex + i + 0;
+					tri[2] = baseindex + i + 2;
 				} else { /* "odd" in OpenGL language (1, 3, 5...) */
 					tri[0] = baseindex + i + 0;
-					tri[0] = baseindex + i + 1;
-					tri[0] = baseindex + i + 2;
+					tri[1] = baseindex + i + 1;
+					tri[2] = baseindex + i + 2;
 				}
 #if DEBUG > 2
 				g_debug("[1] tri = (%d, %d, %d)", tri[0], tri[1], tri[2]);
@@ -465,7 +493,36 @@ static void g3d_gl_tess_vertex(G3DGLTessRendererVertex *v)
 	v->priv->last_count ++;
 }
 
+static void g3d_gl_tess_combine_data(
+	GLdouble coords[3],
+	G3DGLTessRendererVertex *vertex_data[4],
+	GLfloat w[4],
+	G3DGLTessRendererVertex **vertex_out,
+	G3DGLTessRenderer *self) {
+
+	G3DGLTessRendererVertex *out = g_new0(G3DGLTessRendererVertex, 1);
+	out->priv = self->priv;
+	guint32 i, j;
+
+	for (i = 0; i < 3; i ++)
+		out->v[i] = coords[i];
+
+	for (j = 0; j < 4; j ++) {
+		for (i = 0; i < 4; i ++)
+			out->color[i] += vertex_data[j]->color[i] * w[j];
+		for (i = 0; i < 3; i ++)
+			out->n[i] += vertex_data[j]->n[i] * w[j];
+		for (i = 0; i < 2; i ++)
+			out->uv[i] += vertex_data[j]->uv[i] * w[j];
+	}
+
+	/* track pointer to clean it up later */
+	self->priv->combined_vertices = g_slist_prepend(self->priv->combined_vertices, out);
+
+	*vertex_out = out;
+}
+
 static void g3d_gl_tess_error_data(GLenum errno, G3DGLTessRenderer *self)
 {
-	g_warning("ERROR_DATA: errno = %d", errno);
+	g_warning("ERROR_DATA: %s (%d)", gluErrorString(errno), errno);
 }
