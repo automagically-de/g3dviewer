@@ -508,6 +508,8 @@ static void g3d_gl_tess_combine_data(
 		out->v[i] = coords[i];
 
 	for (j = 0; j < 4; j ++) {
+		if (w[j] == 0.0)
+			break;
 		for (i = 0; i < 4; i ++)
 			out->color[i] += vertex_data[j]->color[i] * w[j];
 		for (i = 0; i < 3; i ++)
